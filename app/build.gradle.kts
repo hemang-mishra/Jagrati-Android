@@ -84,4 +84,7 @@ dependencies {
 
     //Serialization
     implementation(libs.kotlinx.serialization.json)
+
+    //GSON
+    implementation(libs.gson)
 }
