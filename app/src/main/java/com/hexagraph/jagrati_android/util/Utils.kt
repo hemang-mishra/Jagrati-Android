@@ -1,10 +1,13 @@
 package com.hexagraph.jagrati_android.util
 
+import android.icu.text.SimpleDateFormat
 import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.ResponseError.Companion.getError
 import retrofit2.Response
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.util.Date
+import java.util.Locale
 
 /**
  * A set of fairly general Android utility methods.
@@ -40,4 +43,11 @@ object Utils {
      * **CAUTION:** If this function is called once, calling it further with the same [Response] instance will result in an empty
      * string. Store this function's result for multiple use cases.*/
     fun <T> Response<T>.error(): String? = this.errorBody()?.string()
+
+
+    fun timestamp(pattern: String = "yyyy-MM-dd HH:mm:ss", date: Date = Date()): String = SimpleDateFormat(pattern, Locale.getDefault()).format(date)
+
+    fun PIDGenerator(timeInMills: Long = System.currentTimeMillis(), name: String): String{
+        return "${name}_$timeInMills"
+    }
 }
