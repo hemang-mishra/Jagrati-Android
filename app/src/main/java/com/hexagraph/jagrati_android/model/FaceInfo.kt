@@ -30,7 +30,7 @@ data class FaceInfo(
     val timestamp: String = Utils.timestamp(),
     val time: Long = System.currentTimeMillis(),
 ) {
-    val pattern get(): String = "${name}_${time}.png"
+    val pattern get(): String = "${pid}.png"
     val faceFileName get(): String = "Face_${pattern}"
     val imageFileName get(): String = "Image_${pattern}"
     val frameFileName get(): String = "Frame_${pattern}"

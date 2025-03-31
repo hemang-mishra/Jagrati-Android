@@ -58,7 +58,7 @@ class OmniScanImplementation @Inject constructor(
         val info = image.faceInfo
         val images = faceList().map { it.processedImage(application) }
         if (image.faceBitmap == null) throw Throwable("Face is empty")
-        if (images.find { image.name == it.name } != null) throw Throwable("Name Already Exist.")
+        if (images.find { image.pid == it.pid } != null) throw Throwable("Person Already Exist.")
         if ((faceRecognitionService.recognizeFace(image, images, application)?.matchesCriteria == true)) throw Throwable("Face Already Exist.")
         image.faceBitmap.let { application.writeBitmapIntoFile(info.faceFileName, it).getOrNull() }
         image.frame?.let { application.writeBitmapIntoFile(info.frameFileName, it).getOrNull() }

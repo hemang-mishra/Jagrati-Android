@@ -28,4 +28,7 @@ interface StudentDetailsDao {
 
     @Query("SELECT * FROM student_details WHERE pid = :pid")
     suspend fun getStudentDetailsByPid(pid: String): StudentDetails?
+
+    @Query("SELECT * FROM student_details WHERE first_name LIKE '%' || :query || '%' OR last_name LIKE '%' || :query || '%'")
+    suspend fun getStudentDetailsByQuery(query: String): List<StudentDetails>
 }
