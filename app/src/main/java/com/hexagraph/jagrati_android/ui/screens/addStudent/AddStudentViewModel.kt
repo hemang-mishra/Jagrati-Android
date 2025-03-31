@@ -33,16 +33,23 @@ class AddStudentViewModel @Inject constructor(
         }
     }
 
-    fun initialize(pid: String){
+    fun initialize(pid: String?, isFacialDataAvailable: Boolean){
         viewModelScope.launch {
-            val studentDetails = addStudentRepository.getStudentDetails(pid)
-            if(studentDetails != null)
             studentUiStateFlow.emit(
                 studentUiStateFlow.value.copy(
-                    studentData = studentDetails,
-                    isStudentNew = false
+                    isFacialDataAdded = isFacialDataAvailable
                 )
             )
+            if(pid != null) {
+                val studentDetails = addStudentRepository.getStudentDetails(pid)
+                if (studentDetails != null)
+                    studentUiStateFlow.emit(
+                        studentUiStateFlow.value.copy(
+                            studentData = studentDetails,
+                            isStudentNew = false
+                        )
+                    )
+            }
         }
     }
 
@@ -53,7 +60,7 @@ class AddStudentViewModel @Inject constructor(
             student = studentDetails.copy(pid = Utils.PIDGenerator(name = studentDetails.firstName))
         }
         viewModelScope.launch {
-           addStudentRepository.upsertStudent(studentDetails)
+           addStudentRepository.upsertStudent(student)
         }
         return student
     }

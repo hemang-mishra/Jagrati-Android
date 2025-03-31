@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.ui.screens.omniscan
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hexagraph.jagrati_android.ui.screens.addStudent.AddStudentScreen
+import com.hexagraph.jagrati_android.ui.screens.main.OmniScreens
 
 @Composable
 fun OmniScanMainScreen(
@@ -24,18 +26,40 @@ fun OmniScanMainScreen(
     LaunchedEffect(Unit) {
         omniScanViewModel.initializeOmniScan(context, useCases)
     }
-    Box(modifier = Modifier.fillMaxSize()
-        .statusBarsPadding()) {
-        AnimatedVisibility(uiState.cameraScreenUiState.registerNewStudent) {
-            AddStudentScreen(onSuccessAddition = {
-                omniScanViewModel.onSuccessfulRegister(it)
-            })
+    Box(modifier = Modifier
+        .fillMaxSize()) {
+        AnimatedContent(
+            uiState.cameraScreenUiState.currentOmniScreens
+        ) {screen->
+            when (screen) {
+                OmniScreens.CAMERA_SCREEN -> {
+                    OmniScanCameraScreen(
+                        omniScanViewModel,
+                        onExit
+                    )
+                }
+                OmniScreens.ADD_MANUALLY_SCREEN -> {
+                    AddManuallyScreen(omniScanViewModel){
+                        omniScanViewModel.navigate(OmniScreens.CAMERA_SCREEN)
+                    }
+                }
+                OmniScreens.CONFIRMATION_SCREEN -> {
+                    OmniScanConfirmationScreen(omniScanViewModel) {
+                        //Callback
+                    }
+                }
+                OmniScreens.REGISTER_SCREEN -> {
+                    AddStudentScreen(
+                        onPressBack = {
+                            omniScanViewModel.navigate(OmniScreens.CAMERA_SCREEN)
+                        },
+                        isFacialDataAvailable = true,
+                        onSuccessAddition = {
+                        omniScanViewModel.onSuccessfulRegister(it)
+                    })
+                }
+            }
         }
-        if (!uiState.cameraScreenUiState.registerNewStudent) {
-            OmniScanCameraScreen(
-                omniScanViewModel,
-                onExit
-            )
-        }
+
     }
 }
