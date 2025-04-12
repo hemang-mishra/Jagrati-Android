@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,12 +22,13 @@ fun ScreenHeader(
     modifier: Modifier = Modifier,
     onBackPress: () -> Unit,
     title: String,
+    isTitleClickable: Boolean = false,
+    onTitleClick: () -> Unit = {},
     trailingContent: @Composable () -> Unit
 ) {
     Row(
         modifier = modifier
-            .fillMaxWidth()
-            ,
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -43,7 +45,11 @@ fun ScreenHeader(
                 title,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(start = 8.dp)
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .then(
+                        if (isTitleClickable) Modifier.clickable
+                        { onTitleClick() } else Modifier)
             )
         }
         trailingContent()

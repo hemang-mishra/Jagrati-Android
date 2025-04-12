@@ -20,7 +20,7 @@ interface StudentDetailsDao {
     fun getAllStudentDetails(): Flow<List<StudentDetails>>
 
     @Query("SELECT * FROM student_details WHERE pid = :pid")
-    fun getStudentDetails(pid: String): Flow<StudentDetails>
+    suspend fun getStudentDetails(pid: String): StudentDetails
 
     //Function to check if student with particular pid exists
     @Query("SELECT EXISTS(SELECT * FROM student_details WHERE pid = :pid)")

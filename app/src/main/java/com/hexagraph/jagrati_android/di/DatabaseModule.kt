@@ -2,6 +2,7 @@ package com.hexagraph.jagrati_android.di
 
 import android.content.Context
 import androidx.room.Room
+import com.hexagraph.jagrati_android.model.databases.EmbeddingsDatabase
 import com.hexagraph.jagrati_android.model.databases.FaceInfoListConvertor
 import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
 import dagger.Module
@@ -28,6 +29,17 @@ class DatabaseModule {
 
     @Provides
     @Singleton
+    fun providesFaceEmbeddingDatabase(
+        @ApplicationContext context: Context
+    ): EmbeddingsDatabase = Room.databaseBuilder(
+        context,
+        EmbeddingsDatabase::class.java,
+        "face_embedding_db"
+    )
+        .build()
+
+    @Provides
+    @Singleton
     fun provideFaceInfoDao(
         database: PrimaryDatabase
     ) = database.faceInfoDao()
@@ -37,4 +49,16 @@ class DatabaseModule {
     fun provideStudentDetailsDao(
         database: PrimaryDatabase
     ) = database.studentDetailsDao()
+
+    @Provides
+    @Singleton
+    fun provideAttendanceDao(
+        database: PrimaryDatabase
+    ) = database.attendanceDao()
+
+    @Provides
+    @Singleton
+    fun provideEmbeddingsDao(
+        database: EmbeddingsDatabase
+    ) = database.embeddingsDao()
 }

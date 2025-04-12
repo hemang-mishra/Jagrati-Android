@@ -11,6 +11,7 @@ data class OmniScanUIState(
     val allFaces: List<FaceInfo> = emptyList(),
     val allProcessedFaces: List<ProcessedImage> = emptyList(),
     val addManuallyUIState: AddManuallyUIState = AddManuallyUIState(),
+    val message: String? = null
 )
 
 data class CameraScreenUiState(
@@ -28,7 +29,6 @@ data class AddManuallyUIState(
     val queryString: String = "",
     val queriedData: List<StudentDetails> = emptyList(),
 )
-
 
 
 enum class OmniScreens{
