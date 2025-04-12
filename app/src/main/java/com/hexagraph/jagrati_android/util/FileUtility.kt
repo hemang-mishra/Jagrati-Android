@@ -21,6 +21,7 @@ object FileUtility {
         val outputStream = file.outputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
         outputStream.close()
+        Log.i("FileUtility", "Successfully written $fileName")
         return@runCatching file.exists()
     }.onFailure {
         Log.e("FileUtility", it.message?:"Error while writing bitmap into file")

@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.ui.screens.omniscan
 
+import androidx.activity.compose.BackHandler
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.view.CameraController
@@ -77,6 +78,9 @@ fun OmniScanCameraScreen(
             imageAnalysisBackpressureStrategy = ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
         }
 
+    }
+    BackHandler {
+        onExit()
     }
     LaunchedEffect(Unit) {
         controller.cameraSelector = if(uiState.cameraScreenUiState.lensFacing == CameraSelector.LENS_FACING_BACK)

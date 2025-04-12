@@ -47,7 +47,8 @@ object Utils {
 
     fun timestamp(pattern: String = "yyyy-MM-dd HH:mm:ss", date: Date = Date()): String = SimpleDateFormat(pattern, Locale.getDefault()).format(date)
 
-    fun PIDGenerator(timeInMills: Long = System.currentTimeMillis(), name: String): String{
-        return "${name}_$timeInMills"
+    fun PIDGenerator(timeInMills: Long = System.currentTimeMillis(), name: String): String {
+        val sanitizedName = name.replace(Regex("[^a-zA-Z0-9]"), "_")
+        return "${sanitizedName}_$timeInMills"
     }
 }

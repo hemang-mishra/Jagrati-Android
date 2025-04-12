@@ -37,4 +37,10 @@ class DatabaseModule {
     fun provideStudentDetailsDao(
         database: PrimaryDatabase
     ) = database.studentDetailsDao()
+
+    @Provides
+    @Singleton
+    fun provideAttendanceDao(
+        database: PrimaryDatabase
+    ) = database.attendanceDao()
 }

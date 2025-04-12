@@ -51,6 +51,8 @@ class FaceRecognitionServiceImpl @Inject constructor(): FaceRecognitionService {
             isRunning = true
         }
         return try {
+            val start = System.currentTimeMillis()
+            var embeddingTime = 0L
             // Preprocess the reference bitmap
             val referenceInput =
                 face.faceBitmap?.let { bitmap -> preprocessBitmapForMobileFaceNet(bitmap, FACE_NET_IMAGE_SIZE).getOrNull()?.let { arrayOf(it) } }
@@ -73,7 +75,10 @@ class FaceRecognitionServiceImpl @Inject constructor(): FaceRecognitionService {
                 // Run inference for the test face
                 val testInputs = arrayOf(testInputBuffer)
                 val testOutputs: MutableMap<Int, Any> = mutableMapOf(0 to testOutputBuffer)
+                val singleStart = System.currentTimeMillis()
                 context.faceNetInterceptor.runForMultipleInputsOutputs(testInputs, testOutputs)
+                embeddingTime = System.currentTimeMillis()
+                Log.i("FaceRecognitionServiceImpl", "Time taken for embedding: ${embeddingTime - singleStart} ms")
                 // Calculate the Euclidean distance between the reference and test embeddings
                 val distance = AIIntegration.calculateDistanceBtwEmbeddings(referenceOutputBuffer, testOutputBuffer).getOrNull() ?: throw Throwable("Unable to calculate Distance")
                 // Calculate the Cosine Similarity between the reference and test embeddings
@@ -85,6 +90,8 @@ class FaceRecognitionServiceImpl @Inject constructor(): FaceRecognitionService {
                     image = data.copy(distance = distance, similarity = similarity)
                 }
             }
+            val end = System.currentTimeMillis()
+            Log.i("FaceRecognitionServiceImpl", "Pre embedding: ${embeddingTime - start}ms, similarity calculation: ${end - embeddingTime} Time taken for face recognition: ${end - start} ms")
             // Cleanup
             context.faceNetInterceptor.close()
             image

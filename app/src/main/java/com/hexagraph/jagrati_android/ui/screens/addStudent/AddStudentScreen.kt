@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -30,15 +32,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.Bitmap
 import com.hexagraph.jagrati_android.model.Gender
 import com.hexagraph.jagrati_android.model.JagratiGroups
 import com.hexagraph.jagrati_android.model.StudentDetails
@@ -50,6 +56,7 @@ fun AddStudentScreen(
     pid: String? = null,
     onSuccessAddition: (StudentDetails) -> Unit,
     isFacialDataAvailable: Boolean,
+    bitmap: Bitmap? = null,
     onPressBack: () -> Unit,
     addStudentViewModel: AddStudentViewModel = hiltViewModel()
 ) {
@@ -69,13 +76,15 @@ fun AddStudentScreen(
         onAddFacialData = {
             //To be implemented
         },
-        onPressBack = onPressBack
+        onPressBack = onPressBack,
+        bitmap = bitmap
     )
 }
 
 @Composable
 fun AddStudentScreenBase(
     uiState: AddStudentUIState,
+    bitmap: Bitmap?,
     onChangeOfStudentDetails: (StudentDetails) -> Unit,
     onSave: () -> Unit,
     onPressBack: () -> Unit,
@@ -92,6 +101,19 @@ fun AddStudentScreenBase(
                 title =  if (uiState.isStudentNew) "Add New Student" else "Edit Student Details",
                 trailingContent = {}
             )
+        }
+        if(bitmap!=null){
+            item {
+                Box(modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(), modifier = Modifier.size(80.dp)
+                            .clip(CircleShape)
+                        ,
+                        contentDescription = "Image Bitmap"
+                    )
+                }
+            }
         }
         item {
             if (!uiState.isFacialDataAdded) {
@@ -340,6 +362,7 @@ fun PreviewAddStudentScreen() {
         onChangeOfStudentDetails = {},
         onSave = {},
         onAddFacialData = {},
-        onPressBack = {}
+        onPressBack = {},
+        bitmap = null
     )
 }

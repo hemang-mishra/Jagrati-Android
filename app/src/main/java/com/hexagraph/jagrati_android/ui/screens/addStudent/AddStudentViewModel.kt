@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.StudentDetails
 import com.hexagraph.jagrati_android.repository.student.AddStudentRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
+import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceUIState
 import com.hexagraph.jagrati_android.util.Utils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,6 +62,7 @@ class AddStudentViewModel @Inject constructor(
         }
         viewModelScope.launch {
            addStudentRepository.upsertStudent(student)
+            studentUiStateFlow.emit(AddStudentUIState())
         }
         return student
     }

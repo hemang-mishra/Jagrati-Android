@@ -29,7 +29,10 @@ fun AppNavigation(
         }
         composable<Screens.NavAttendanceRoute> {
             StudentAttendanceScreen(
-                snackbarHostState = snackbarHostState
+                snackbarHostState = snackbarHostState,
+                onBackPress = {
+                    navController.navigateUp()
+                }
             )
         }
     }

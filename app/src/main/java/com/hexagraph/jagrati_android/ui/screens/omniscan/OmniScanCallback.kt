@@ -1,5 +1,7 @@
 package com.hexagraph.jagrati_android.ui.screens.omniscan
 
-sealed class OmniScanCallback {
+import com.hexagraph.jagrati_android.model.ProcessedImage
 
-}
+data class OmniScanCallback(
+    val onListGeneration: (List<ProcessedImage>)->Unit = {}
+)

@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -41,9 +40,11 @@ class OmniScanViewModel @Inject constructor(
     private val faceRecognitionService: FaceRecognitionService,
     private val studentDetailsDao: StudentDetailsDao
 ) : BaseViewModel<OmniScanUIState>() {
+    private val allStudentDetails = studentDetailsDao.getAllStudentDetails()
     private val studentSearchQueryInput = MutableStateFlow("")
+
     @OptIn(FlowPreview::class)
-    private val studentSearchQuery = studentSearchQueryInput.asStateFlow().debounce(500).distinctUntilChanged()
+    private val studentSearchQuery = studentSearchQueryInput.asStateFlow().debounce(500)
     private val semaphore = Semaphore(1)
     private val facesFlow = omniScanRepository.faces
     private val processedFacesFlow = MutableStateFlow(emptyList<ProcessedImage>())
@@ -52,6 +53,14 @@ class OmniScanViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
+            allStudentDetails.collectLatest {
+                addManuallyUIStateFlow.emit(
+                    addManuallyUIStateFlow.value.copy(
+                        queriedData = it,
+                        queryString = ""
+                    )
+                )
+            }
             studentSearchQuery.collectLatest {
                 addManuallyUIStateFlow.emit(
                     addManuallyUIStateFlow.value.copy(
@@ -63,9 +72,20 @@ class OmniScanViewModel @Inject constructor(
     }
 
 
-    fun initializeOmniScan(context: Context, useCases: OmniScanUseCases) {
+    fun initializeOmniScan(
+        context: Context,
+        useCases: OmniScanUseCases,
+        initialList: List<ProcessedImage>
+    ) {
+//        val currentList = uiState.value.cameraScreenUiState.savedPeople.toMutableList()
+//        initialList.forEach { currentList.add(it) }
         viewModelScope.launch(Dispatchers.IO) {
-            cameraScreenUiState.emit(cameraScreenUiState.value.copy(useCases = useCases))
+            cameraScreenUiState.emit(
+                cameraScreenUiState.value.copy(
+                    useCases = useCases,
+                    savedPeople = initialList
+                )
+            )
             facesFlow.collectLatest { faces ->
                 for (face in faces) {
                     if (processedFacesFlow.value.find { it.pid == face.pid } == null) {
@@ -135,16 +155,35 @@ class OmniScanViewModel @Inject constructor(
     }
 
     fun onSuccessfulRegister(studentDetails: StudentDetails) {
-        viewModelScope.launch {
-            cameraScreenUiState.emit(
-                cameraScreenUiState.value.copy(
-                    currentOmniScreens = OmniScreens.CAMERA_SCREEN
-                )
+        val currentList = uiState.value.cameraScreenUiState.savedPeople.toMutableList()
+        currentList.add(
+            uiState.value.cameraScreenUiState.imageAboutToBeSaved.copy(
+                pid = studentDetails.pid,
+                name = studentDetails.firstName
             )
-            omniScanRepository.saveFace(
+        )
+        viewModelScope.launch {
+            val result = omniScanRepository.saveFace(
                 uiState.value.cameraScreenUiState.imageAboutToBeSaved.copy(
                     pid = studentDetails.pid,
-                    name = studentDetails.firstName
+                    name = studentDetails.firstName,
+                )
+            )
+            if (result.isSuccess) {
+                Log.i(
+                    "ViewModel",
+                    "Student details saved successfully $studentDetails in all databases"
+                )
+            } else {
+                emitError(ResponseError.UNKNOWN.apply {
+                    actualResponse = "Student details could not be $studentDetails in all databases"
+                })
+                Log.i("ViewModel", "Student details could not be $studentDetails in all databases")
+            }
+            cameraScreenUiState.emit(
+                cameraScreenUiState.value.copy(
+                    currentOmniScreens = OmniScreens.CAMERA_SCREEN,
+                    savedPeople = currentList
                 )
             )
         }
@@ -152,6 +191,7 @@ class OmniScanViewModel @Inject constructor(
 
     fun addFace() {
         if (uiState.value.cameraScreenUiState.currentImage.faceBitmap == null || uiState.value.cameraScreenUiState.recognizedImage.matchesCriteria) {
+
             return
         }
         viewModelScope.launch {
@@ -185,7 +225,8 @@ class OmniScanViewModel @Inject constructor(
                     )
                 } else {
                     val currentList = cameraScreenUiState.value.savedPeople.toMutableList()
-                    if(currentList.find { it.pid == cameraScreenUiState.value.recognizedImage.pid } != null) {
+                    if (currentList.find { it.pid == cameraScreenUiState.value.recognizedImage.pid } != null) {
+                        emitMsg("Already in list")
                         return@launch
                     }
                     currentList.add(cameraScreenUiState.value.recognizedImage)
@@ -225,7 +266,7 @@ class OmniScanViewModel @Inject constructor(
         }
     }
 
-    fun navigate(omniScreens: OmniScreens){
+    fun navigate(omniScreens: OmniScreens) {
         viewModelScope.launch {
             cameraScreenUiState.emit(
                 cameraScreenUiState.value.copy(
@@ -235,7 +276,7 @@ class OmniScanViewModel @Inject constructor(
         }
     }
 
-    fun selectFace(processedImage: ProcessedImage){
+    fun selectFace(processedImage: ProcessedImage) {
         val selectedPeople = cameraScreenUiState.value.selectedPeople.toMutableList()
         if (selectedPeople.find { it.pid == processedImage.pid } == null) {
             selectedPeople.add(processedImage)
@@ -251,7 +292,7 @@ class OmniScanViewModel @Inject constructor(
         }
     }
 
-    fun deleteSelectedFaces(){
+    fun deleteSelectedFaces() {
         val savedPeople = cameraScreenUiState.value.savedPeople.toMutableList()
         val selectedPeople = cameraScreenUiState.value.selectedPeople
         savedPeople.removeIf { it.pid in selectedPeople.map { it.pid } }
@@ -265,11 +306,12 @@ class OmniScanViewModel @Inject constructor(
         }
     }
 
-    fun onSelectStudentInAddManuallyScreen(studentDetails: StudentDetails){
+    fun onSelectStudentInAddManuallyScreen(studentDetails: StudentDetails) {
         val processedImage = processedFacesFlow.value.find { it.pid == studentDetails.pid }
         val images = cameraScreenUiState.value.savedPeople.toMutableList()
         if (processedImage != null) {
-            images.add(processedImage)
+            if (images.find { it.pid == processedImage.pid } == null)
+                images.add(processedImage)
             viewModelScope.launch {
                 cameraScreenUiState.emit(
                     cameraScreenUiState.value.copy(
@@ -286,13 +328,15 @@ class OmniScanViewModel @Inject constructor(
             cameraScreenUiState,
             facesFlow,
             processedFacesFlow,
-            addManuallyUIStateFlow
-        ) { cameraUIState, faces, processedFaces, addManuallyUIState ->
+            addManuallyUIStateFlow,
+            successMsgFlow
+        ) { cameraUIState, faces, processedFaces, addManuallyUIState, msg ->
             OmniScanUIState(
+                message = msg,
                 cameraScreenUiState = cameraUIState,
                 allFaces = faces,
                 allProcessedFaces = processedFaces,
-                addManuallyUIState
+                addManuallyUIState = addManuallyUIState
             )
         }.stateIn(
             viewModelScope,
@@ -300,5 +344,4 @@ class OmniScanViewModel @Inject constructor(
             OmniScanUIState()
         )
     }
-
 }
