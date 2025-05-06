@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -44,7 +45,7 @@ class OmniScanViewModel @Inject constructor(
     private val studentSearchQueryInput = MutableStateFlow("")
 
     @OptIn(FlowPreview::class)
-    private val studentSearchQuery = studentSearchQueryInput.asStateFlow().debounce(500)
+    private val studentSearchQuery = studentSearchQueryInput.asStateFlow().debounce(50).distinctUntilChanged()
     private val semaphore = Semaphore(1)
     private val facesFlow = omniScanRepository.faces
     private val processedFacesFlow = MutableStateFlow(emptyList<ProcessedImage>())
@@ -61,7 +62,10 @@ class OmniScanViewModel @Inject constructor(
                     )
                 )
             }
-            studentSearchQuery.collectLatest {
+        }
+        viewModelScope.launch {
+            studentSearchQueryInput.collectLatest {
+                Log.i("OmniScanViewModel", "$it is the query")
                 addManuallyUIStateFlow.emit(
                     addManuallyUIStateFlow.value.copy(
                         queriedData = studentDetailsDao.getStudentDetailsByQuery(it)
@@ -118,20 +122,11 @@ class OmniScanViewModel @Inject constructor(
 //                        data.spoof = faceRecognitionService.mobileNet(data, context).getOrNull()
                         recognizedImage = faceRecognitionService.recognizeFace(
                             data,
-                            listOf(uiState.value.cameraScreenUiState.recognizedImage),
+                            processedFacesFlow.value,
                             context
                         )
-                        if (recognizedImage?.similarity == null || recognizedImage.matchesCriteria)
+                        if (recognizedImage?.similarity == null || recognizedImage.similarity!! < 0.45f)
                             recognizedImage = null
-                        if (recognizedImage == null) {
-                            recognizedImage = faceRecognitionService.recognizeFace(
-                                data,
-                                processedFacesFlow.value,
-                                context
-                            )
-                            if (recognizedImage?.similarity == null || recognizedImage?.similarity!! < 0.45f)
-                                recognizedImage = null
-                        }
                         cameraScreenUiState.value = cameraScreenUiState.value.copy(
                             currentImage = data,
                             recognizedImage = recognizedImage ?: ProcessedImage()
@@ -263,6 +258,7 @@ class OmniScanViewModel @Inject constructor(
                 )
             )
             studentSearchQueryInput.emit(query)
+            Log.i("Here", "$query")
         }
     }
 

@@ -16,6 +16,9 @@ interface StudentDetailsDao {
     @Delete
     suspend fun deleteStudentDetails(studentDetails: StudentDetails)
 
+    @Query("DELETE FROM student_details WHERE pid = :pid")
+    suspend fun deleteByPid(pid: String)
+
     @Query("SELECT * FROM student_details")
     fun getAllStudentDetails(): Flow<List<StudentDetails>>
 

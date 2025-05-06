@@ -18,4 +18,7 @@ interface AttendanceDao {
 
     @Delete
     fun deleteAttendance(attendance: AttendanceModel)
+
+    @Query("DELETE FROM attendance WHERE pid=:pid")
+    suspend fun deleteByPid(pid: String)
 }

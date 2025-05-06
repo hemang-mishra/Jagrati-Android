@@ -30,10 +30,10 @@ data class FaceInfo(
     val timestamp: String = Utils.timestamp(),
     val time: Long = System.currentTimeMillis(),
 ) {
-    val pattern get(): String = "${pid}.png"
-    val faceFileName get(): String = "Face_${pattern}"
-    val imageFileName get(): String = "Image_${pattern}"
-    val frameFileName get(): String = "Frame_${pattern}"
+    val pattern get(): String = getPattern(pid)
+    val faceFileName get(): String = getFaceFileName(pid)
+    val imageFileName get(): String = getImageFileName(pid)
+    val frameFileName get(): String = getFrameFileName(pid)
     fun faceBitmap(context: Context): Bitmap? = context.readBitmapFromFile(faceFileName).getOrNull()
     fun imageBitmap(context: Context): Bitmap? = context.readBitmapFromFile(imageFileName).getOrNull()
     fun frameBitmap(context: Context): Bitmap? = context.readBitmapFromFile(frameFileName).getOrNull()
@@ -42,5 +42,12 @@ data class FaceInfo(
         val frame = frameBitmap(context)
         val face = faceBitmap(context)
         return ProcessedImage(pid = pid, name = name, image = image, frame = frame, faceBitmap = face, landmarks = landmarks)
+    }
+
+    companion object{
+        fun getPattern(pid: String) = "${pid}.png"
+        fun getFaceFileName(pid: String) = "Face_${getPattern(pid)}"
+        fun getImageFileName(pid:String) = "Image_${getPattern(pid)}"
+        fun getFrameFileName(pid: String) = "Frame_${getPattern(pid)}"
     }
 }

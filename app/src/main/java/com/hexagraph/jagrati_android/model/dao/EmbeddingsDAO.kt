@@ -12,4 +12,7 @@ interface EmbeddingsDAO {
 
     @Query("SELECT * FROM FaceEmbeddingsEntity WHERE pid = :pid")
     suspend fun getEmbeddingsByPid(pid: String): FaceEmbeddingsEntity?
+
+    @Query("DELETE FROM FaceEmbeddingsEntity WHERE pid = :pid")
+    suspend fun deleteEmbeddingsByPid(pid: String)
 }
