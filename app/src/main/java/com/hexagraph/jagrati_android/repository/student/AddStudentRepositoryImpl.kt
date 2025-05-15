@@ -9,7 +9,6 @@ class AddStudentRepositoryImpl @Inject constructor(
     private val studentDetailsDao: StudentDetailsDao
 ): AddStudentRepository {
     override suspend fun upsertStudent(studentDetails: StudentDetails) {
-
         studentDetailsDao.updateStudentDetails(studentDetails)
     }
 

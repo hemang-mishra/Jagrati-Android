@@ -39,4 +39,14 @@ object FileUtility {
         Log.e("FileUtility", it.message?:"Error while reading bitmap from file")
     }
 
+    fun deleteFile(context: Context, fileName: String): Boolean {
+        val file = context.privateFile(fileName)
+        return if (file.exists()) {
+            file.delete()
+        } else {
+            Log.e("FileUtility", "File $fileName does not exist")
+            false
+        }
+    }
+
 }
