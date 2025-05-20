@@ -1,4 +1,4 @@
-package com.hexagraph.jagrati_android.service
+package com.hexagraph.jagrati_android.service.face_recognition
 
 import android.content.Context
 import android.util.Log
@@ -18,7 +18,8 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.inject.Inject
 
-class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: EmbeddingsDAO): FaceRecognitionService {
+class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: EmbeddingsDAO):
+    FaceRecognitionService {
     override fun mobileNet(face: ProcessedImage, context: Context): Result<Float> = runCatching {
         val referenceInput = face.faceBitmap?.let { bitmap ->
             AIIntegration.preprocessBitmapForMobileFaceNet(

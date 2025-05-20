@@ -89,9 +89,9 @@ dependencies {
     //Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
-    ksp("androidx.hilt:hilt-compiler:1.2.0")
+    ksp(libs.androidx.hilt.compiler)
 //    implementation("androidx.hilt:hilt-work:1.2.0")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation(libs.androidx.hilt.navigation.compose)
 //    implementation("androidx.startup:startup-runtime:1.2.0")
 
     //Navigation
@@ -126,5 +126,7 @@ dependencies {
 
     implementation(libs.face.detection)
     implementation(libs.play.services.mlkit.face.detection)
+
+    implementation(libs.guava)
 
 }

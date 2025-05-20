@@ -1,26 +1,28 @@
 [versions]
-agp = "8.9.1"
-cameraCore = "1.5.0-alpha06"
+agp = "8.9.3"
+cameraCore = "1.5.0-beta01"
 coilCompose = "3.1.0"
 converterGson = "2.11.0"
 faceDetection = "16.1.7"
 gson = "2.12.1"
+guava = "32.1.3-android"
 hiltAndroid = "2.55"
+hiltCompiler = "1.2.0"
 kotlin = "2.1.10"
-coreKtx = "1.15.0"
+coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 kotlinxSerializationJson = "1.8.0"
-lifecycleRuntimeKtx = "2.8.7"
+lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.1"
-composeBom = "2025.03.01"
+composeBom = "2025.05.00"
 ksp = "2.1.10-1.0.31"
-navigationCompose = "2.8.9"
+navigationCompose = "2.9.0"
 okhttp = "4.12.0"
 playServicesMlkitFaceDetection = "17.1.0"
 retrofit = "2.11.0"
-roomRuntime = "2.6.1"
+roomRuntime = "2.7.1"
 hilt = "2.55"
 tensorflowLite = "2.12.0"
 tensorflowLiteGpu = "2.12.0"
@@ -43,6 +45,8 @@ androidx-camera-mlkit-vision = { module = "androidx.camera:camera-mlkit-vision",
 androidx-camera-video = { module = "androidx.camera:camera-video", version.ref = "cameraCore" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraCore" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompiler" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltCompiler" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
@@ -52,6 +56,7 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCo
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 face-detection = { module = "com.google.mlkit:face-detection", version.ref = "faceDetection" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
