@@ -24,11 +24,6 @@ class ServicesModule {
         return FaceRecognitionServiceImpl(faceEmbeddingsDAO)
     }
 
-    @Provides
-    @Singleton
-    fun providesFirebaseAuth(): FirebaseAuth{
-        return FirebaseAuth.getInstance()
-    }
 
     @Provides
     @Singleton

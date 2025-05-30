@@ -8,14 +8,20 @@ plugins {
     alias(libs.plugins.google.gms.google.services)
 }
 
+
 android {
     namespace = "com.hexagraph.jagrati_android"
     compileSdk = 35
 
     defaultConfig {
+        // Read web client ID from local.properties
+        val webClientId = project.findProperty("WEB_CLIENT_ID") as String? ?: "YOUR_WEB_CLIENT_ID"
+
+        // Create a resource value for the web client ID
+        resValue("string", "web_client_id", webClientId)
         applicationId = "com.hexagraph.jagrati_android"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -25,7 +31,7 @@ android {
     buildTypes {
 //        debug {
 //            applicationIdSuffix = ".debug"
-//            versionNameSuffix = ".debug"
+//            versionNameSuffix = "-debug"
 //        }
         release {
             isMinifyEnabled = false
@@ -44,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -129,4 +136,8 @@ dependencies {
 
     implementation(libs.guava)
 
+    //Navigation 3 API
+//    implementation(libs.androidx.navigation3.ui)
+//    implementation(libs.androidx.navigation3.runtime)
+//    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 }
