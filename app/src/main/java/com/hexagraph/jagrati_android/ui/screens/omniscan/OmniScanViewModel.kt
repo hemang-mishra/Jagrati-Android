@@ -12,7 +12,7 @@ import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.StudentDetails
 import com.hexagraph.jagrati_android.model.dao.StudentDetailsDao
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
-import com.hexagraph.jagrati_android.service.FaceRecognitionService
+import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.ui.screens.main.AddManuallyUIState
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.ui.screens.main.CameraScreenUiState

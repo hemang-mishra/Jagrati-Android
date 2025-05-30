@@ -1,4 +1,4 @@
-package com.hexagraph.jagrati_android.service
+package com.hexagraph.jagrati_android.service.face_recognition
 
 import android.content.Context
 import com.hexagraph.jagrati_android.model.ProcessedImage

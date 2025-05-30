@@ -25,10 +25,9 @@ import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.hexagraph.jagrati_android.model.FaceInfo
 import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
-import com.hexagraph.jagrati_android.service.FaceRecognitionService
+import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.util.FileUtility.writeBitmapIntoFile
 import com.hexagraph.jagrati_android.util.MediaUtils.bitmap
-import com.hexagraph.jagrati_android.util.Utils
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -106,7 +105,7 @@ class OmniScanImplementation @Inject constructor(
             }
         }
 
-    fun processImage(
+    private fun processImage(
         lensFacing: Int,
         data: MutableList<Face>,
         bitmap: Bitmap,
@@ -130,7 +129,7 @@ class OmniScanImplementation @Inject constructor(
         Log.e("MediaUtils", it.message ?: "Error while processing image")
     }
 
-    fun biggestFace(faces: MutableList<Face>): Face? {
+    private fun biggestFace(faces: MutableList<Face>): Face? {
         var biggestFace: Face? = null
         var biggestFaceSize = 0
         for (face in faces) {
@@ -144,7 +143,7 @@ class OmniScanImplementation @Inject constructor(
     }
 
     // Function to align a bitmap based on facial landmarks
-    fun alignBitmapByLandmarks(bitmap: Bitmap, landmarks: List<FaceLandmark>, noseRatio: Float = 0.4f, eyeDistanceRatio: Float = 0.3f): Result<Bitmap> = runCatching {
+    private fun alignBitmapByLandmarks(bitmap: Bitmap, landmarks: List<FaceLandmark>, noseRatio: Float = 0.4f, eyeDistanceRatio: Float = 0.3f): Result<Bitmap> = runCatching {
         val leftEye = landmarks.find { it.landmarkType == FaceLandmark.LEFT_EYE }?.position
         val rightEye = landmarks.find { it.landmarkType == FaceLandmark.RIGHT_EYE }?.position
         val noseBase = landmarks.find { it.landmarkType == FaceLandmark.NOSE_BASE }?.position
