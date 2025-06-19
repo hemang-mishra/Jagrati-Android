@@ -97,8 +97,9 @@ class MainActivity : ComponentActivity() {
                 val googleIdOption = GetGoogleIdOption.Builder()
                     .setFilterByAuthorizedAccounts(false)
                     // Use your web client ID from Google Cloud Console
-                    .setServerClientId(getString(R.string.web_client_id))
+                    .setServerClientId(getString(R.string.WEB_CLIENT_ID))
                     .build()
+                Log.i("Web client", "${getString(R.string.WEB_CLIENT_ID)} $googleIdOption")
 
                 val request = GetCredentialRequest.Builder()
                     .addCredentialOption(googleIdOption)
