@@ -28,7 +28,7 @@
 
         <meta-data
             android:name="com.google.android.gms.credentials.api.key"
-            android:value="@string/web_client_id" />
+            android:value="@string/WEB_CLIENT_ID" />
 
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"

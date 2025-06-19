@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,6 +11,8 @@ plugins {
     alias(libs.plugins.google.gms.google.services)
 }
 
+// Load properties from local.properties file
+val localPropertiesFile = rootProject.file("local.properties")
 
 android {
     namespace = "com.hexagraph.jagrati_android"
@@ -15,10 +20,14 @@ android {
 
     defaultConfig {
         // Read web client ID from local.properties
-        val webClientId = project.findProperty("WEB_CLIENT_ID") as String? ?: "YOUR_WEB_CLIENT_ID"
+        val localProperties = Properties()
+            .takeIf { localPropertiesFile.exists() }
+            ?.apply { load(FileInputStream(localPropertiesFile)) }
 
-        // Create a resource value for the web client ID
-        resValue("string", "web_client_id", webClientId)
+        fun addStringRes(name: String) =
+            resValue("string", name, localProperties?.getProperty(name)?.toString().toString())
+
+        addStringRes("WEB_CLIENT_ID")
         applicationId = "com.hexagraph.jagrati_android"
         minSdk = 26
         targetSdk = 36
@@ -34,6 +43,8 @@ android {
 //            versionNameSuffix = "-debug"
 //        }
         release {
+
+
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
