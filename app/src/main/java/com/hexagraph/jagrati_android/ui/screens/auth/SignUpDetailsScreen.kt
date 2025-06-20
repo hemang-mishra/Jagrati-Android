@@ -59,7 +59,8 @@ fun SignUpDetailsScreen(
     viewModel: SignUpViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val displayName by viewModel.displayName.collectAsState()
+    val firstName by viewModel.firstName.collectAsState()
+    val lastName by viewModel.lastName.collectAsState()
     val password by viewModel.password.collectAsState()
     val confirmPassword by viewModel.confirmPassword.collectAsState()
     val isPasswordVisible by viewModel.isPasswordVisible.collectAsState()
@@ -152,12 +153,34 @@ fun SignUpDetailsScreen(
                     enabled = false
                 )
 
-                // Name input
+                // First Name input
                 OutlinedTextField(
-                    value = displayName,
-                    onValueChange = viewModel::updateDisplayName,
+                    value = firstName,
+                    onValueChange = viewModel::updateFirstName,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Full Name") },
+                    label = { Text("First Name") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Person Icon"
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { /* Focus on last name */ }
+                    ),
+                    singleLine = true
+                )
+
+                // Last Name input
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = viewModel::updateLastName,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Last Name") },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Person,
@@ -193,7 +216,7 @@ fun SignUpDetailsScreen(
                     onTogglePasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
                     imeAction = ImeAction.Done,
                     onImeAction = { 
-                        if (displayName.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()) {
+                        if (firstName.isNotBlank() && lastName.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()) {
                             viewModel.createUserWithEmailAndPassword()
                         }
                     }

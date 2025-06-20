@@ -29,7 +29,7 @@ object FirebaseModule {
      * @param firebaseAuthRepository The Firebase implementation of AuthRepository
      * @return AuthRepository instance
      */
-    @Provides
-    @Singleton
-    fun provideAuthRepository(firebaseAuthRepository: FirebaseAuthRepository): AuthRepository = firebaseAuthRepository
+//    @Provides
+//    @Singleton
+//    fun provideAuthRepository(firebaseAuthRepository: FirebaseAuthRepository): AuthRepository = firebaseAuthRepository
 }

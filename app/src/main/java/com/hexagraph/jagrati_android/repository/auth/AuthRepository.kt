@@ -62,6 +62,13 @@ interface AuthRepository {
     suspend fun sendEmailVerification(): Flow<AuthResult>
 
     /**
+     * Sends an email verification to the specified email address.
+     * @param email Email address to send the verification link to
+     * @return Flow of AuthResult representing the operation result
+     */
+    suspend fun sendEmailVerification(email: String): Flow<AuthResult>
+
+    /**
      * Signs out the current user.
      */
     suspend fun signOut()

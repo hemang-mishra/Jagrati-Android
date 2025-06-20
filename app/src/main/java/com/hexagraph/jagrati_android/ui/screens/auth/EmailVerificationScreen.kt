@@ -150,7 +150,7 @@ fun EmailVerificationScreen(
 
                 PrimaryButton(
                     text = "Resend Verification Email",
-                    onClick = { viewModel.sendEmailVerification() },
+                    onClick = { viewModel.sendEmailVerification(email) },
                     isLoading = emailVerificationState is AuthResult.Loading
                 )
 

@@ -62,7 +62,7 @@ class ForgotPasswordViewModel @Inject constructor(
      * @return true if email is valid, false otherwise
      */
     fun isEmailValid(): Boolean {
-        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+        val emailPattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
         return _email.value.matches(emailPattern.toRegex())
     }
 

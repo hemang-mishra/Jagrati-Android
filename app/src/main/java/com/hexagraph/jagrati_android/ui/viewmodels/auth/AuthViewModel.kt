@@ -96,6 +96,24 @@ class AuthViewModel @Inject constructor(
     }
 
     /**
+     * Sends an email verification to the specified email address.
+     * @param email Email address to send the verification link to
+     */
+    fun sendEmailVerification(email: String) {
+        viewModelScope.launch {
+            _emailVerificationState.value = AuthResult.Loading
+            authRepository.sendEmailVerification(email).collectLatest { result ->
+                _emailVerificationState.value = result
+                if (result is AuthResult.Error) {
+                    emitError(ResponseError.UNKNOWN.apply { actualResponse = result.message })
+                } else if (result is AuthResult.Success) {
+                    emitMsg("Verification email sent successfully")
+                }
+            }
+        }
+    }
+
+    /**
      * Resets the email verification state.
      */
     fun resetEmailVerificationState() {

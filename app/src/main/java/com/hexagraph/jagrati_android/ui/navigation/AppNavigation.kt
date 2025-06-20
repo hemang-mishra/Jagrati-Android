@@ -32,7 +32,8 @@ fun AppNavigation(
     snackbarHostState: SnackbarHostState,
     authViewModel: AuthViewModel = hiltViewModel(),
     onGoogleSignInClick: () -> Unit = {},
-    googleIdToken: String? = null
+    googleIdToken: String? = null,
+    currentUser: com.hexagraph.jagrati_android.model.User? = null
 ){
     // Get context for preferences
     val context = LocalContext.current

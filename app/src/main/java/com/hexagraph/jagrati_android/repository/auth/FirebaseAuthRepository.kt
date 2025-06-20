@@ -163,6 +163,10 @@ class FirebaseAuthRepository @Inject constructor(
         }
     }
 
+    override suspend fun sendEmailVerification(email: String): Flow<AuthResult> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun signOut() {
         firebaseAuth.signOut()
     }
