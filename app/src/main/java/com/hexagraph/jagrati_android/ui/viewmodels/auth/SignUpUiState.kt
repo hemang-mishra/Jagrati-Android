@@ -6,7 +6,8 @@ import com.hexagraph.jagrati_android.model.AuthResult
  * Data class representing the UI state for the sign up screen.
  *
  * @property email Current email input
- * @property displayName Current display name input
+ * @property firstName Current first name input
+ * @property lastName Current last name input
  * @property password Current password input
  * @property confirmPassword Current confirm password input
  * @property isPasswordVisible Whether the password is visible
@@ -17,7 +18,8 @@ import com.hexagraph.jagrati_android.model.AuthResult
  */
 data class SignUpUiState(
     val email: String = "",
-    val displayName: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
     val password: String = "",
     val confirmPassword: String = "",
     val isPasswordVisible: Boolean = false,

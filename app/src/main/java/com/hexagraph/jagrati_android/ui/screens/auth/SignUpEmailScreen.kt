@@ -27,13 +27,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.hexagraph.jagrati_android.ui.components.auth.EmailInput
 import com.hexagraph.jagrati_android.ui.components.auth.PrimaryButton
 import com.hexagraph.jagrati_android.ui.components.auth.TextLinkButton
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.SignUpViewModel
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Sign up email screen component.
@@ -48,7 +48,7 @@ fun SignUpEmailScreen(
     snackbarHostState: SnackbarHostState,
     navigateToSignUpDetails: (String) -> Unit,
     navigateToLogin: () -> Unit,
-    viewModel: SignUpViewModel = hiltViewModel()
+    viewModel: SignUpViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val email by viewModel.email.collectAsState()
@@ -109,7 +109,7 @@ fun SignUpEmailScreen(
                     email = email,
                     onEmailChange = viewModel::updateEmail,
                     imeAction = ImeAction.Done,
-                    onImeAction = { 
+                    onImeAction = {
                         if (email.isNotBlank()) {
                             validateAndNavigate(
                                 email = email,

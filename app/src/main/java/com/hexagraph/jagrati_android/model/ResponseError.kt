@@ -5,8 +5,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.hexagraph.jagrati_android.util.Resource
-import com.hexagraph.jagrati_android.util.Utils.error
-import retrofit2.Response
 
 
 /** These exceptions need to be handled in view-model, shown via UI and not just thrown.
@@ -47,40 +45,6 @@ enum class ResponseError(val genericToast: String, var actualResponse: String? =
     /** Wrap this [ResponseError] in [Resource] with an optional parameter to add the actual response.*/
     fun <T> asResource(actualResponse: String? = null): Resource<T> =
         Resource.failure(error = this.apply { this@ResponseError.actualResponse = actualResponse })
-
-    companion object {
-
-        /** Get [ResponseError] for a given Retrofit **error** [Response] from server.*/
-        fun <T> getError(response: Response<T>) : ResponseError {
-            val apiError = parseError(response)
-            val error = apiError.error
-            val code = apiError.code
-            return when (code) {
-                400 -> BAD_REQUEST
-                401 -> AUTH_HEADER_NOT_FOUND
-                403 -> UNAUTHORISED
-                404 -> DOES_NOT_EXIST
-                429 -> RATE_LIMIT_EXCEEDED
-                500 -> INTERNAL_SERVER_ERROR
-                502 -> BAD_GATEWAY
-                503 -> SERVICE_UNAVAILABLE
-                else -> UNKNOWN
-            }.apply { actualResponse = error }
-        }
-
-        /** Parsing server response into [ApiError] class. Consider using specific functions like [getSocialResponseError], etc. for each repository if
-         * returning errors is the sole motive.*/
-        fun <T> parseError(response: Response<T>) : ApiError = try {
-            Gson().fromJson(
-                /* json = */ response.error(),
-                /* typeOfT = */ object : TypeToken<ApiError>() {}.type
-            )
-        } catch (e: JsonSyntaxException) {
-            // Server doesn't return error in expected format.
-            ApiError(response.code())
-        }
-    }
-
 
 
 }

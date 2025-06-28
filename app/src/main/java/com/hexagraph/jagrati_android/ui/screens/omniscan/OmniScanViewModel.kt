@@ -18,7 +18,6 @@ import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.ui.screens.main.CameraScreenUiState
 import com.hexagraph.jagrati_android.ui.screens.main.OmniScanUIState
 import com.hexagraph.jagrati_android.ui.screens.main.OmniScreens
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,10 +32,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import java.util.concurrent.Executor
-import javax.inject.Inject
 
-@HiltViewModel
-class OmniScanViewModel @Inject constructor(
+
+class OmniScanViewModel(
     private val omniScanRepository: OmniScanRepository,
     private val faceRecognitionService: FaceRecognitionService,
     private val studentDetailsDao: StudentDetailsDao
@@ -45,7 +43,8 @@ class OmniScanViewModel @Inject constructor(
     private val studentSearchQueryInput = MutableStateFlow("")
 
     @OptIn(FlowPreview::class)
-    private val studentSearchQuery = studentSearchQueryInput.asStateFlow().debounce(50).distinctUntilChanged()
+    private val studentSearchQuery =
+        studentSearchQueryInput.asStateFlow().debounce(50).distinctUntilChanged()
     private val semaphore = Semaphore(1)
     private val facesFlow = omniScanRepository.faces
     private val processedFacesFlow = MutableStateFlow(emptyList<ProcessedImage>())

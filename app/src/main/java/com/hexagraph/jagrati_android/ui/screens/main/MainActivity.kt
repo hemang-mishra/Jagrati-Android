@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -30,18 +32,23 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.hexagraph.jagrati_android.R
+import com.hexagraph.jagrati_android.model.AuthResult
+import com.hexagraph.jagrati_android.repository.auth.AuthRepository
 import com.hexagraph.jagrati_android.ui.navigation.AppNavigation
 import com.hexagraph.jagrati_android.ui.screens.addStudent.AddStudentScreen
 import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanCameraScreen
 import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanMainScreen
 import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanUseCases
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
-import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
+import javax.inject.Inject
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    val authRepository: AuthRepository by inject()
 
     private lateinit var credentialManager: CredentialManager
     private lateinit var googleSignInLauncher: ActivityResultLauncher<IntentSenderRequest>
@@ -71,6 +78,7 @@ class MainActivity : ComponentActivity() {
                 SnackbarHostState()
             }
             val currentGoogleIdToken = remember { googleIdToken }
+            val currentUser by authRepository.getCurrentUser().collectAsState(initial = null)
 
             JagratiAndroidTheme {
                 Scaffold(
@@ -82,7 +90,8 @@ class MainActivity : ComponentActivity() {
                         AppNavigation(
                             snackbarHostState = snackBarState,
                             onGoogleSignInClick = { signInWithGoogle() },
-                            googleIdToken = currentGoogleIdToken.value
+                            googleIdToken = currentGoogleIdToken.value,
+                            currentUser = currentUser
                         )
                     }
                 }
@@ -99,8 +108,6 @@ class MainActivity : ComponentActivity() {
                     // Use your web client ID from Google Cloud Console
                     .setServerClientId(getString(R.string.WEB_CLIENT_ID))
                     .build()
-                Log.i("Web client", "${getString(R.string.WEB_CLIENT_ID)} $googleIdOption")
-
                 val request = GetCredentialRequest.Builder()
                     .addCredentialOption(googleIdOption)
                     .build()
@@ -122,9 +129,27 @@ class MainActivity : ComponentActivity() {
         val credential = response.credential
         val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
         val idToken = googleIdTokenCredential.idToken
+        Log.i("MainActivity", "IdToken : $idToken")
 
         // Store the ID token in the state
         googleIdToken.value = idToken
+
+        // Sign in with Google using the repository
+        lifecycleScope.launch {
+            authRepository.signInWithGoogle(idToken).collectLatest { result ->
+                when (result) {
+                    is AuthResult.Success -> {
+                        Log.d("MainActivity", "Google Sign-In successful: ${result.user}")
+                    }
+                    is AuthResult.Error -> {
+                        Log.e("MainActivity", "Google Sign-In failed: ${result.message}")
+                    }
+                    else -> {
+                        // Handle other states if needed
+                    }
+                }
+            }
+        }
     }
 
     private fun handleGoogleSignInResult(data: Intent) {

@@ -1,64 +1,42 @@
 package com.hexagraph.jagrati_android.di
 
-import android.content.Context
 import androidx.room.Room
 import com.hexagraph.jagrati_android.model.databases.EmbeddingsDatabase
-import com.hexagraph.jagrati_android.model.databases.FaceInfoListConvertor
 import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import org.koin.android.ext.koin.androidContext
+import org.koin.dsl.module
 
-@Module
-@InstallIn(SingletonComponent::class)
-class DatabaseModule {
+val databaseModule = module {
 
-    @Provides
-    @Singleton
-    fun providesFaceInfoDatabase(
-        @ApplicationContext context: Context
-    ): PrimaryDatabase = Room.databaseBuilder(
-        context,
-        PrimaryDatabase::class.java,
-        "face_info_db"
-    )
-        .build()
+    single {
+        Room.databaseBuilder(
+            androidContext(),
+            PrimaryDatabase::class.java,
+            "face_info_db"
+        ).build()
+    }
 
-    @Provides
-    @Singleton
-    fun providesFaceEmbeddingDatabase(
-        @ApplicationContext context: Context
-    ): EmbeddingsDatabase = Room.databaseBuilder(
-        context,
-        EmbeddingsDatabase::class.java,
-        "face_embedding_db"
-    )
-        .build()
+    single {
+        Room.databaseBuilder(
+            androidContext(),
+            EmbeddingsDatabase::class.java,
+            "face_embedding_db"
+        ).build()
+    }
 
-    @Provides
-    @Singleton
-    fun provideFaceInfoDao(
-        database: PrimaryDatabase
-    ) = database.faceInfoDao()
+    single {
+        get<PrimaryDatabase>().faceInfoDao()
+    }
 
-    @Provides
-    @Singleton
-    fun provideStudentDetailsDao(
-        database: PrimaryDatabase
-    ) = database.studentDetailsDao()
+    single {
+        get<PrimaryDatabase>().studentDetailsDao()
+    }
 
-    @Provides
-    @Singleton
-    fun provideAttendanceDao(
-        database: PrimaryDatabase
-    ) = database.attendanceDao()
+    single {
+        get<PrimaryDatabase>().attendanceDao()
+    }
 
-    @Provides
-    @Singleton
-    fun provideEmbeddingsDao(
-        database: EmbeddingsDatabase
-    ) = database.embeddingsDao()
+    single {
+        get<EmbeddingsDatabase>().embeddingsDao()
+    }
 }

@@ -10,15 +10,13 @@ import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
 import com.hexagraph.jagrati_android.model.dao.StudentDetailsDao
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.TimeUtils
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class StudentAttendanceViewModel @Inject constructor(
+
+class StudentAttendanceViewModel(
     private val attendanceDao: AttendanceDao,
     private val faceInfoDao: FaceInfoDao,
     private val studentDetailsDao: StudentDetailsDao

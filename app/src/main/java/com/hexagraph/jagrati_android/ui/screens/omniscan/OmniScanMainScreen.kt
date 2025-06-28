@@ -13,14 +13,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.hexagraph.jagrati_android.model.ProcessedImage
 import com.hexagraph.jagrati_android.ui.screens.addStudent.AddStudentScreen
 import com.hexagraph.jagrati_android.ui.screens.main.OmniScreens
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun OmniScanMainScreen(
-    omniScanViewModel: OmniScanViewModel = hiltViewModel(),
+    omniScanViewModel: OmniScanViewModel = koinViewModel(),
     useCases: OmniScanUseCases,
     omniScanCallback: (List<ProcessedImage>)->Unit,
     initialList: List<ProcessedImage> = emptyList(),

@@ -5,21 +5,19 @@ import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * ViewModel that handles forgot password logic.
  */
-@HiltViewModel
-class ForgotPasswordViewModel @Inject constructor(
+
+class ForgotPasswordViewModel(
     private val authRepository: AuthRepository
 ) : BaseViewModel<ForgotPasswordUiState>() {
 
@@ -62,7 +60,7 @@ class ForgotPasswordViewModel @Inject constructor(
      * @return true if email is valid, false otherwise
      */
     fun isEmailValid(): Boolean {
-        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+        val emailPattern = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
         return _email.value.matches(emailPattern.toRegex())
     }
 
@@ -80,7 +78,9 @@ class ForgotPasswordViewModel @Inject constructor(
             }
 
             if (!isEmailValid()) {
-                emitError(ResponseError.UNKNOWN.apply { actualResponse = "Please enter a valid email address" })
+                emitError(ResponseError.UNKNOWN.apply {
+                    actualResponse = "Please enter a valid email address"
+                })
                 _resetPasswordState.value = AuthResult.Error("Please enter a valid email address")
                 return@launch
             }
