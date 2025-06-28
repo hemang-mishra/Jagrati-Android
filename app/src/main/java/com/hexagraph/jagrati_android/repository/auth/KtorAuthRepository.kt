@@ -1,7 +1,6 @@
 package com.hexagraph.jagrati_android.repository.auth
 
-import android.content.SharedPreferences
-import com.hexagraph.jagrati_android.api.AuthService
+import com.hexagraph.jagrati_android.api.KtorAuthService
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.model.auth.ForgotPasswordRequest
@@ -10,50 +9,25 @@ import com.hexagraph.jagrati_android.model.auth.LoginRequest
 import com.hexagraph.jagrati_android.model.auth.RefreshRequest
 import com.hexagraph.jagrati_android.model.auth.RegisterRequest
 import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
-import com.hexagraph.jagrati_android.util.Utils
+import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.Utils.safeApiCall
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
- * Implementation of AuthRepository using Spring Boot backend.
+ * Implementation of AuthRepository using Spring Boot backend with Ktor client.
  */
-@Singleton
-class SpringAuthRepository @Inject constructor(
-    private val authService: AuthService,
-    private val sharedPreferences: SharedPreferences
+class KtorAuthRepository(
+    private val authService: KtorAuthService,
+    private val appPreferences: AppPreferences
 ) : AuthRepository {
 
-    companion object {
-        private const val KEY_ACCESS_TOKEN = "access_token"
-        private const val KEY_REFRESH_TOKEN = "refresh_token"
-        private const val KEY_USER_ID = "user_id"
-        private const val KEY_USER_EMAIL = "user_email"
-        private const val KEY_USER_DISPLAY_NAME = "user_display_name"
-        private const val KEY_USER_EMAIL_VERIFIED = "user_email_verified"
-        private const val KEY_USER_PHOTO_URL = "user_photo_url"
-    }
+    override fun getCurrentUser(): Flow<User?> = appPreferences.currentUser
 
-    override fun getCurrentUser(): Flow<User?> = flow {
-        val userId = sharedPreferences.getString(KEY_USER_ID, null)
-        if (userId != null) {
-            val user = User(
-                uid = userId,
-                email = sharedPreferences.getString(KEY_USER_EMAIL, "") ?: "",
-                displayName = sharedPreferences.getString(KEY_USER_DISPLAY_NAME, "") ?: "",
-                isEmailVerified = sharedPreferences.getBoolean(KEY_USER_EMAIL_VERIFIED, false),
-                photoUrl = sharedPreferences.getString(KEY_USER_PHOTO_URL, "") ?: ""
-            )
-            emit(user)
-        } else {
-            emit(null)
-        }
-    }
-
-    override fun isUserAuthenticated(): Boolean {
-        return sharedPreferences.getString(KEY_ACCESS_TOKEN, null) != null
-    }
+    override fun isUserAuthenticated(): Boolean = runCatching {
+        kotlinx.coroutines.runBlocking { appPreferences.isAuthenticated().first() }
+    }.getOrDefault(false)
 
     override suspend fun signInWithEmailAndPassword(
         email: String,
@@ -62,12 +36,14 @@ class SpringAuthRepository @Inject constructor(
         emit(AuthResult.Loading)
 
         val loginRequest = LoginRequest(email = email, password = password)
-        val response = Utils.parseResponse { authService.login(loginRequest) }
+        val response = safeApiCall {
+            authService.login(loginRequest)
+        }
 
         when {
             response.isSuccess && response.data != null -> {
                 // Save tokens
-                saveTokens(response.data.accessToken, response.data.refreshToken)
+                appPreferences.saveTokens(response.data.accessToken, response.data.refreshToken)
 
                 // Create user object
                 val user = User(
@@ -79,7 +55,7 @@ class SpringAuthRepository @Inject constructor(
                 )
 
                 // Save user info
-                saveUserInfo(user)
+                appPreferences.saveUserInfo(user)
 
                 emit(AuthResult.Success(user))
             }
@@ -96,12 +72,12 @@ class SpringAuthRepository @Inject constructor(
         emit(AuthResult.Loading)
 
         val googleLoginRequest = GoogleLoginRequest(idToken = idToken)
-        val response = Utils.parseResponse { authService.loginWithGoogle(googleLoginRequest) }
+        val response = safeApiCall { authService.loginWithGoogle(googleLoginRequest) }
 
         when {
             response.isSuccess && response.data != null -> {
                 // Save tokens
-                saveTokens(response.data.accessToken, response.data.refreshToken)
+                appPreferences.saveTokens(response.data.accessToken, response.data.refreshToken)
 
                 // Create user object - we'll need to get user details from the token or make another API call
                 val user = User(
@@ -113,7 +89,7 @@ class SpringAuthRepository @Inject constructor(
                 )
 
                 // Save user info
-                saveUserInfo(user)
+                appPreferences.saveUserInfo(user)
 
                 emit(AuthResult.Success(user))
             }
@@ -142,7 +118,7 @@ class SpringAuthRepository @Inject constructor(
             lastName = lastName
         )
 
-        val response = Utils.parseResponse { authService.register(registerRequest) }
+        val response = safeApiCall { authService.register(registerRequest) }
 
         when {
             response.isSuccess && response.data != null -> {
@@ -159,7 +135,7 @@ class SpringAuthRepository @Inject constructor(
         emit(AuthResult.Loading)
 
         val forgotPasswordRequest = ForgotPasswordRequest(email = email)
-        val response = Utils.parseResponse { authService.forgotPassword(forgotPasswordRequest) }
+        val response = safeApiCall { authService.forgotPassword(forgotPasswordRequest) }
 
         when {
             response.isSuccess -> {
@@ -174,10 +150,11 @@ class SpringAuthRepository @Inject constructor(
     override suspend fun sendEmailVerification(): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
 
-        val email = sharedPreferences.getString(KEY_USER_EMAIL, null)
+        val email = appPreferences.currentUser.first()?.email
+
         if (email != null) {
             val resendVerificationRequest = ResendVerificationRequest(email = email)
-            val response = Utils.parseResponse { authService.resendVerification(resendVerificationRequest) }
+            val response = safeApiCall { authService.resendVerification(resendVerificationRequest) }
 
             when {
                 response.isSuccess -> {
@@ -196,7 +173,7 @@ class SpringAuthRepository @Inject constructor(
         emit(AuthResult.Loading)
 
         val resendVerificationRequest = ResendVerificationRequest(email = email)
-        val response = Utils.parseResponse { authService.resendVerification(resendVerificationRequest) }
+        val response = safeApiCall { authService.resendVerification(resendVerificationRequest) }
 
         when {
             response.isSuccess -> {
@@ -209,38 +186,7 @@ class SpringAuthRepository @Inject constructor(
     }
 
     override suspend fun signOut() {
-        // Clear tokens and user info from SharedPreferences
-        sharedPreferences.edit()
-            .remove(KEY_ACCESS_TOKEN)
-            .remove(KEY_REFRESH_TOKEN)
-            .remove(KEY_USER_ID)
-            .remove(KEY_USER_EMAIL)
-            .remove(KEY_USER_DISPLAY_NAME)
-            .remove(KEY_USER_EMAIL_VERIFIED)
-            .remove(KEY_USER_PHOTO_URL)
-            .apply()
-    }
-
-    /**
-     * Save authentication tokens to SharedPreferences.
-     */
-    private fun saveTokens(accessToken: String, refreshToken: String) {
-        sharedPreferences.edit()
-            .putString(KEY_ACCESS_TOKEN, accessToken)
-            .putString(KEY_REFRESH_TOKEN, refreshToken)
-            .apply()
-    }
-
-    /**
-     * Save user information to SharedPreferences.
-     */
-    private fun saveUserInfo(user: User) {
-        sharedPreferences.edit()
-            .putString(KEY_USER_ID, user.uid)
-            .putString(KEY_USER_EMAIL, user.email)
-            .putString(KEY_USER_DISPLAY_NAME, user.displayName)
-            .putBoolean(KEY_USER_EMAIL_VERIFIED, user.isEmailVerified)
-            .putString(KEY_USER_PHOTO_URL, user.photoUrl)
-            .apply()
+        // Clear tokens and user info from DataStore
+        appPreferences.clearAll()
     }
 }

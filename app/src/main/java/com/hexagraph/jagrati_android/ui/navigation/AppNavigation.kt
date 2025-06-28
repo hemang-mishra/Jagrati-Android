@@ -4,7 +4,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -25,12 +24,13 @@ import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen3
 import com.hexagraph.jagrati_android.ui.screens.onboarding.PermissionsScreen
 import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AppNavigation(
     navController: NavController = rememberNavController(),
     snackbarHostState: SnackbarHostState,
-    authViewModel: AuthViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = koinViewModel(),
     onGoogleSignInClick: () -> Unit = {},
     googleIdToken: String? = null,
     currentUser: com.hexagraph.jagrati_android.model.User? = null

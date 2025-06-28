@@ -34,12 +34,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.ui.components.auth.PasswordInput
 import com.hexagraph.jagrati_android.ui.components.auth.PrimaryButton
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.SignUpViewModel
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Sign up details screen component.
@@ -56,7 +56,7 @@ fun SignUpDetailsScreen(
     snackbarHostState: SnackbarHostState,
     navigateToEmailVerification: (String) -> Unit,
     navigateBack: () -> Unit,
-    viewModel: SignUpViewModel = hiltViewModel()
+    viewModel: SignUpViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val firstName by viewModel.firstName.collectAsState()
@@ -91,10 +91,12 @@ fun SignUpDetailsScreen(
             is AuthResult.VerificationNeeded -> {
                 navigateToEmailVerification((signUpState as AuthResult.VerificationNeeded).email)
             }
+
             is AuthResult.Error -> {
                 snackbarHostState.showSnackbar((signUpState as AuthResult.Error).message)
                 viewModel.resetSignUpState()
             }
+
             else -> {}
         }
     }
@@ -215,7 +217,7 @@ fun SignUpDetailsScreen(
                     isPasswordVisible = isConfirmPasswordVisible,
                     onTogglePasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
                     imeAction = ImeAction.Done,
-                    onImeAction = { 
+                    onImeAction = {
                         if (firstName.isNotBlank() && lastName.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()) {
                             viewModel.createUserWithEmailAndPassword()
                         }

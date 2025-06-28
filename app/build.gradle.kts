@@ -6,7 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.gms.google.services)
 }
@@ -96,21 +95,26 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     testImplementation(libs.androidx.room.testing)
 
-    //Retrofit
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-    implementation(libs.okhttp)
 
     //Coil
     implementation(libs.coil.compose)
 
-    //Hilt
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.android.compiler)
-    ksp(libs.androidx.hilt.compiler)
-//    implementation("androidx.hilt:hilt-work:1.2.0")
-    implementation(libs.androidx.hilt.navigation.compose)
-//    implementation("androidx.startup:startup-runtime:1.2.0")
+    // Ktor client
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.serialization.jvm)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    // Add these missing dependencies for auth features
+    implementation(libs.ktor.client.auth)
+
+    // Koin core for DI
+    implementation(libs.koin.core)
+    // Koin for Android
+    implementation(libs.koin.androidx.compose)
+    // Koin for Android (includes all Android-related features)
+    implementation(libs.koin.android)
 
     //Navigation
     implementation(libs.androidx.navigation.compose)
@@ -146,6 +150,8 @@ dependencies {
     implementation(libs.play.services.mlkit.face.detection)
 
     implementation(libs.guava)
+
+    implementation(libs.androidx.datastore.preferences)
 
     //Navigation 3 API
 //    implementation(libs.androidx.navigation3.ui)

@@ -26,13 +26,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.ui.components.auth.EmailInput
 import com.hexagraph.jagrati_android.ui.components.auth.PrimaryButton
 import com.hexagraph.jagrati_android.ui.components.auth.TextLinkButton
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.ForgotPasswordViewModel
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Forgot password screen component.
@@ -45,7 +45,7 @@ import com.hexagraph.jagrati_android.ui.viewmodels.auth.ForgotPasswordViewModel
 fun ForgotPasswordScreen(
     snackbarHostState: SnackbarHostState,
     navigateToLogin: () -> Unit,
-    viewModel: ForgotPasswordViewModel = hiltViewModel()
+    viewModel: ForgotPasswordViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val email by viewModel.email.collectAsState()

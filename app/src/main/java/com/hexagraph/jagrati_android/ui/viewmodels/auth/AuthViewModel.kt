@@ -6,21 +6,18 @@ import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * ViewModel that handles shared authentication logic.
  */
-@HiltViewModel
-class AuthViewModel @Inject constructor(
+class AuthViewModel(
     private val authRepository: AuthRepository
 ) : BaseViewModel<AuthUiState>() {
 

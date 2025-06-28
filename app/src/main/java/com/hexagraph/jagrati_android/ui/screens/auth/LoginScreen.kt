@@ -33,7 +33,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.ui.components.auth.EmailInput
 import com.hexagraph.jagrati_android.ui.components.auth.PasswordInput
@@ -41,6 +40,7 @@ import com.hexagraph.jagrati_android.ui.components.auth.PrimaryButton
 import com.hexagraph.jagrati_android.ui.components.auth.TextLinkButton
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.LoginViewModel
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Login screen component.
@@ -60,7 +60,7 @@ fun LoginScreen(
     navigateToEmailVerification: (String) -> Unit,
     onGoogleSignInClick: () -> Unit = {},
     googleIdToken: String? = null,
-    viewModel: LoginViewModel = hiltViewModel()
+    viewModel: LoginViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val email by viewModel.email.collectAsState()

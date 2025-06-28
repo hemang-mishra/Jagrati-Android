@@ -40,17 +40,15 @@ import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanCameraScreen
 import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanMainScreen
 import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanUseCases
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
-import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var authRepository: AuthRepository
+    val authRepository: AuthRepository by inject()
 
     private lateinit var credentialManager: CredentialManager
     private lateinit var googleSignInLauncher: ActivityResultLauncher<IntentSenderRequest>

@@ -43,13 +43,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.Bitmap
 import com.hexagraph.jagrati_android.model.Gender
 import com.hexagraph.jagrati_android.model.JagratiGroups
 import com.hexagraph.jagrati_android.model.StudentDetails
 import com.hexagraph.jagrati_android.model.Village
 import com.hexagraph.jagrati_android.ui.components.ScreenHeader
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun AddStudentScreen(
@@ -58,7 +58,7 @@ fun AddStudentScreen(
     isFacialDataAvailable: Boolean,
     bitmap: Bitmap? = null,
     onPressBack: () -> Unit,
-    addStudentViewModel: AddStudentViewModel = hiltViewModel()
+    addStudentViewModel: AddStudentViewModel = koinViewModel()
 ) {
     val uiState by addStudentViewModel.uiState.collectAsState()
     BackHandler {

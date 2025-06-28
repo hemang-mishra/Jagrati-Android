@@ -34,7 +34,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.JagratiGroups
 import com.hexagraph.jagrati_android.ui.components.ScreenHeader
@@ -42,11 +41,12 @@ import com.hexagraph.jagrati_android.ui.components.StudentListRow
 import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanMainScreen
 import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanUseCases
 import com.hexagraph.jagrati_android.util.TimeUtils
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentAttendanceScreen(
-    viewModel: StudentAttendanceViewModel = hiltViewModel(),
+    viewModel: StudentAttendanceViewModel = koinViewModel(),
     onBackPress: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
