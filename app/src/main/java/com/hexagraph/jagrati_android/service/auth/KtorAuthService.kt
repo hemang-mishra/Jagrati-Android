@@ -1,12 +1,5 @@
-package com.hexagraph.jagrati_android.api
+package com.hexagraph.jagrati_android.service.auth
 
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.get
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 import com.hexagraph.jagrati_android.model.auth.ForgotPasswordRequest
 import com.hexagraph.jagrati_android.model.auth.GoogleLoginRequest
 import com.hexagraph.jagrati_android.model.auth.GoogleLoginUrlResponse
@@ -17,6 +10,13 @@ import com.hexagraph.jagrati_android.model.auth.RegisterRequest
 import com.hexagraph.jagrati_android.model.auth.RegisterResponse
 import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
 import com.hexagraph.jagrati_android.model.auth.TokenPair
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 
 /**
  * Ktor client implementation for authentication API calls.

@@ -1,5 +1,7 @@
 package com.hexagraph.jagrati_android.model.auth
 
+import kotlinx.serialization.Serializable
+
 /**
  * Data classes for authentication requests to the Spring Boot backend.
  */
@@ -7,6 +9,7 @@ package com.hexagraph.jagrati_android.model.auth
 /**
  * Request for user login with email and password.
  */
+@Serializable
 data class LoginRequest(
     val email: String,
     val password: String
@@ -15,6 +18,7 @@ data class LoginRequest(
 /**
  * Request for refreshing authentication tokens.
  */
+@Serializable
 data class RefreshRequest(
     val refreshToken: String
 )
@@ -22,6 +26,7 @@ data class RefreshRequest(
 /**
  * Request for user registration.
  */
+@Serializable
 data class RegisterRequest(
     val email: String,
     val password: String,
@@ -32,6 +37,7 @@ data class RegisterRequest(
 /**
  * Request for resending verification email.
  */
+@Serializable
 data class ResendVerificationRequest(
     val email: String
 )
@@ -39,6 +45,7 @@ data class ResendVerificationRequest(
 /**
  * Request for initiating password reset.
  */
+@Serializable
 data class ForgotPasswordRequest(
     val email: String
 )
@@ -46,6 +53,7 @@ data class ForgotPasswordRequest(
 /**
  * Request for Google login.
  */
+@Serializable
 data class GoogleLoginRequest(
     val idToken: String
 )

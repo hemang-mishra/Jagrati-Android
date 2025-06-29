@@ -2,7 +2,7 @@ package com.hexagraph.jagrati_android.di
 
 import android.content.Context
 import com.hexagraph.jagrati_android.api.AuthProvider
-import com.hexagraph.jagrati_android.api.KtorAuthService
+import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.util.AppPreferences
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
@@ -19,7 +19,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
-private const val BASE_URL = "https://19f2-2409-40e3-26-46b5-67fd-2080-66cd-87ea.ngrok-free.app"
+private const val BASE_URL = "https://9dc1-2401-4900-85c4-f921-5e5-542f-b17e-dbbb.ngrok-free.app"
 private const val TIMEOUT = 6000L
 
 val networkModule = module {

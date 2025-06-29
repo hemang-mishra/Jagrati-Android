@@ -1,46 +1,47 @@
 package com.hexagraph.jagrati_android.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 
-sealed class Screens{
+sealed interface Screens: NavKey {
     // Onboarding routes
     @Serializable
-    data object NavOnboarding1Route
+    data object NavOnboarding1Route: Screens
 
     @Serializable
-    data object NavOnboarding2Route
+    data object NavOnboarding2Route: Screens
 
     @Serializable
-    data object NavOnboarding3Route
+    data object NavOnboarding3Route: Screens
 
     @Serializable
-    data object NavPermissionsRoute
+    data object NavPermissionsRoute: Screens
 
     // Authentication routes
     @Serializable
-    data object NavLoginRoute
+    data object NavLoginRoute: Screens
 
     @Serializable
-    data object NavSignUpEmailRoute
+    data object NavSignUpEmailRoute: Screens
 
     @Serializable
-    data object NavSignUpDetailsRoute {
-        const val EMAIL_ARG = "email"
-    }
+    data class NavSignUpDetailsRoute(
+        val email: String
+    ): Screens
 
     @Serializable
-    data object NavForgotPasswordRoute
+    data object NavForgotPasswordRoute: Screens
 
     @Serializable
-    data object NavEmailVerificationRoute {
-        const val EMAIL_ARG = "email"
-    }
+    data class NavEmailVerificationRoute(
+        val email: String
+    ): Screens
 
     // Main app routes
     @Serializable
-    data object NavHomeRoute
+    data object NavHomeRoute: Screens
 
     @Serializable
-    data object NavAttendanceRoute
+    data object NavAttendanceRoute: Screens
 }

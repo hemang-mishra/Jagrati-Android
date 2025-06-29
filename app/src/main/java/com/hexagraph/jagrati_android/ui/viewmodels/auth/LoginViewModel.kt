@@ -1,9 +1,11 @@
 package com.hexagraph.jagrati_android.ui.viewmodels.auth
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
+import com.hexagraph.jagrati_android.repository.auth.GoogleSignInClient
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -113,10 +115,16 @@ class LoginViewModel(
      * Signs in with Google.
      * @param idToken Google ID token
      */
-    fun signInWithGoogle(idToken: String) {
+    fun signInWithGoogle(context: Context) {
+        val googleAuthService = GoogleSignInClient(context)
         viewModelScope.launch {
             _googleSignInState.value = AuthResult.Loading
-
+            val idToken = googleAuthService.signIn()
+            if (idToken == null) {
+                emitError(ResponseError.UNKNOWN.apply { actualResponse = "Google sign-in failed" })
+                _googleSignInState.value = AuthResult.Error("Google sign-in failed")
+                return@launch
+            }
             authRepository.signInWithGoogle(idToken)
                 .collectLatest { result ->
                     _googleSignInState.value = result

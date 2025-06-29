@@ -90,10 +90,7 @@ class AuthProvider(
             sendWithoutRequest { request ->
                 // Don't add auth headers for login/register endpoints
                 val path = request.url.encodedPath
-                path.contains("/api/auth/login") ||
-                path.contains("/api/auth/register") ||
-                path.contains("/api/auth/google") ||
-                path.contains("/api/auth/refresh")
+                path.contains("/api/auth")
             }
         }
     }

@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -58,8 +59,6 @@ fun LoginScreen(
     navigateToSignUp: () -> Unit,
     navigateToForgotPassword: () -> Unit,
     navigateToEmailVerification: (String) -> Unit,
-    onGoogleSignInClick: () -> Unit = {},
-    googleIdToken: String? = null,
     viewModel: LoginViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -67,7 +66,7 @@ fun LoginScreen(
     val password by viewModel.password.collectAsState()
     val isPasswordVisible by viewModel.isPasswordVisible.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
-
+    val context = LocalContext.current
     // Handle error and success messages
     LaunchedEffect(uiState.error, uiState.successMsg) {
         uiState.error?.let { error ->
@@ -105,20 +104,10 @@ fun LoginScreen(
             is AuthResult.Success -> {
                 navigateToHome()
             }
-            is AuthResult.Error -> {
-                snackbarHostState.showSnackbar((googleSignInState as AuthResult.Error).message)
-                viewModel.resetGoogleSignInState()
-            }
             else -> {}
         }
     }
 
-    // Handle Google ID token from MainActivity
-    LaunchedEffect(googleIdToken) {
-        googleIdToken?.let { token ->
-            viewModel.signInWithGoogle(token)
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -196,7 +185,9 @@ fun LoginScreen(
 
                 // Google Sign-In Button
                 OutlinedButton(
-                    onClick = onGoogleSignInClick,
+                    onClick = {
+                        viewModel.signInWithGoogle(context)
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !(googleSignInState is AuthResult.Loading),
                     border = BorderStroke(1.dp, Color.LightGray)
@@ -241,8 +232,6 @@ fun LoginScreenPreview() {
             navigateToSignUp = {},
             navigateToForgotPassword = {},
             navigateToEmailVerification = {},
-            onGoogleSignInClick = {},
-            googleIdToken = null
         )
     }
 }
