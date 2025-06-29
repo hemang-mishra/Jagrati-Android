@@ -3,6 +3,7 @@ package com.hexagraph.jagrati_android.di
 import android.content.Context
 import com.hexagraph.jagrati_android.api.AuthProvider
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
+import com.hexagraph.jagrati_android.service.permission.KtorPermissionService
 import com.hexagraph.jagrati_android.util.AppPreferences
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
@@ -74,4 +75,7 @@ val networkModule = module {
 
     // Provide KtorAuthService
     single { KtorAuthService(get(), BASE_URL) }
+
+    // Provide KtorPermissionService
+    single { KtorPermissionService(get(), BASE_URL) }
 }
