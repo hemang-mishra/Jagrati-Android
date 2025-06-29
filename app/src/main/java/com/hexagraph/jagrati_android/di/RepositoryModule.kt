@@ -10,6 +10,8 @@ import com.hexagraph.jagrati_android.repository.role.KtorRoleRepository
 import com.hexagraph.jagrati_android.repository.role.RoleRepository
 import com.hexagraph.jagrati_android.repository.student.AddStudentRepository
 import com.hexagraph.jagrati_android.repository.student.AddStudentRepositoryImpl
+import com.hexagraph.jagrati_android.repository.user.KtorUserRepository
+import com.hexagraph.jagrati_android.repository.user.UserRepository
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
@@ -27,5 +29,8 @@ val repositoryModule = module {
     }
     single<RoleRepository> {
         KtorRoleRepository(get())
+    }
+    single<UserRepository> {
+        KtorUserRepository(get())
     }
 }
