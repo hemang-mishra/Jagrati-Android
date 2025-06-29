@@ -47,38 +47,13 @@ import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
-
-    val authRepository: AuthRepository by inject()
-
-    private lateinit var credentialManager: CredentialManager
-    private lateinit var googleSignInLauncher: ActivityResultLauncher<IntentSenderRequest>
-    private val googleIdToken = mutableStateOf<String?>(null)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // Initialize CredentialManager
-        credentialManager = CredentialManager.create(this)
-
-        // Set up Google Sign-In launcher
-        googleSignInLauncher = registerForActivityResult(
-            ActivityResultContracts.StartIntentSenderForResult()
-        ) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val credential = result.data
-                if (credential != null) {
-                    handleGoogleSignInResult(credential)
-                }
-            }
-        }
-
         setContent {
             val snackBarState = remember {
                 SnackbarHostState()
             }
-            val currentGoogleIdToken = remember { googleIdToken }
-            val currentUser by authRepository.getCurrentUser().collectAsState(initial = null)
 
             JagratiAndroidTheme {
                 Scaffold(
@@ -89,72 +64,10 @@ class MainActivity : ComponentActivity() {
                         .padding(innerPadding)){
                         AppNavigation(
                             snackbarHostState = snackBarState,
-                            onGoogleSignInClick = { signInWithGoogle() },
-                            googleIdToken = currentGoogleIdToken.value,
-                            currentUser = currentUser
                         )
                     }
                 }
             }
         }
-    }
-
-    private fun signInWithGoogle() {
-        lifecycleScope.launch {
-            try {
-                // Configure the request
-                val googleIdOption = GetGoogleIdOption.Builder()
-                    .setFilterByAuthorizedAccounts(false)
-                    // Use your web client ID from Google Cloud Console
-                    .setServerClientId(getString(R.string.WEB_CLIENT_ID))
-                    .build()
-                val request = GetCredentialRequest.Builder()
-                    .addCredentialOption(googleIdOption)
-                    .build()
-
-                // Request the credential
-                val response = credentialManager.getCredential(
-                    request = request,
-                    context = this@MainActivity
-                )
-
-                handleGoogleSignInResponse(response)
-            } catch (e: GetCredentialException) {
-                Log.e("MainActivity", "Error getting credential: ${e.message}")
-            }
-        }
-    }
-
-    private fun handleGoogleSignInResponse(response: GetCredentialResponse) {
-        val credential = response.credential
-        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-        val idToken = googleIdTokenCredential.idToken
-        Log.i("MainActivity", "IdToken : $idToken")
-
-        // Store the ID token in the state
-        googleIdToken.value = idToken
-
-        // Sign in with Google using the repository
-        lifecycleScope.launch {
-            authRepository.signInWithGoogle(idToken).collectLatest { result ->
-                when (result) {
-                    is AuthResult.Success -> {
-                        Log.d("MainActivity", "Google Sign-In successful: ${result.user}")
-                    }
-                    is AuthResult.Error -> {
-                        Log.e("MainActivity", "Google Sign-In failed: ${result.message}")
-                    }
-                    else -> {
-                        // Handle other states if needed
-                    }
-                }
-            }
-        }
-    }
-
-    private fun handleGoogleSignInResult(data: Intent) {
-        // This method is not needed with the Credential Manager API
-        // The result is handled directly in the signInWithGoogle method
-        Log.d("MainActivity", "Google Sign-In result received")
     }
 }

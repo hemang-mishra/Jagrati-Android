@@ -1,16 +1,18 @@
 package com.hexagraph.jagrati_android.ui.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.entry
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
 import com.hexagraph.jagrati_android.ui.screens.auth.EmailVerificationScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.ForgotPasswordScreen
@@ -26,15 +28,18 @@ import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttenda
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 
+// Function to handle back navigation
+private fun NavBackStack.popBackStack() {
+    if (isNotEmpty()) {
+        removeAt(size - 1)
+    }
+}
+
 @Composable
 fun AppNavigation(
-    navController: NavController = rememberNavController(),
     snackbarHostState: SnackbarHostState,
     authViewModel: AuthViewModel = koinViewModel(),
-    onGoogleSignInClick: () -> Unit = {},
-    googleIdToken: String? = null,
-    currentUser: com.hexagraph.jagrati_android.model.User? = null
-){
+) {
     // Get context for preferences
     val context = LocalContext.current
 
@@ -45,179 +50,154 @@ fun AppNavigation(
     // Check if user is authenticated
     val isAuthenticated = authViewModel.isUserAuthenticated()
 
-    // Determine start destination
-    val startDestination = when {
-        !isOnboardingCompleted -> Screens.NavOnboarding1Route
-        isAuthenticated -> Screens.NavHomeRoute
-        else -> Screens.NavLoginRoute
-    }
-
-    NavHost(
-        navController = navController as NavHostController,
-        startDestination = startDestination
-    ){
-        // Onboarding routes
-        composable<Screens.NavOnboarding1Route> {
-            OnboardingScreen1(
-                onNextClick = {
-                    navController.navigate(Screens.NavOnboarding2Route)
-                }
-            )
+    var backstack = rememberNavBackStack(
+        when {
+            !isOnboardingCompleted -> Screens.NavOnboarding1Route
+            isAuthenticated -> Screens.NavHomeRoute
+            else -> Screens.NavLoginRoute
         }
+    )
 
-        composable<Screens.NavOnboarding2Route> {
-            OnboardingScreen2(
-                onNextClick = {
-                    navController.navigate(Screens.NavOnboarding3Route)
-                },
-                onBackClick = {
-                    navController.navigateUp()
-                }
-            )
-        }
-
-        composable<Screens.NavOnboarding3Route> {
-            OnboardingScreen3(
-                onNextClick = {
-                    navController.navigate(Screens.NavPermissionsRoute)
-                },
-                onBackClick = {
-                    navController.navigateUp()
-                }
-            )
-        }
-
-        composable<Screens.NavPermissionsRoute> {
-            PermissionsScreen(
-                onAllPermissionsGranted = {
-                    // Mark onboarding as completed
-                    onboardingPreferences.setOnboardingCompleted()
-
-                    // Navigate to login or home based on authentication status
-                    if (isAuthenticated) {
-                        navController.navigate(Screens.NavHomeRoute) {
-                            popUpTo(0) { inclusive = true }
+    NavDisplay(
+        backStack = backstack,
+        modifier = Modifier.fillMaxSize(),
+        entryDecorators = listOf(
+            rememberSavedStateNavEntryDecorator(),
+            rememberViewModelStoreNavEntryDecorator(),
+        ),
+        entryProvider = entryProvider {
+            entry<Screens.NavOnboarding1Route> {
+                OnboardingScreen1(
+                    onNextClick = {
+                        backstack.add(Screens.NavOnboarding2Route)
+                    }
+                )
+            }
+            entry<Screens.NavOnboarding2Route> {
+                OnboardingScreen2(
+                    onNextClick = {
+                        backstack.add(Screens.NavOnboarding3Route)
+                    },
+                    onBackClick = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+            entry<Screens.NavOnboarding3Route> {
+                OnboardingScreen3(
+                    onNextClick = {
+                        backstack.add(Screens.NavPermissionsRoute)
+                    },
+                    onBackClick = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+            entry<Screens.NavPermissionsRoute> {
+                PermissionsScreen(
+                    onAllPermissionsGranted = {
+                        onboardingPreferences.setOnboardingCompleted()
+                        if (isAuthenticated) {
+                            backstack.clear()
+                            backstack.add(Screens.NavHomeRoute)
+                        } else {
+                            backstack.clear()
+                            backstack.add(Screens.NavLoginRoute)
                         }
-                    } else {
-                        navController.navigate(Screens.NavLoginRoute) {
-                            popUpTo(0) { inclusive = true }
+                    },
+                    onBackClick = {
+                        if (backstack.isNotEmpty()) {
+                            backstack.removeAt(backstack.size - 1)
                         }
                     }
-                },
-                onBackClick = {
-                    navController.navigateUp()
-                }
-            )
-        }
-        // Authentication routes
-        composable<Screens.NavLoginRoute> {
-            LoginScreen(
-                snackbarHostState = snackbarHostState,
-                navigateToHome = {
-                    navController.navigate(Screens.NavHomeRoute) {
-                        popUpTo(Screens.NavLoginRoute) { inclusive = true }
+                )
+            }
+            entry<Screens.NavLoginRoute> {
+                LoginScreen(
+                    snackbarHostState = snackbarHostState,
+                    navigateToHome = {
+                        backstack.clear()
+                        backstack.add(Screens.NavHomeRoute)
+                    },
+                    navigateToSignUp = {
+                        backstack.add(Screens.NavSignUpEmailRoute)
+                    },
+                    navigateToForgotPassword = {
+                        backstack.add(Screens.NavForgotPasswordRoute)
+                    },
+                    navigateToEmailVerification = { email ->
+                        backstack.add(Screens.NavEmailVerificationRoute(email))
+                    },
+                )
+            }
+            entry<Screens.NavSignUpEmailRoute> {
+                SignUpEmailScreen(
+                    snackbarHostState = snackbarHostState,
+                    navigateToSignUpDetails = { email ->
+                        backstack.add(Screens.NavSignUpDetailsRoute(email))
+                    },
+                    navigateToLogin = {
+                        backstack.popBackStack()
                     }
-                },
-                navigateToSignUp = {
-                    navController.navigate(Screens.NavSignUpEmailRoute)
-                },
-                navigateToForgotPassword = {
-                    navController.navigate(Screens.NavForgotPasswordRoute)
-                },
-                navigateToEmailVerification = { email ->
-                    navController.navigate("${Screens.NavEmailVerificationRoute}/$email")
-                },
-                onGoogleSignInClick = onGoogleSignInClick,
-                googleIdToken = googleIdToken
-            )
-        }
+                )
+            }
 
-        composable<Screens.NavSignUpEmailRoute> {
-            SignUpEmailScreen(
-                snackbarHostState = snackbarHostState,
-                navigateToSignUpDetails = { email ->
-                    navController.navigate("${Screens.NavSignUpDetailsRoute}/$email")
-                },
-                navigateToLogin = {
-                    navController.navigateUp()
-                }
-            )
-        }
-
-        composable(
-            route = "${Screens.NavSignUpDetailsRoute}/{${Screens.NavSignUpDetailsRoute.EMAIL_ARG}}",
-            arguments = listOf(
-                navArgument(Screens.NavSignUpDetailsRoute.EMAIL_ARG) {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
-            val email = backStackEntry.arguments?.getString(Screens.NavSignUpDetailsRoute.EMAIL_ARG) ?: ""
-            SignUpDetailsScreen(
-                email = email,
-                snackbarHostState = snackbarHostState,
-                navigateToEmailVerification = { verificationEmail ->
-                    navController.navigate("${Screens.NavEmailVerificationRoute}/$verificationEmail") {
-                        popUpTo(Screens.NavLoginRoute)
+            entry<Screens.NavSignUpDetailsRoute> { it ->
+                val email = it.email
+                SignUpDetailsScreen(
+                    email = email,
+                    snackbarHostState = snackbarHostState,
+                    navigateToEmailVerification = { verificationEmail ->
+                        backstack.clear()
+                        backstack.add(Screens.NavEmailVerificationRoute(verificationEmail))
+                    },
+                    navigateBack = {
+                        backstack.popBackStack()
                     }
-                },
-                navigateBack = {
-                    navController.navigateUp()
-                }
-            )
-        }
-
-        composable<Screens.NavForgotPasswordRoute> {
-            ForgotPasswordScreen(
-                snackbarHostState = snackbarHostState,
-                navigateToLogin = {
-                    navController.navigateUp()
-                }
-            )
-        }
-
-        composable(
-            route = "${Screens.NavEmailVerificationRoute}/{${Screens.NavEmailVerificationRoute.EMAIL_ARG}}",
-            arguments = listOf(
-                navArgument(Screens.NavEmailVerificationRoute.EMAIL_ARG) {
-                    type = NavType.StringType
-                }
-            )
-        ) { backStackEntry ->
-            val email = backStackEntry.arguments?.getString(Screens.NavEmailVerificationRoute.EMAIL_ARG) ?: ""
-            EmailVerificationScreen(
-                email = email,
-                snackbarHostState = snackbarHostState,
-                navigateToLogin = {
-                    navController.navigate(Screens.NavLoginRoute) {
-                        popUpTo(0) { inclusive = true }
+                )
+            }
+            entry<Screens.NavForgotPasswordRoute> {
+                ForgotPasswordScreen(
+                    snackbarHostState = snackbarHostState,
+                    navigateToLogin = {
+                        backstack.popBackStack()
                     }
-                }
-            )
-        }
-
-        // Main app routes
-        composable<Screens.NavHomeRoute> {
-            HomeScreen(
-                snackbarHostState = snackbarHostState,
-                navigateToAttendancePage = {
-                    navController.navigate(Screens.NavAttendanceRoute)
-                },
-                navigateToLogin = {
-                    navController.navigate(Screens.NavLoginRoute) {
-                        popUpTo(0) { inclusive = true }
+                )
+            }
+            entry<Screens.NavEmailVerificationRoute> { it ->
+                val email = it.email
+                EmailVerificationScreen(
+                    email = email,
+                    snackbarHostState = snackbarHostState,
+                    navigateToLogin = {
+                        backstack.clear()
+                        backstack.add(Screens.NavLoginRoute)
                     }
-                }
-            )
+                )
+            }
+            // Main app routes
+            entry<Screens.NavHomeRoute> {
+                HomeScreen(
+                    snackbarHostState = snackbarHostState,
+                    navigateToAttendancePage = {
+                        backstack.add(Screens.NavAttendanceRoute)
+                    },
+                    navigateToLogin = {
+                        backstack.clear()
+                        backstack.add(Screens.NavLoginRoute)
+                    }
+                )
+            }
+            entry<Screens.NavAttendanceRoute> {
+                StudentAttendanceScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPress = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
         }
 
-        composable<Screens.NavAttendanceRoute> {
-            StudentAttendanceScreen(
-                snackbarHostState = snackbarHostState,
-                onBackPress = {
-                    navController.navigateUp()
-                }
-            )
-        }
-    }
+    )
+
 }

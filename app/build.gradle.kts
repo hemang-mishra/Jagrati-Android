@@ -15,7 +15,7 @@ val localPropertiesFile = rootProject.file("local.properties")
 
 android {
     namespace = "com.hexagraph.jagrati_android"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         // Read web client ID from local.properties
@@ -74,12 +74,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.firebase.auth)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
-    implementation(libs.firebase.storage)
-    implementation(libs.firebase.firestore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -154,7 +151,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
 
     //Navigation 3 API
-//    implementation(libs.androidx.navigation3.ui)
-//    implementation(libs.androidx.navigation3.runtime)
-//    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 }

@@ -1,6 +1,6 @@
 package com.hexagraph.jagrati_android.repository.auth
 
-import com.hexagraph.jagrati_android.api.KtorAuthService
+import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.model.auth.ForgotPasswordRequest
