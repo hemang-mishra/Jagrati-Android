@@ -38,6 +38,10 @@ sealed interface Screens: NavKey {
         val email: String
     ): Screens
 
+    // User Details route (runs at app startup after authentication)
+    @Serializable
+    data object NavUserDetailsRoute: Screens
+
     // Main app routes
     @Serializable
     data object NavHomeRoute: Screens

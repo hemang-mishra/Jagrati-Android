@@ -25,6 +25,7 @@ import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen2
 import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen3
 import com.hexagraph.jagrati_android.ui.screens.onboarding.PermissionsScreen
 import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceScreen
+import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -53,7 +54,7 @@ fun AppNavigation(
     var backstack = rememberNavBackStack(
         when {
             !isOnboardingCompleted -> Screens.NavOnboarding1Route
-            isAuthenticated -> Screens.NavHomeRoute
+            isAuthenticated -> Screens.NavUserDetailsRoute // Load user details first if authenticated
             else -> Screens.NavLoginRoute
         }
     )
@@ -66,6 +67,7 @@ fun AppNavigation(
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
+            // Onboarding routes
             entry<Screens.NavOnboarding1Route> {
                 OnboardingScreen1(
                     onNextClick = {
@@ -99,7 +101,7 @@ fun AppNavigation(
                         onboardingPreferences.setOnboardingCompleted()
                         if (isAuthenticated) {
                             backstack.clear()
-                            backstack.add(Screens.NavHomeRoute)
+                            backstack.add(Screens.NavUserDetailsRoute) // Go to UserDetails screen if authenticated
                         } else {
                             backstack.clear()
                             backstack.add(Screens.NavLoginRoute)
@@ -112,12 +114,25 @@ fun AppNavigation(
                     }
                 )
             }
+
+            // User details route - loads after authentication
+            entry<Screens.NavUserDetailsRoute> {
+                UserDetailsScreen(
+                    snackbarHostState = snackbarHostState,
+                    onDetailsLoaded = {
+                        backstack.clear()
+                        backstack.add(Screens.NavHomeRoute)
+                    }
+                )
+            }
+
+            // Authentication routes
             entry<Screens.NavLoginRoute> {
                 LoginScreen(
                     snackbarHostState = snackbarHostState,
                     navigateToHome = {
                         backstack.clear()
-                        backstack.add(Screens.NavHomeRoute)
+                        backstack.add(Screens.NavUserDetailsRoute) // Go to UserDetails first
                     },
                     navigateToSignUp = {
                         backstack.add(Screens.NavSignUpEmailRoute)
@@ -197,7 +212,5 @@ fun AppNavigation(
                 )
             }
         }
-
     )
-
 }

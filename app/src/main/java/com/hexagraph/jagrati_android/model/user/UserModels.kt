@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.model.user
 
+import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.model.permission.PermissionResponse
 import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
 import com.hexagraph.jagrati_android.model.role.RoleResponse
@@ -63,7 +64,17 @@ data class UserSummaryDTO(
     val lastName: String,
     val email: String,
     val profileImageUrl: String?
-)
+){
+    fun toUser(): User =
+        User(
+            uid = pid,
+            firstName = firstName,
+            lastName = lastName,
+            email = email,
+            isEmailVerified = true,
+            photoUrl = profileImageUrl
+        )
+}
 /**
  * Response model containing list of permissions
  */

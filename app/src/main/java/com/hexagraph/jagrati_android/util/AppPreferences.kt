@@ -6,15 +6,23 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import com.hexagraph.jagrati_android.model.User
+import com.hexagraph.jagrati_android.model.permission.AllPermissions
+import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
+import com.hexagraph.jagrati_android.model.user.UserSummaryDTO
 
 /**
  * A centralized class to manage DataStore preferences throughout the app.
  */
 class AppPreferences(private val context: Context) {
+
+    private val gson = Gson()
 
     companion object {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "jagrati_prefs")
@@ -22,11 +30,12 @@ class AppPreferences(private val context: Context) {
         // Auth related keys
         private val ACCESS_TOKEN = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
-        private val USER_ID = stringPreferencesKey("user_id")
-        private val USER_EMAIL = stringPreferencesKey("user_email")
-        private val USER_DISPLAY_NAME = stringPreferencesKey("user_display_name")
-        private val USER_EMAIL_VERIFIED = booleanPreferencesKey("user_email_verified")
-        private val USER_PHOTO_URL = stringPreferencesKey("user_photo_url")
+        // Permissions related key
+        private val USER_PERMISSIONS = stringSetPreferencesKey("user_permissions")
+
+        // User details and roles related keys
+        private val USER_DETAILS = stringPreferencesKey("user_details")
+        private val USER_ROLES = stringPreferencesKey("user_roles")
     }
 
     // Token Management
@@ -57,36 +66,73 @@ class AppPreferences(private val context: Context) {
         preferences[ACCESS_TOKEN] != null
     }
 
-    // User Info Management
-    val currentUser: Flow<User?> = context.dataStore.data.map { preferences ->
-        val userId = preferences[USER_ID] ?: return@map null
 
-        User(
-            uid = userId,
-            email = preferences[USER_EMAIL] ?: "",
-            displayName = preferences[USER_DISPLAY_NAME] ?: "",
-            isEmailVerified = preferences[USER_EMAIL_VERIFIED] ?: false,
-            photoUrl = preferences[USER_PHOTO_URL] ?: ""
-        )
+
+    // Permissions Management
+    val userPermissions: Flow<Set<String>> = context.dataStore.data.map { preferences ->
+        preferences[USER_PERMISSIONS] ?: emptySet()
     }
 
-    suspend fun saveUserInfo(user: User) {
-        context.dataStore.edit { preferences ->
-            preferences[USER_ID] = user.uid
-            preferences[USER_EMAIL] = user.email
-            preferences[USER_DISPLAY_NAME] = user.displayName
-            preferences[USER_EMAIL_VERIFIED] = user.isEmailVerified
-            preferences[USER_PHOTO_URL] = user.photoUrl ?: ""
+    fun hasPermission(permission: AllPermissions): Flow<Boolean> {
+        return userPermissions.map { permissions ->
+            permissions.contains(permission.name)
         }
     }
 
-    suspend fun clearUserInfo() {
+    suspend fun saveUserPermissions(permissions: List<String>) {
         context.dataStore.edit { preferences ->
-            preferences.remove(USER_ID)
-            preferences.remove(USER_EMAIL)
-            preferences.remove(USER_DISPLAY_NAME)
-            preferences.remove(USER_EMAIL_VERIFIED)
-            preferences.remove(USER_PHOTO_URL)
+            preferences[USER_PERMISSIONS] = permissions.toSet()
+        }
+    }
+
+    suspend fun clearUserPermissions() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(USER_PERMISSIONS)
+        }
+    }
+
+    // User Details Management
+    val userDetails: Flow<User?> = context.dataStore.data.map { preferences ->
+        val userDetailsJson = preferences[USER_DETAILS] ?: return@map null
+        try {
+            gson.fromJson(userDetailsJson, UserSummaryDTO::class.java).toUser()
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    suspend fun saveUserDetails(userDetails: UserSummaryDTO) {
+        context.dataStore.edit { preferences ->
+            preferences[USER_DETAILS] = gson.toJson(userDetails)
+        }
+    }
+
+    suspend fun clearUserDetails() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(USER_DETAILS)
+        }
+    }
+
+    // User Roles Management
+    val userRoles: Flow<List<RoleSummaryResponse>> = context.dataStore.data.map { preferences ->
+        val userRolesJson = preferences[USER_ROLES] ?: return@map emptyList()
+        try {
+            val type = object : TypeToken<List<RoleSummaryResponse>>() {}.type
+            gson.fromJson(userRolesJson, type)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    suspend fun saveUserRoles(roles: List<RoleSummaryResponse>) {
+        context.dataStore.edit { preferences ->
+            preferences[USER_ROLES] = gson.toJson(roles)
+        }
+    }
+
+    suspend fun clearUserRoles() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(USER_ROLES)
         }
     }
 

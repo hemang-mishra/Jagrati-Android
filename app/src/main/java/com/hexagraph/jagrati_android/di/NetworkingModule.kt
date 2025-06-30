@@ -1,13 +1,11 @@
 package com.hexagraph.jagrati_android.di
 
-import android.content.Context
 import com.hexagraph.jagrati_android.api.AuthProvider
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.service.permission.KtorPermissionService
 import com.hexagraph.jagrati_android.service.role.KtorRoleService
 import com.hexagraph.jagrati_android.service.user.KtorUserService
 import com.hexagraph.jagrati_android.service.volunteer.KtorVolunteerRequestService
-import com.hexagraph.jagrati_android.util.AppPreferences
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.HttpTimeout
@@ -17,13 +15,19 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.observer.ResponseObserver
+import io.ktor.client.statement.request
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-private const val BASE_URL = "https://9dc1-2401-4900-85c4-f921-5e5-542f-b17e-dbbb.ngrok-free.app"
+private const val BASE_URL = "https://ea71-2401-4900-85c0-c699-5192-2377-36b2-f4e5.ngrok-free.app"
 private const val TIMEOUT = 6000L
 
 val networkModule = module {
@@ -52,19 +56,37 @@ val networkModule = module {
                 socketTimeoutMillis = TIMEOUT
             }
 
-            // Add logging
+            // Enhanced logging with detailed request/response information
             install(Logging) {
                 logger = object : Logger {
+                    private val dateFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+
                     override fun log(message: String) {
-                        android.util.Log.d("KtorClient", message)
+                        val timestamp = dateFormat.format(Date())
+                        android.util.Log.d("KtorClient", "[$timestamp] $message")
                     }
                 }
                 level = LogLevel.ALL
             }
 
-            // Default request configuration
-            defaultRequest {
-                contentType(ContentType.Application.Json)
+            // Add response observer for additional logging of response status and timing
+            install(ResponseObserver) {
+                onResponse { response ->
+                    val status = response.status
+                    val url = response.request.url
+                    val time = response.responseTime.timestamp - response.requestTime.timestamp
+
+                    val logMessage =
+                        "Response: $url - ${status.value} (${status.description}) - ${time}ms"
+                    val logColor =
+                        if (status == HttpStatusCode.OK || status == HttpStatusCode.Created) {
+                            "Response ✅"
+                        } else {
+                            "Response ❌"
+                        }
+
+                    android.util.Log.d("KtorResponse", "$logColor: $logMessage")
+                }
             }
 
             // Configure authentication with token refresh
@@ -73,6 +95,13 @@ val networkModule = module {
                     configureBearerAuth()
                 }
             }
+
+            // Default request configuration
+            defaultRequest {
+                contentType(ContentType.Application.Json)
+                url(BASE_URL)
+            }
+
         }
     }
 
