@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.repository.user
 
 import com.hexagraph.jagrati_android.model.permission.PermissionListResponse
+import com.hexagraph.jagrati_android.model.user.UserDetailsWithRolesAndPermissions
 import com.hexagraph.jagrati_android.model.user.UserRoleAssignmentResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesListResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesResponse
@@ -51,5 +52,5 @@ interface UserRepository {
      *
      * @return Flow of Resource containing list of permissions for the current user
      */
-    suspend fun getCurrentUserPermissions(): Flow<Resource<PermissionListResponse>>
+    suspend fun getCurrentUserPermissions(): Flow<Resource<UserDetailsWithRolesAndPermissions>>
 }

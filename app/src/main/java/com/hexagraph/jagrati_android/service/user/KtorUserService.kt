@@ -3,6 +3,7 @@ package com.hexagraph.jagrati_android.service.user
 import com.hexagraph.jagrati_android.model.permission.PermissionListResponse
 import com.hexagraph.jagrati_android.model.user.AssignRoleToUserRequest
 import com.hexagraph.jagrati_android.model.user.RemoveRoleFromUserRequest
+import com.hexagraph.jagrati_android.model.user.UserDetailsWithRolesAndPermissions
 import com.hexagraph.jagrati_android.model.user.UserRoleAssignmentResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesListResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesResponse
@@ -72,11 +73,11 @@ class KtorUserService(
     }
 
     /**
-     * Fetch permissions of the current authenticated user.
+     * Fetch details of the currently logged-in user, including their roles.
      *
-     * @return List of permissions for the current user
+     * @return User details with assigned roles and permissions
      */
-    suspend fun getCurrentUserPermissions(): PermissionListResponse {
+    suspend fun getCurrentUserDetails(): UserDetailsWithRolesAndPermissions {
         return client.get("$baseUrl/api/users/me").body()
     }
 }

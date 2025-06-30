@@ -3,6 +3,7 @@ package com.hexagraph.jagrati_android.repository.user
 import com.hexagraph.jagrati_android.api.AuthProvider
 import com.hexagraph.jagrati_android.model.permission.PermissionListResponse
 import com.hexagraph.jagrati_android.model.user.AssignRoleToUserRequest
+import com.hexagraph.jagrati_android.model.user.UserDetailsWithRolesAndPermissions
 import com.hexagraph.jagrati_android.model.user.UserRoleAssignmentResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesListResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesResponse
@@ -44,9 +45,9 @@ class KtorUserRepository(
         emit(response)
     }
 
-    override suspend fun getCurrentUserPermissions(): Flow<Resource<PermissionListResponse>> = flow {
+    override suspend fun getCurrentUserPermissions(): Flow<Resource<UserDetailsWithRolesAndPermissions>> = flow {
         emit(Resource.loading())
-        val response = safeApiCall { userService.getCurrentUserPermissions() }
+        val response = safeApiCall { userService.getCurrentUserDetails() }
         emit(response)
     }
 }

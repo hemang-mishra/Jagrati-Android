@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.model.user
 
 import com.hexagraph.jagrati_android.model.permission.PermissionResponse
+import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
 import com.hexagraph.jagrati_android.model.role.RoleResponse
 import kotlinx.serialization.Serializable
 
@@ -60,13 +61,23 @@ data class UserSummaryDTO(
     val pid: String,
     val firstName: String,
     val lastName: String,
-    val email: String
+    val email: String,
+    val profileImageUrl: String?
 )
-
 /**
  * Response model containing list of permissions
  */
 @Serializable
 data class PermissionListResponse(
     val permissions: List<PermissionResponse>
+)
+
+/**
+ * Response model containing user details along with their roles and permissions
+ */
+@Serializable
+data class UserDetailsWithRolesAndPermissions(
+    val userDetails: UserSummaryDTO,
+    val roles: List<RoleSummaryResponse>,
+    val permissions: PermissionListResponse
 )
