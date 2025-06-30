@@ -56,17 +56,9 @@ class MainActivity : ComponentActivity() {
             }
 
             JagratiAndroidTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    snackbarHost = { androidx.compose.material3.SnackbarHost(hostState = snackBarState) }
-                ) { innerPadding ->
-                    Box(modifier = Modifier.fillMaxSize()
-                        .padding(innerPadding)){
-                        AppNavigation(
-                            snackbarHostState = snackBarState,
-                        )
-                    }
-                }
+                AppNavigation(
+                    snackbarHostState = snackBarState,
+                )
             }
         }
     }

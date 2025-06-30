@@ -25,6 +25,7 @@ import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen1
 import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen2
 import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen3
 import com.hexagraph.jagrati_android.ui.screens.onboarding.PermissionsScreen
+import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesScreen
 import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceScreen
 import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
@@ -223,6 +224,16 @@ fun AppNavigation(
                     onNavigateToScreen = { screen ->
                         backstack.add(screen)
                     },
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            // Role management screens
+            entry<Screens.NavManageRolesRoute> {
+                ManageRolesScreen(
+                    snackbarHostState = snackbarHostState,
                     onBackPressed = {
                         backstack.popBackStack()
                     }
