@@ -31,6 +31,7 @@ import org.koin.androidx.compose.koinViewModel
 fun HomeScreen(
     snackbarHostState: SnackbarHostState,
     navigateToAttendancePage: () -> Unit,
+    navigateToManagement: () -> Unit = {},
     navigateToLogin: () -> Unit = {},
     authViewModel: AuthViewModel = koinViewModel()
 ) {
@@ -52,6 +53,17 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp)
         ) {
             Text("Take Student Attendance")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = { navigateToManagement() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
+            Text("Management")
         }
     }
 }

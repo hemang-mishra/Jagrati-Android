@@ -48,4 +48,24 @@ sealed interface Screens: NavKey {
 
     @Serializable
     data object NavAttendanceRoute: Screens
+
+    // Management routes
+    @Serializable
+    data object NavManagementRoute: Screens
+
+    //Manage roles and permissions
+    @Serializable
+    data object NavManageRolesRoute: Screens
+
+    @Serializable
+    data object NavManagePermissionsRoute: Screens
+
+    @Serializable
+    data object NavUserRoleManagementRoute: Screens
+
+    @Serializable
+    data object NavManageVolunteerRequestsRoute: Screens
+
+    @Serializable
+    data object NavMyVolunteerRequestsRoute: Screens
 }

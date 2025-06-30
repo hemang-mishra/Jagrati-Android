@@ -20,6 +20,7 @@ import com.hexagraph.jagrati_android.ui.screens.auth.LoginScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.SignUpDetailsScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.SignUpEmailScreen
 import com.hexagraph.jagrati_android.ui.screens.home.HomeScreen
+import com.hexagraph.jagrati_android.ui.screens.management.ManagementScreen
 import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen1
 import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen2
 import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen3
@@ -200,6 +201,9 @@ fun AppNavigation(
                     navigateToLogin = {
                         backstack.clear()
                         backstack.add(Screens.NavLoginRoute)
+                    },
+                    navigateToManagement = {
+                        backstack.add(Screens.NavManagementRoute)
                     }
                 )
             }
@@ -207,6 +211,19 @@ fun AppNavigation(
                 StudentAttendanceScreen(
                     snackbarHostState = snackbarHostState,
                     onBackPress = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            // Management screens
+            entry<Screens.NavManagementRoute> {
+                ManagementScreen(
+                    snackbarHostState = snackbarHostState,
+                    onNavigateToScreen = { screen ->
+                        backstack.add(screen)
+                    },
+                    onBackPressed = {
                         backstack.popBackStack()
                     }
                 )
