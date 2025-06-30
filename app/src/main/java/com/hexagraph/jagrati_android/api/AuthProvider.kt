@@ -39,8 +39,8 @@ class AuthProvider(
             // Provide the tokens
             loadTokens {
                 runBlocking {
-                    val accessToken = appPreferences.accessToken.first()
-                    val refreshToken = appPreferences.refreshToken.first()
+                    val accessToken = appPreferences.accessToken.get()
+                    val refreshToken = appPreferences.refreshToken.get()
                     Log.d(
                         "AuthProvider",
                         "Loaded tokens: accessToken=$accessToken, refreshToken=$refreshToken"
@@ -55,7 +55,7 @@ class AuthProvider(
 
             // Handle 401 Unauthorized responses
             refreshTokens {
-                val oldRefreshToken = runBlocking { appPreferences.refreshToken.first() } ?: ""
+                val oldRefreshToken = runBlocking { appPreferences.refreshToken.get() } ?: ""
                 Log.d("AuthProvider", "Token refresh triggered")
 
                 try {

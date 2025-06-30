@@ -14,6 +14,7 @@ import com.hexagraph.jagrati_android.util.Utils.safeApiCall
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 
 /**
  * Implementation of AuthRepository using Spring Boot backend with Ktor client.
@@ -23,10 +24,12 @@ class KtorAuthRepository(
     private val appPreferences: AppPreferences
 ) : AuthRepository {
 
-    override fun getCurrentUser(): Flow<User?> = appPreferences.userDetails
+    override fun getCurrentUser(): Flow<User?> = appPreferences.userDetails.getFlow()
 
     override fun isUserAuthenticated(): Boolean = runCatching {
-        kotlinx.coroutines.runBlocking { appPreferences.isAuthenticated().first() }
+        runBlocking {
+            appPreferences.isAuthenticated.get()
+        }
     }.getOrDefault(false)
 
     override suspend fun signInWithEmailAndPassword(
@@ -150,7 +153,7 @@ class KtorAuthRepository(
     override suspend fun sendEmailVerification(): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
 
-        val email = appPreferences.userDetails.first()?.email
+        val email = appPreferences.userDetails.get()?.email
 
         if (email != null) {
             val resendVerificationRequest = ResendVerificationRequest(email = email)

@@ -3,6 +3,7 @@ package com.hexagraph.jagrati_android.di
 import com.hexagraph.jagrati_android.ui.screens.addStudent.AddStudentViewModel
 import com.hexagraph.jagrati_android.ui.screens.management.ManagementViewModel
 import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanViewModel
+import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceViewModel
 import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.ForgotPasswordViewModel
@@ -17,6 +18,7 @@ val viewModelModule = module {
     factory<ForgotPasswordViewModel>{ ForgotPasswordViewModel(get()) }
     factory<OmniScanViewModel> { OmniScanViewModel(get(), get(), get()) }
     factory<AddStudentViewModel> { AddStudentViewModel(get()) }
+    factory<StudentAttendanceViewModel>{ StudentAttendanceViewModel(get(), get(), get()) }
     factory<UserDetailsViewModel> { UserDetailsViewModel(get(), get()) }
     factory<ManagementViewModel> { ManagementViewModel(get()) }
 }

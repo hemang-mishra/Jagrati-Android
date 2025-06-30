@@ -3,7 +3,7 @@ package com.hexagraph.jagrati_android.util
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
@@ -11,6 +11,8 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.model.permission.AllPermissions
@@ -18,7 +20,7 @@ import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
 import com.hexagraph.jagrati_android.model.user.UserSummaryDTO
 
 /**
- * A centralized class to manage DataStore preferences throughout the app.
+ * A centralized class to manage DataStore preferences throughout the app using type-safe DataStorePreference pattern.
  */
 class AppPreferences(private val context: Context) {
 
@@ -30,6 +32,7 @@ class AppPreferences(private val context: Context) {
         // Auth related keys
         private val ACCESS_TOKEN = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+
         // Permissions related key
         private val USER_PERMISSIONS = stringSetPreferencesKey("user_permissions")
 
@@ -39,12 +42,40 @@ class AppPreferences(private val context: Context) {
     }
 
     // Token Management
-    val accessToken: Flow<String?> = context.dataStore.data.map { preferences ->
-        preferences[ACCESS_TOKEN]
+    val accessToken: DataStorePreference<String?> = object : DataStorePreference<String?> {
+        override fun getFlow(): Flow<String?> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[ACCESS_TOKEN] }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: String?) {
+            context.dataStore.edit { preferences ->
+                if (value == null) {
+                    preferences.remove(ACCESS_TOKEN)
+                } else {
+                    preferences[ACCESS_TOKEN] = value
+                }
+            }
+        }
     }
 
-    val refreshToken: Flow<String?> = context.dataStore.data.map { preferences ->
-        preferences[REFRESH_TOKEN]
+    val refreshToken: DataStorePreference<String?> = object : DataStorePreference<String?> {
+        override fun getFlow(): Flow<String?> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[REFRESH_TOKEN] }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: String?) {
+            context.dataStore.edit { preferences ->
+                if (value == null) {
+                    preferences.remove(REFRESH_TOKEN)
+                } else {
+                    preferences[REFRESH_TOKEN] = value
+                }
+            }
+        }
     }
 
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
@@ -62,42 +93,73 @@ class AppPreferences(private val context: Context) {
     }
 
     // Check if user is authenticated
-    fun isAuthenticated(): Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[ACCESS_TOKEN] != null
+    val isAuthenticated: DataStorePreference<Boolean> = object : DataStorePreference<Boolean> {
+        override fun getFlow(): Flow<Boolean> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[ACCESS_TOKEN] != null }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: Boolean) {
+            // This is read-only and derived from tokens, so setting is not supported
+            throw UnsupportedOperationException("Cannot directly set authentication status")
+        }
     }
 
-
-
     // Permissions Management
-    val userPermissions: Flow<Set<String>> = context.dataStore.data.map { preferences ->
-        preferences[USER_PERMISSIONS] ?: emptySet()
+    val userPermissions: DataStorePreference<Set<String>> = object : DataStorePreference<Set<String>> {
+        override fun getFlow(): Flow<Set<String>> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[USER_PERMISSIONS] ?: emptySet() }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: Set<String>) {
+            context.dataStore.edit { preferences ->
+                preferences[USER_PERMISSIONS] = value
+            }
+        }
     }
 
     fun hasPermission(permission: AllPermissions): Flow<Boolean> {
-        return userPermissions.map { permissions ->
-            permissions.contains(permission.name)
-        }
+        return userPermissions.getFlow()
+            .map { permissions -> permissions.contains(permission.name) }
+            .distinctUntilChanged()
     }
 
     suspend fun saveUserPermissions(permissions: List<String>) {
-        context.dataStore.edit { preferences ->
-            preferences[USER_PERMISSIONS] = permissions.toSet()
-        }
+        userPermissions.set(permissions.toSet())
     }
 
     suspend fun clearUserPermissions() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(USER_PERMISSIONS)
-        }
+        userPermissions.set(emptySet())
     }
 
     // User Details Management
-    val userDetails: Flow<User?> = context.dataStore.data.map { preferences ->
-        val userDetailsJson = preferences[USER_DETAILS] ?: return@map null
-        try {
-            gson.fromJson(userDetailsJson, UserSummaryDTO::class.java).toUser()
-        } catch (e: Exception) {
-            null
+    val userDetails: DataStorePreference<User?> = object : DataStorePreference<User?> {
+        override fun getFlow(): Flow<User?> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { preferences ->
+                    val userDetailsJson = preferences[USER_DETAILS] ?: return@map null
+                    try {
+                        gson.fromJson(userDetailsJson, UserSummaryDTO::class.java).toUser()
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: User?) {
+            context.dataStore.edit { preferences ->
+                if (value == null) {
+                    preferences.remove(USER_DETAILS)
+                } else {
+                    // This would require a toDTO method on User which we don't have,
+                    // so this is just a placeholder. The actual implementation should use saveUserDetails.
+                    throw UnsupportedOperationException("Cannot directly set User objects. Use saveUserDetails instead.")
+                }
+            }
         }
     }
 
@@ -114,26 +176,34 @@ class AppPreferences(private val context: Context) {
     }
 
     // User Roles Management
-    val userRoles: Flow<List<RoleSummaryResponse>> = context.dataStore.data.map { preferences ->
-        val userRolesJson = preferences[USER_ROLES] ?: return@map emptyList()
-        try {
-            val type = object : TypeToken<List<RoleSummaryResponse>>() {}.type
-            gson.fromJson(userRolesJson, type)
-        } catch (e: Exception) {
-            emptyList()
+    val userRoles: DataStorePreference<List<RoleSummaryResponse>> = object : DataStorePreference<List<RoleSummaryResponse>> {
+        override fun getFlow(): Flow<List<RoleSummaryResponse>> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { preferences ->
+                    val userRolesJson = preferences[USER_ROLES] ?: return@map emptyList()
+                    try {
+                        val type = object : TypeToken<List<RoleSummaryResponse>>() {}.type
+                        gson.fromJson<List<RoleSummaryResponse>>(userRolesJson, type)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: List<RoleSummaryResponse>) {
+            context.dataStore.edit { preferences ->
+                preferences[USER_ROLES] = gson.toJson(value)
+            }
         }
     }
 
     suspend fun saveUserRoles(roles: List<RoleSummaryResponse>) {
-        context.dataStore.edit { preferences ->
-            preferences[USER_ROLES] = gson.toJson(roles)
-        }
+        userRoles.set(roles)
     }
 
     suspend fun clearUserRoles() {
-        context.dataStore.edit { preferences ->
-            preferences.remove(USER_ROLES)
-        }
+        userRoles.set(emptyList())
     }
 
     // Clear all data
