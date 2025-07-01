@@ -61,11 +61,25 @@ sealed interface Screens: NavKey {
     data object NavManagePermissionsRoute: Screens
 
     @Serializable
+    data class NavPermissionDetailRoute(
+        val permissionId: Long
+    ): Screens
+
+    @Serializable
     data object NavUserRoleManagementRoute: Screens
+
+    @Serializable
+    data class NavUserDetailRoute(
+        val userPid: String
+    ): Screens
 
     @Serializable
     data object NavManageVolunteerRequestsRoute: Screens
 
     @Serializable
     data object NavMyVolunteerRequestsRoute: Screens
+
+    // Volunteer routes
+    @Serializable
+    data object NavVolunteerRegistrationRoute: Screens
 }

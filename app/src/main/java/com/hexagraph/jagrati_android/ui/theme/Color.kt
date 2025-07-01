@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 object JagratiColors {
     val Orange = Color(0xFFF17E01)
     val Purple = Color(0xFFAA9FF8)
-    val Yellow = Color(0xFFFD233)
+    val Yellow = Color(0x0FEEC434)
     val Turquoise = Color(0xFF3FB8AF)
     val Brown = Color(0xFFA65700)
     val DarkBrown = Color(0xFF332118)
@@ -133,7 +133,7 @@ object CustomColors {
     val lightBatchColors = listOf(
         BatchOrange,
         BatchPurple,
-        BatchYellow,
+        BatchOrange,
         BatchTurquoise,
         BatchBrown
     )

@@ -56,14 +56,17 @@ fun HomeScreen(
     snackbarHostState: SnackbarHostState,
     navigateToAttendancePage: () -> Unit,
     navigateToManagement: () -> Unit = {},
+    navigateToVolunteerRegistration: () -> Unit = {},
     navigateToLogin: () -> Unit = {},
     authViewModel: AuthViewModel = koinViewModel(),
 ) {
     val appPreferences: AppPreferences = koinInject<AppPreferences>()
     var userData by remember { mutableStateOf<User?>(null) }
+    var hasVolunteerRole by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = Unit) {
         userData = appPreferences.userDetails.get()
+        hasVolunteerRole = appPreferences.hasRole("VOLUNTEER").first()
     }
 
     Column(
@@ -123,6 +126,22 @@ fun HomeScreen(
                         "Management",
                         style = MaterialTheme.typography.bodyLarge
                     )
+                }
+
+                // Volunteer registration button, visible only to users WITHOUT the VOLUNTEER role
+                if (!hasVolunteerRole) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { navigateToVolunteerRegistration() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            "Register as Volunteer",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             }
         }

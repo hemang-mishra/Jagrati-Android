@@ -25,11 +25,19 @@ import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen1
 import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen2
 import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen3
 import com.hexagraph.jagrati_android.ui.screens.onboarding.PermissionsScreen
+import com.hexagraph.jagrati_android.ui.screens.permissions.ManagePermissionsScreen
+import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailScreen
+import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesScreen
 import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceScreen
 import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsScreen
+import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailScreen
+import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesScreen
+import com.hexagraph.jagrati_android.ui.screens.volunteer.MyVolunteerRequestsScreen
+import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 // Function to handle back navigation
 private fun NavBackStack.popBackStack() {
@@ -205,6 +213,9 @@ fun AppNavigation(
                     },
                     navigateToManagement = {
                         backstack.add(Screens.NavManagementRoute)
+                    },
+                    navigateToVolunteerRegistration = {
+                        backstack.add(Screens.NavVolunteerRegistrationRoute)
                     }
                 )
             }
@@ -236,6 +247,86 @@ fun AppNavigation(
                     snackbarHostState = snackbarHostState,
                     onBackPressed = {
                         backstack.popBackStack()
+                    }
+                )
+            }
+
+            // Permission management screens
+            entry<Screens.NavManagePermissionsRoute> {
+                ManagePermissionsScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    onPermissionClicked = { permissionId ->
+                        backstack.add(Screens.NavPermissionDetailRoute(permissionId))
+                    }
+                )
+            }
+
+            entry<Screens.NavPermissionDetailRoute> { it ->
+                val permissionId = it.permissionId
+
+                PermissionDetailScreen(
+                    permissionId = permissionId,
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    viewModel = koinViewModel<PermissionDetailViewModel> { parametersOf(permissionId) }
+                )
+            }
+
+            // User role management screens
+            entry<Screens.NavUserRoleManagementRoute> {
+                UserRolesScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    onUserClicked = { userPid ->
+                        backstack.add(Screens.NavUserDetailRoute(userPid))
+                    }
+                )
+            }
+
+            entry<Screens.NavUserDetailRoute> { it ->
+                val userPid = it.userPid
+
+                UserDetailScreen(
+                    userPid = userPid,
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            // Volunteer screens
+            entry<Screens.NavVolunteerRegistrationRoute> {
+                VolunteerRegistrationScreen(
+                    viewModel = koinViewModel(),
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    navigateToMyRequests = {
+                        // Replace the current screen with My Requests screen
+                        backstack.removeAt(backstack.size - 1)
+                        backstack.add(Screens.NavMyVolunteerRequestsRoute)
+                    }
+                )
+            }
+
+            entry<Screens.NavMyVolunteerRequestsRoute> {
+                MyVolunteerRequestsScreen(
+                    viewModel = koinViewModel(),
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    navigateToVolunteerRegistration = {
+                        backstack.add(Screens.NavVolunteerRegistrationRoute)
                     }
                 )
             }

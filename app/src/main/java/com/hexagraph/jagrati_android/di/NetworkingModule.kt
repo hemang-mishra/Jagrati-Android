@@ -27,7 +27,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private const val BASE_URL = "https://ea71-2401-4900-85c0-c699-5192-2377-36b2-f4e5.ngrok-free.app"
+private const val BASE_URL = "https://57f6-2409-40e3-3189-3db5-533f-6e2b-9fa1-57fa.ngrok-free.app"
 private const val TIMEOUT = 6000L
 
 val networkModule = module {

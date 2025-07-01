@@ -198,6 +198,13 @@ class AppPreferences(private val context: Context) {
         }
     }
 
+    // Check if user has a specific role by name
+    fun hasRole(roleName: String): Flow<Boolean> {
+        return userRoles.getFlow()
+            .map { roles -> roles.any { it.name == roleName } }
+            .distinctUntilChanged()
+    }
+
     suspend fun saveUserRoles(roles: List<RoleSummaryResponse>) {
         userRoles.set(roles)
     }
