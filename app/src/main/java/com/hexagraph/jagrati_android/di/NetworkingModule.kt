@@ -27,20 +27,17 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private const val BASE_URL = "https://57f6-2409-40e3-3189-3db5-533f-6e2b-9fa1-57fa.ngrok-free.app"
+private const val BASE_URL = "https://1fc5-2409-40e3-3189-3db5-8d95-a3c8-4a3-703d.ngrok-free.app"
 private const val TIMEOUT = 6000L
 
 val networkModule = module {
 
-    // Create AuthProvider
-    single { AuthProvider(get(), BASE_URL) }
+    factory { AuthProvider(get(), BASE_URL) }
 
-    // Create main HttpClient with auth
     single {
         val authProvider = get<AuthProvider>()
 
         HttpClient(Android) {
-            // Install ContentNegotiation to handle JSON serialization
             install(ContentNegotiation) {
                 json(Json {
                     prettyPrint = true
@@ -49,14 +46,12 @@ val networkModule = module {
                 })
             }
 
-            // Configure timeout
             install(HttpTimeout) {
                 requestTimeoutMillis = TIMEOUT
                 connectTimeoutMillis = TIMEOUT
                 socketTimeoutMillis = TIMEOUT
             }
 
-            // Enhanced logging with detailed request/response information
             install(Logging) {
                 logger = object : Logger {
                     private val dateFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
@@ -69,7 +64,6 @@ val networkModule = module {
                 level = LogLevel.ALL
             }
 
-            // Add response observer for additional logging of response status and timing
             install(ResponseObserver) {
                 onResponse { response ->
                     val status = response.status
@@ -89,14 +83,12 @@ val networkModule = module {
                 }
             }
 
-            // Configure authentication with token refresh
             install(Auth) {
                 with(authProvider) {
                     configureBearerAuth()
                 }
             }
 
-            // Default request configuration
             defaultRequest {
                 contentType(ContentType.Application.Json)
                 url(BASE_URL)
@@ -105,18 +97,13 @@ val networkModule = module {
         }
     }
 
-    // Provide KtorAuthService
     single { KtorAuthService(get(), BASE_URL) }
 
-    // Provide KtorPermissionService
     single { KtorPermissionService(get(), BASE_URL) }
 
-    // Provide KtorRoleService
     single { KtorRoleService(get(), BASE_URL) }
 
-    // Provide KtorUserService
     single { KtorUserService(get(), BASE_URL) }
 
-    // Provide KtorVolunteerRequestService
     single { KtorVolunteerRequestService(get(), BASE_URL) }
 }

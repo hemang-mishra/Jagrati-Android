@@ -330,6 +330,16 @@ fun AppNavigation(
                     }
                 )
             }
+
+            entry<Screens.NavManageVolunteerRequestsRoute> {
+                com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen(
+                    viewModel = koinViewModel(),
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
         }
     )
 }
