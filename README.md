@@ -16,3 +16,5 @@ Jagrati is a non-profit organization at IIITDM Jabalpur dedicated to education a
 - **FaceNet** – Facial feature extraction
 - **CameraX** – Camera API for capturing student images
 
+Screenshots:
+<img width="200" height="500" alt="image" src="https://github.com/user-attachments/assets/e1ace246-1022-4703-802d-d10d4bb3af77" />
