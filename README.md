@@ -25,5 +25,6 @@ Jagrati is a non-profit organization at IIITDM Jabalpur dedicated to education a
 <img width="200" height="500" alt="image" src="https://github.com/user-attachments/assets/adcfca40-2e25-410f-a0b1-b1d43ba7b0cf" />
 <img width="200" height="500" alt="image" src="https://github.com/user-attachments/assets/dfe9d43f-da5a-4d8f-9d87-28ea0746e6eb" />
 <img width="200" height="500" alt="image" src="https://github.com/user-attachments/assets/040398d1-a8f2-484e-a9c1-3fb64bc63cd2" />
+<img width="200" height="500" alt="image" src="https://github.com/user-attachments/assets/7a786bee-514f-484d-9026-10872fd30747" />
 
 
