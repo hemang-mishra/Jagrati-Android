@@ -1,5 +1,6 @@
 
 <img width="114" height="115" alt="JagratiAppLogo" src="https://github.com/user-attachments/assets/a472b331-ce73-4446-9f0a-ebfea0bfb012" />
+
 # Jagrati Android App
 
 ## Introduction
