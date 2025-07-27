@@ -5,15 +5,9 @@ import kotlinx.serialization.Serializable
 
 
 sealed interface Screens: NavKey {
-    // Onboarding routes
+    // Unified onboarding route
     @Serializable
-    data object NavOnboarding1Route: Screens
-
-    @Serializable
-    data object NavOnboarding2Route: Screens
-
-    @Serializable
-    data object NavOnboarding3Route: Screens
+    data object NavOnboardingRoute: Screens
 
     @Serializable
     data object NavPermissionsRoute: Screens

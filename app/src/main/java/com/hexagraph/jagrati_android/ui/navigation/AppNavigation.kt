@@ -21,9 +21,7 @@ import com.hexagraph.jagrati_android.ui.screens.auth.SignUpDetailsScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.SignUpEmailScreen
 import com.hexagraph.jagrati_android.ui.screens.home.HomeScreen
 import com.hexagraph.jagrati_android.ui.screens.management.ManagementScreen
-import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen1
-import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen2
-import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen3
+import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen
 import com.hexagraph.jagrati_android.ui.screens.onboarding.PermissionsScreen
 import com.hexagraph.jagrati_android.ui.screens.permissions.ManagePermissionsScreen
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailScreen
@@ -63,7 +61,7 @@ fun AppNavigation(
 
     var backstack = rememberNavBackStack(
         when {
-            !isOnboardingCompleted -> Screens.NavOnboarding1Route
+            !isOnboardingCompleted -> Screens.NavOnboardingRoute
             isAuthenticated -> Screens.NavUserDetailsRoute // Load user details first if authenticated
             else -> Screens.NavLoginRoute
         }
@@ -77,34 +75,15 @@ fun AppNavigation(
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
-            // Onboarding routes
-            entry<Screens.NavOnboarding1Route> {
-                OnboardingScreen1(
-                    onNextClick = {
-                        backstack.add(Screens.NavOnboarding2Route)
-                    }
-                )
-            }
-            entry<Screens.NavOnboarding2Route> {
-                OnboardingScreen2(
-                    onNextClick = {
-                        backstack.add(Screens.NavOnboarding3Route)
-                    },
-                    onBackClick = {
-                        backstack.popBackStack()
-                    }
-                )
-            }
-            entry<Screens.NavOnboarding3Route> {
-                OnboardingScreen3(
-                    onNextClick = {
+            // Unified onboarding route
+            entry<Screens.NavOnboardingRoute> {
+                OnboardingScreen(
+                    onCompleteOnboarding = {
                         backstack.add(Screens.NavPermissionsRoute)
-                    },
-                    onBackClick = {
-                        backstack.popBackStack()
                     }
                 )
             }
+
             entry<Screens.NavPermissionsRoute> {
                 PermissionsScreen(
                     onAllPermissionsGranted = {

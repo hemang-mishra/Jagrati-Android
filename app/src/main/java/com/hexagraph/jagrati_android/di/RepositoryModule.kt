@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.di
 
+import android.app.Application
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
 import com.hexagraph.jagrati_android.repository.auth.KtorAuthRepository
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanImplementation
@@ -18,8 +19,7 @@ import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
 val repositoryModule = module {
-    single { androidApplication() }
-    single<OmniScanRepository> { OmniScanImplementation(get(), get(), get()) }
+    single<OmniScanRepository> { OmniScanImplementation(get(), androidApplication(), get()) }
     single<AddStudentRepository> {
         AddStudentRepositoryImpl(get())
     }

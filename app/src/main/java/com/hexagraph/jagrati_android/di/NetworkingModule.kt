@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.di
 
+import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.api.AuthProvider
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.service.permission.KtorPermissionService
@@ -22,17 +23,18 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private const val BASE_URL = "https://1fc5-2409-40e3-3189-3db5-8d95-a3c8-4a3-703d.ngrok-free.app"
+private val BASE_URL = R.string.BASE_URL
 private const val TIMEOUT = 6000L
 
 val networkModule = module {
 
-    factory { AuthProvider(get(), BASE_URL) }
+    factory { AuthProvider(get(), androidApplication().getString(BASE_URL)) }
 
     single {
         val authProvider = get<AuthProvider>()
@@ -91,19 +93,19 @@ val networkModule = module {
 
             defaultRequest {
                 contentType(ContentType.Application.Json)
-                url(BASE_URL)
+                url(androidApplication().getString(BASE_URL))
             }
 
         }
     }
 
-    single { KtorAuthService(get(), BASE_URL) }
+    single { KtorAuthService(get(), androidApplication().getString(BASE_URL)) }
 
-    single { KtorPermissionService(get(), BASE_URL) }
+    single { KtorPermissionService(get(), androidApplication().getString(BASE_URL)) }
 
-    single { KtorRoleService(get(), BASE_URL) }
+    single { KtorRoleService(get(), androidApplication().getString(BASE_URL)) }
 
-    single { KtorUserService(get(), BASE_URL) }
+    single { KtorUserService(get(), androidApplication().getString(BASE_URL)) }
 
-    single { KtorVolunteerRequestService(get(), BASE_URL) }
+    single { KtorVolunteerRequestService(get(), androidApplication().getString(BASE_URL)) }
 }

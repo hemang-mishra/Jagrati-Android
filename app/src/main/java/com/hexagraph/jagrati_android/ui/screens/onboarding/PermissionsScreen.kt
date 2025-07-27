@@ -3,8 +3,13 @@ package com.hexagraph.jagrati_android.ui.screens.onboarding
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,13 +23,32 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.hexagraph.jagrati_android.permissions.PermissionsRequired
 import com.hexagraph.jagrati_android.permissions.rememberPermissionLauncher
+import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PermissionsScreen(
     onAllPermissionsGranted: () -> Unit,
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
+
+    // Animation states
+    var showTitle by remember { mutableStateOf(false) }
+    var showImage by remember { mutableStateOf(false) }
+    var showDescription by remember { mutableStateOf(false) }
+    var showButtons by remember { mutableStateOf(false) }
+
+    // Trigger animations with delays
+    LaunchedEffect(Unit) {
+        showTitle = true
+        delay(300)
+        showImage = true
+        delay(300)
+        showDescription = true
+        delay(300)
+        showButtons = true
+    }
 
     // Track permission states with mutable state to allow updates
     var permissionsToRequest by remember { 
@@ -129,89 +153,115 @@ fun PermissionsScreen(
         }
     }
 
-    // UI
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Spacer(modifier = Modifier.height(32.dp))
-
-        if (permissionsToRequest.isNotEmpty() && currentPermissionIndex < permissionsToRequest.size) {
-            val currentPermission = permissionsToRequest[currentPermissionIndex]
-
-            // Title
-            Text(
-                text = currentPermission.title,
-                style = MaterialTheme.typography.headlineMedium,
-                textAlign = TextAlign.Center
+    // UI with Scaffold
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { },
+                navigationIcon = {
+                    AnimatedVisibility(
+                        visible = showButtons,
+                        enter = fadeIn()
+                    ) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    }
+                }
             )
-
-            // Image
-            Image(
-                painter = painterResource(id = currentPermission.image),
-                contentDescription = "Permission Image",
-                modifier = Modifier
-                    .size(300.dp)
-                    .padding(32.dp)
-            )
-
-            // Description
-            Text(
-                text = if (permanentlyDeclinedPermission == currentPermission) 
-                    currentPermission.permanentlyDeclinedRationale 
-                else 
-                    currentPermission.rationaleText,
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Buttons
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Button(
-                    onClick = onBackClick,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                ) {
-                    Text(text = "Back")
-                }
+            if (permissionsToRequest.isNotEmpty() && currentPermissionIndex < permissionsToRequest.size) {
+                val currentPermission = permissionsToRequest[currentPermissionIndex]
 
-                Button(
-                    onClick = {
-                        if (permanentlyDeclinedPermission == currentPermission) {
-                            // Open app settings
-                            PermissionsRequired.openAppSettings(context)
-                        } else {
-                            // Request permission
-                            permissionLauncher.launch(currentPermission.permission)
-                        }
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 8.dp)
+                // Animated title
+                AnimatedVisibility(
+                    visible = showTitle,
+                    enter = fadeIn() + slideInVertically(initialOffsetY = { -40 })
                 ) {
                     Text(
-                        text = if (permanentlyDeclinedPermission == currentPermission) 
-                            "Open Settings" 
-                        else 
-                            "Grant Permission"
+                        text = currentPermission.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        textAlign = TextAlign.Center
                     )
                 }
-            }
-        }
 
-        Spacer(modifier = Modifier.height(32.dp))
+                // Animated image
+                AnimatedVisibility(
+                    visible = showImage,
+                    enter = fadeIn()
+                ) {
+                    Image(
+                        painter = painterResource(id = currentPermission.image),
+                        contentDescription = "Permission Image",
+                        modifier = Modifier
+                            .size(300.dp)
+                            .padding(32.dp)
+                    )
+                }
+
+                // Animated description
+                AnimatedVisibility(
+                    visible = showDescription,
+                    enter = fadeIn() + slideInVertically(initialOffsetY = { 40 })
+                ) {
+                    Text(
+                        text = if (permanentlyDeclinedPermission == currentPermission)
+                            currentPermission.permanentlyDeclinedRationale
+                        else
+                            currentPermission.rationaleText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Animated button
+                AnimatedVisibility(
+                    visible = showButtons,
+                    enter = fadeIn()
+                ) {
+                    Button(
+                        onClick = {
+                            if (permanentlyDeclinedPermission == currentPermission) {
+                                // Open app settings
+                                PermissionsRequired.openAppSettings(context)
+                            } else {
+                                // Request permission
+                                permissionLauncher.launch(currentPermission.permission)
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 32.dp, vertical = 16.dp)
+                    ) {
+                        Text(
+                            text = if (permanentlyDeclinedPermission == currentPermission)
+                                "Open Settings"
+                            else
+                                "Grant Permission"
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+        }
     }
 }
 
