@@ -1,9 +1,12 @@
 package com.hexagraph.jagrati_android.di
 
-import android.content.Context
+import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.api.AuthProvider
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
-import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.service.permission.KtorPermissionService
+import com.hexagraph.jagrati_android.service.role.KtorRoleService
+import com.hexagraph.jagrati_android.service.user.KtorUserService
+import com.hexagraph.jagrati_android.service.volunteer.KtorVolunteerRequestService
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.HttpTimeout
@@ -13,26 +16,30 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.observer.ResponseObserver
+import io.ktor.client.statement.request
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-private const val BASE_URL = "https://9dc1-2401-4900-85c4-f921-5e5-542f-b17e-dbbb.ngrok-free.app"
+private val BASE_URL = R.string.BASE_URL
 private const val TIMEOUT = 6000L
 
 val networkModule = module {
 
-    // Create AuthProvider
-    single { AuthProvider(get(), BASE_URL) }
+    factory { AuthProvider(get(), androidApplication().getString(BASE_URL)) }
 
-    // Create main HttpClient with auth
     single {
         val authProvider = get<AuthProvider>()
 
         HttpClient(Android) {
-            // Install ContentNegotiation to handle JSON serialization
             install(ContentNegotiation) {
                 json(Json {
                     prettyPrint = true
@@ -41,37 +48,64 @@ val networkModule = module {
                 })
             }
 
-            // Configure timeout
             install(HttpTimeout) {
                 requestTimeoutMillis = TIMEOUT
                 connectTimeoutMillis = TIMEOUT
                 socketTimeoutMillis = TIMEOUT
             }
 
-            // Add logging
             install(Logging) {
                 logger = object : Logger {
+                    private val dateFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
+
                     override fun log(message: String) {
-                        android.util.Log.d("KtorClient", message)
+                        val timestamp = dateFormat.format(Date())
+                        android.util.Log.d("KtorClient", "[$timestamp] $message")
                     }
                 }
                 level = LogLevel.ALL
             }
 
-            // Default request configuration
-            defaultRequest {
-                contentType(ContentType.Application.Json)
+            install(ResponseObserver) {
+                onResponse { response ->
+                    val status = response.status
+                    val url = response.request.url
+                    val time = response.responseTime.timestamp - response.requestTime.timestamp
+
+                    val logMessage =
+                        "Response: $url - ${status.value} (${status.description}) - ${time}ms"
+                    val logColor =
+                        if (status == HttpStatusCode.OK || status == HttpStatusCode.Created) {
+                            "Response ✅"
+                        } else {
+                            "Response ❌"
+                        }
+
+                    android.util.Log.d("KtorResponse", "$logColor: $logMessage")
+                }
             }
 
-            // Configure authentication with token refresh
             install(Auth) {
                 with(authProvider) {
                     configureBearerAuth()
                 }
             }
+
+            defaultRequest {
+                contentType(ContentType.Application.Json)
+                url(androidApplication().getString(BASE_URL))
+            }
+
         }
     }
 
-    // Provide KtorAuthService
-    single { KtorAuthService(get(), BASE_URL) }
+    single { KtorAuthService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorPermissionService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorRoleService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorUserService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorVolunteerRequestService(get(), androidApplication().getString(BASE_URL)) }
 }

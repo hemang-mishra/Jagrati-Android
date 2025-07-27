@@ -20,13 +20,22 @@ import com.hexagraph.jagrati_android.ui.screens.auth.LoginScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.SignUpDetailsScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.SignUpEmailScreen
 import com.hexagraph.jagrati_android.ui.screens.home.HomeScreen
-import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen1
-import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen2
-import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen3
+import com.hexagraph.jagrati_android.ui.screens.management.ManagementScreen
+import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen
 import com.hexagraph.jagrati_android.ui.screens.onboarding.PermissionsScreen
+import com.hexagraph.jagrati_android.ui.screens.permissions.ManagePermissionsScreen
+import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailScreen
+import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
+import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesScreen
 import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceScreen
+import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsScreen
+import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailScreen
+import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesScreen
+import com.hexagraph.jagrati_android.ui.screens.volunteer.MyVolunteerRequestsScreen
+import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 // Function to handle back navigation
 private fun NavBackStack.popBackStack() {
@@ -52,8 +61,8 @@ fun AppNavigation(
 
     var backstack = rememberNavBackStack(
         when {
-            !isOnboardingCompleted -> Screens.NavOnboarding1Route
-            isAuthenticated -> Screens.NavHomeRoute
+            !isOnboardingCompleted -> Screens.NavOnboardingRoute
+            isAuthenticated -> Screens.NavUserDetailsRoute // Load user details first if authenticated
             else -> Screens.NavLoginRoute
         }
     )
@@ -66,40 +75,22 @@ fun AppNavigation(
             rememberViewModelStoreNavEntryDecorator(),
         ),
         entryProvider = entryProvider {
-            entry<Screens.NavOnboarding1Route> {
-                OnboardingScreen1(
-                    onNextClick = {
-                        backstack.add(Screens.NavOnboarding2Route)
-                    }
-                )
-            }
-            entry<Screens.NavOnboarding2Route> {
-                OnboardingScreen2(
-                    onNextClick = {
-                        backstack.add(Screens.NavOnboarding3Route)
-                    },
-                    onBackClick = {
-                        backstack.popBackStack()
-                    }
-                )
-            }
-            entry<Screens.NavOnboarding3Route> {
-                OnboardingScreen3(
-                    onNextClick = {
+            // Unified onboarding route
+            entry<Screens.NavOnboardingRoute> {
+                OnboardingScreen(
+                    onCompleteOnboarding = {
                         backstack.add(Screens.NavPermissionsRoute)
-                    },
-                    onBackClick = {
-                        backstack.popBackStack()
                     }
                 )
             }
+
             entry<Screens.NavPermissionsRoute> {
                 PermissionsScreen(
                     onAllPermissionsGranted = {
                         onboardingPreferences.setOnboardingCompleted()
                         if (isAuthenticated) {
                             backstack.clear()
-                            backstack.add(Screens.NavHomeRoute)
+                            backstack.add(Screens.NavUserDetailsRoute) // Go to UserDetails screen if authenticated
                         } else {
                             backstack.clear()
                             backstack.add(Screens.NavLoginRoute)
@@ -112,12 +103,25 @@ fun AppNavigation(
                     }
                 )
             }
+
+            // User details route - loads after authentication
+            entry<Screens.NavUserDetailsRoute> {
+                UserDetailsScreen(
+                    snackbarHostState = snackbarHostState,
+                    onDetailsLoaded = {
+                        backstack.clear()
+                        backstack.add(Screens.NavHomeRoute)
+                    }
+                )
+            }
+
+            // Authentication routes
             entry<Screens.NavLoginRoute> {
                 LoginScreen(
                     snackbarHostState = snackbarHostState,
                     navigateToHome = {
                         backstack.clear()
-                        backstack.add(Screens.NavHomeRoute)
+                        backstack.add(Screens.NavUserDetailsRoute) // Go to UserDetails first
                     },
                     navigateToSignUp = {
                         backstack.add(Screens.NavSignUpEmailRoute)
@@ -185,6 +189,12 @@ fun AppNavigation(
                     navigateToLogin = {
                         backstack.clear()
                         backstack.add(Screens.NavLoginRoute)
+                    },
+                    navigateToManagement = {
+                        backstack.add(Screens.NavManagementRoute)
+                    },
+                    navigateToVolunteerRegistration = {
+                        backstack.add(Screens.NavVolunteerRegistrationRoute)
                     }
                 )
             }
@@ -196,8 +206,119 @@ fun AppNavigation(
                     }
                 )
             }
+
+            // Management screens
+            entry<Screens.NavManagementRoute> {
+                ManagementScreen(
+                    snackbarHostState = snackbarHostState,
+                    onNavigateToScreen = { screen ->
+                        backstack.add(screen)
+                    },
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            // Role management screens
+            entry<Screens.NavManageRolesRoute> {
+                ManageRolesScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            // Permission management screens
+            entry<Screens.NavManagePermissionsRoute> {
+                ManagePermissionsScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    onPermissionClicked = { permissionId ->
+                        backstack.add(Screens.NavPermissionDetailRoute(permissionId))
+                    }
+                )
+            }
+
+            entry<Screens.NavPermissionDetailRoute> { it ->
+                val permissionId = it.permissionId
+
+                PermissionDetailScreen(
+                    permissionId = permissionId,
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    viewModel = koinViewModel<PermissionDetailViewModel> { parametersOf(permissionId) }
+                )
+            }
+
+            // User role management screens
+            entry<Screens.NavUserRoleManagementRoute> {
+                UserRolesScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    onUserClicked = { userPid ->
+                        backstack.add(Screens.NavUserDetailRoute(userPid))
+                    }
+                )
+            }
+
+            entry<Screens.NavUserDetailRoute> { it ->
+                val userPid = it.userPid
+
+                UserDetailScreen(
+                    userPid = userPid,
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            // Volunteer screens
+            entry<Screens.NavVolunteerRegistrationRoute> {
+                VolunteerRegistrationScreen(
+                    viewModel = koinViewModel(),
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    navigateToMyRequests = {
+                        // Replace the current screen with My Requests screen
+                        backstack.removeAt(backstack.size - 1)
+                        backstack.add(Screens.NavMyVolunteerRequestsRoute)
+                    }
+                )
+            }
+
+            entry<Screens.NavMyVolunteerRequestsRoute> {
+                MyVolunteerRequestsScreen(
+                    viewModel = koinViewModel(),
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    navigateToVolunteerRegistration = {
+                        backstack.add(Screens.NavVolunteerRegistrationRoute)
+                    }
+                )
+            }
+
+            entry<Screens.NavManageVolunteerRequestsRoute> {
+                com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen(
+                    viewModel = koinViewModel(),
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
         }
-
     )
-
 }

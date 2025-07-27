@@ -14,6 +14,7 @@ import com.hexagraph.jagrati_android.util.Utils.safeApiCall
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 
 /**
  * Implementation of AuthRepository using Spring Boot backend with Ktor client.
@@ -23,10 +24,12 @@ class KtorAuthRepository(
     private val appPreferences: AppPreferences
 ) : AuthRepository {
 
-    override fun getCurrentUser(): Flow<User?> = appPreferences.currentUser
+    override fun getCurrentUser(): Flow<User?> = appPreferences.userDetails.getFlow()
 
     override fun isUserAuthenticated(): Boolean = runCatching {
-        kotlinx.coroutines.runBlocking { appPreferences.isAuthenticated().first() }
+        runBlocking {
+            appPreferences.isAuthenticated.get()
+        }
     }.getOrDefault(false)
 
     override suspend fun signInWithEmailAndPassword(
@@ -49,14 +52,13 @@ class KtorAuthRepository(
                 val user = User(
                     uid = "", // We don't have the user ID from the token response
                     email = email,
-                    displayName = "", // We don't have the display name from the token response
+                    firstName = "", // We don't have the display name from the token response
+                    lastName = "", // We don't have the last name from the token response
                     isEmailVerified = true, // Assuming the user is verified if login succeeds
                     photoUrl = ""
                 )
 
-                // Save user info
-                appPreferences.saveUserInfo(user)
-
+                appPreferences.saveUserDetails(user.toUserSummaryDTO())
                 emit(AuthResult.Success(user))
             }
             response.error?.actualResponse?.contains("verification", ignoreCase = true) == true -> {
@@ -83,13 +85,14 @@ class KtorAuthRepository(
                 val user = User(
                     uid = "", // We don't have the user ID from the token response
                     email = "", // We don't have the email from the token response
-                    displayName = "", // We don't have the display name from the token response
+                    firstName = "", // We don't have the display name from the token response
+                    lastName = "", // We don't have the last name from the token response
                     isEmailVerified = true, // Assuming the user is verified if Google login succeeds
                     photoUrl = ""
                 )
 
                 // Save user info
-                appPreferences.saveUserInfo(user)
+                appPreferences.saveUserDetails(user.toUserSummaryDTO())
 
                 emit(AuthResult.Success(user))
             }
@@ -150,7 +153,7 @@ class KtorAuthRepository(
     override suspend fun sendEmailVerification(): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
 
-        val email = appPreferences.currentUser.first()?.email
+        val email = appPreferences.userDetails.get()?.email
 
         if (email != null) {
             val resendVerificationRequest = ResendVerificationRequest(email = email)

@@ -1,9 +1,8 @@
 package com.hexagraph.jagrati_android.api
 
 import android.util.Log
-import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.model.auth.RefreshRequest
-import io.ktor.client.HttpClient
+import com.hexagraph.jagrati_android.util.AppPreferences
 import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
@@ -40,9 +39,12 @@ class AuthProvider(
             // Provide the tokens
             loadTokens {
                 runBlocking {
-                    val accessToken = appPreferences.accessToken.first()
-                    val refreshToken = appPreferences.refreshToken.first()
-
+                    val accessToken = appPreferences.accessToken.get()
+                    val refreshToken = appPreferences.refreshToken.get()
+                    Log.d(
+                        "AuthProvider",
+                        "Loaded tokens: accessToken=$accessToken, refreshToken=$refreshToken"
+                    )
                     if (accessToken != null && refreshToken != null) {
                         BearerTokens(accessToken, refreshToken)
                     } else {
@@ -53,7 +55,7 @@ class AuthProvider(
 
             // Handle 401 Unauthorized responses
             refreshTokens {
-                val oldRefreshToken = runBlocking { appPreferences.refreshToken.first() } ?: ""
+                val oldRefreshToken = runBlocking { appPreferences.refreshToken.get() } ?: ""
                 Log.d("AuthProvider", "Token refresh triggered")
 
                 try {
@@ -80,7 +82,6 @@ class AuthProvider(
                     Log.e("AuthProvider", "Failed to refresh token", e)
                     runBlocking {
                         appPreferences.clearTokens()
-                        appPreferences.clearUserInfo()
                     }
                     null
                 }
@@ -90,7 +91,13 @@ class AuthProvider(
             sendWithoutRequest { request ->
                 // Don't add auth headers for login/register endpoints
                 val path = request.url.encodedPath
-                path.contains("/api/auth")
+                if (
+                    path.contains("/api/auth/login") ||
+                    path.contains("/api/auth/register")
+                ) {
+                    false
+                } else
+                    true
             }
         }
     }

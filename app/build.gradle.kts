@@ -27,6 +27,10 @@ android {
             resValue("string", name, localProperties?.getProperty(name)?.toString().toString())
 
         addStringRes("WEB_CLIENT_ID")
+        addStringRes("BASE_URL")
+        addStringRes("IMAGE_KIT_URL_ENDPOINT")
+        addStringRes("IMAGE_KIT_PUBLIC_KEY")
+        addStringRes("IMAGE_KIT_PRIVATE_KEY")
         applicationId = "com.hexagraph.jagrati_android"
         minSdk = 26
         targetSdk = 36
@@ -154,4 +158,7 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+
+    //Image kit
+    implementation("com.github.imagekit-developer.imagekit-android:imagekit-android:3.0.1")
 }

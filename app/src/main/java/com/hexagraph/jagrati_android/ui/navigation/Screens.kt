@@ -5,15 +5,9 @@ import kotlinx.serialization.Serializable
 
 
 sealed interface Screens: NavKey {
-    // Onboarding routes
+    // Unified onboarding route
     @Serializable
-    data object NavOnboarding1Route: Screens
-
-    @Serializable
-    data object NavOnboarding2Route: Screens
-
-    @Serializable
-    data object NavOnboarding3Route: Screens
+    data object NavOnboardingRoute: Screens
 
     @Serializable
     data object NavPermissionsRoute: Screens
@@ -38,10 +32,48 @@ sealed interface Screens: NavKey {
         val email: String
     ): Screens
 
+    // User Details route (runs at app startup after authentication)
+    @Serializable
+    data object NavUserDetailsRoute: Screens
+
     // Main app routes
     @Serializable
     data object NavHomeRoute: Screens
 
     @Serializable
     data object NavAttendanceRoute: Screens
+
+    // Management routes
+    @Serializable
+    data object NavManagementRoute: Screens
+
+    //Manage roles and permissions
+    @Serializable
+    data object NavManageRolesRoute: Screens
+
+    @Serializable
+    data object NavManagePermissionsRoute: Screens
+
+    @Serializable
+    data class NavPermissionDetailRoute(
+        val permissionId: Long
+    ): Screens
+
+    @Serializable
+    data object NavUserRoleManagementRoute: Screens
+
+    @Serializable
+    data class NavUserDetailRoute(
+        val userPid: String
+    ): Screens
+
+    @Serializable
+    data object NavManageVolunteerRequestsRoute: Screens
+
+    @Serializable
+    data object NavMyVolunteerRequestsRoute: Screens
+
+    // Volunteer routes
+    @Serializable
+    data object NavVolunteerRegistrationRoute: Screens
 }
