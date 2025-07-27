@@ -59,7 +59,7 @@ object Utils {
             Resource.failure(error = ResponseError.SERVICE_UNAVAILABLE.apply { actualResponse = "Request timed out after ${timeout}ms" })
         } catch (e: HttpRequestTimeoutException) {
             logException(e)
-            Resource.failure(error = ResponseError.SERVICE_UNAVAILABLE.apply { actualResponse = "Request timed out: ${e.message}" })
+            Resource.failure(error = ResponseError.SERVICE_UNAVAILABLE.apply { actualResponse = "Request timed out" })
         } catch (e: ClientRequestException) {
             // Handle 4xx responses from Ktor
             logException(e)
