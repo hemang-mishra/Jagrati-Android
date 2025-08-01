@@ -159,6 +159,4 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
-    //Image kit
-    implementation("com.github.imagekit-developer.imagekit-android:imagekit-android:3.0.1")
 }
