@@ -33,6 +33,7 @@ import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.MyVolunteerRequestsScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationScreen
+import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -311,7 +312,7 @@ fun AppNavigation(
             }
 
             entry<Screens.NavManageVolunteerRequestsRoute> {
-                com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen(
+                ManageVolunteerRequestsScreen(
                     viewModel = koinViewModel(),
                     snackbarHostState = snackbarHostState,
                     onBackPressed = {
