@@ -11,6 +11,10 @@ import com.hexagraph.jagrati_android.model.auth.RegisterRequest
 import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Utils.safeApiCall
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerAuthProvider
+import io.ktor.client.plugins.plugin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -21,7 +25,8 @@ import kotlinx.coroutines.runBlocking
  */
 class KtorAuthRepository(
     private val authService: KtorAuthService,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val client: HttpClient
 ) : AuthRepository {
 
     override fun getCurrentUser(): Flow<User?> = appPreferences.userDetails.getFlow()
@@ -47,7 +52,7 @@ class KtorAuthRepository(
             response.isSuccess && response.data != null -> {
                 // Save tokens
                 appPreferences.saveTokens(response.data.accessToken, response.data.refreshToken)
-
+                refreshTokens()
                 // Create user object
                 val user = User(
                     uid = "", // We don't have the user ID from the token response
@@ -80,7 +85,7 @@ class KtorAuthRepository(
             response.isSuccess && response.data != null -> {
                 // Save tokens
                 appPreferences.saveTokens(response.data.accessToken, response.data.refreshToken)
-
+                refreshTokens()
                 // Create user object - we'll need to get user details from the token or make another API call
                 val user = User(
                     uid = "", // We don't have the user ID from the token response
@@ -191,5 +196,11 @@ class KtorAuthRepository(
     override suspend fun signOut() {
         // Clear tokens and user info from DataStore
         appPreferences.clearAll()
+        refreshTokens()
+    }
+
+    private fun refreshTokens(){
+        client.plugin(Auth).providers.filterIsInstance<BearerAuthProvider>()
+            .first().clearToken()
     }
 }

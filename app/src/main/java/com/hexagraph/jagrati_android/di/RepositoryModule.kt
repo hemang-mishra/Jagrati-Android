@@ -24,7 +24,7 @@ val repositoryModule = module {
         AddStudentRepositoryImpl(get())
     }
     single<AuthRepository>{
-        KtorAuthRepository(get(), get())
+        KtorAuthRepository(get(), get(), get())
     }
     single<PermissionRepository> {
         KtorPermissionRepository(get())
