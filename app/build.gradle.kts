@@ -109,6 +109,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     // Add these missing dependencies for auth features
     implementation(libs.ktor.client.auth)
+    implementation(libs.ktor.client.okhttp)
 
     // Koin core for DI
     implementation(libs.koin.core)
@@ -151,4 +152,7 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
+    // Chucker
+    debugImplementation(libs.chucker)
+    releaseImplementation(libs.chucker.noop)
 }
