@@ -1,5 +1,8 @@
 package com.hexagraph.jagrati_android.di
 
+import android.content.Context
+import com.chuckerteam.chucker.api.ChuckerInterceptor
+import com.hexagraph.jagrati_android.BuildConfig
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.api.AuthProvider
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
@@ -9,6 +12,8 @@ import com.hexagraph.jagrati_android.service.user.KtorUserService
 import com.hexagraph.jagrati_android.service.volunteer.KtorVolunteerRequestService
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.engine.okhttp.OkHttpConfig
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -38,8 +43,19 @@ val networkModule = module {
 
     single {
         val authProvider = get<AuthProvider>()
+        val context = get<Context>()
+        val okhttpConfig : OkHttpConfig.()->Unit = {
+            if(BuildConfig.DEBUG){
+                addInterceptor(
+                    ChuckerInterceptor.Builder(context)
+                        .alwaysReadResponseBody(true)
+                        .build()
+                )
+            }
+        }
 
-        HttpClient(Android) {
+        HttpClient(OkHttp) {
+            engine(okhttpConfig)
             install(ContentNegotiation) {
                 json(Json {
                     prettyPrint = true
