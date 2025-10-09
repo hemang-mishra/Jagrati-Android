@@ -1,12 +1,10 @@
 package com.hexagraph.jagrati_android.ui.screens.auth
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -46,9 +44,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hexagraph.jagrati_android.model.AuthResult
-import com.hexagraph.jagrati_android.ui.components.auth.EmailInput
-import com.hexagraph.jagrati_android.ui.components.auth.PrimaryButton
-import com.hexagraph.jagrati_android.ui.components.auth.TextLinkButton
+import com.hexagraph.jagrati_android.ui.components.EmailInput
+import com.hexagraph.jagrati_android.ui.components.PrimaryButton
+import com.hexagraph.jagrati_android.ui.components.TextLinkButton
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.ForgotPasswordViewModel
 import kotlinx.coroutines.delay

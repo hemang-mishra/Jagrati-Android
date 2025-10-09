@@ -24,6 +24,12 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.serialization.SerializationException
 import com.google.gson.JsonSyntaxException
+import io.ktor.client.call.NoTransformationFoundException
+import io.ktor.client.statement.HttpResponse
+import io.ktor.serialization.JsonConvertException
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import java.time.LocalDateTime
 
 /**
  * A set of fairly general Android utility methods.
@@ -37,9 +43,9 @@ object Utils {
      * @param apiCall The suspending API call to execute safely
      * @return A [Resource] wrapping the API result or error
      */
-    suspend fun <T> safeApiCall(
+    suspend inline fun <reified T> safeApiCall(
         timeout: Long? = null,
-        apiCall: suspend () -> T
+        crossinline apiCall: suspend () -> T
     ): Resource<T> {
         return try {
             // Apply timeout if specified
@@ -51,7 +57,8 @@ object Utils {
                 apiCall()
             }
             Resource.success(result)
-        } catch (e: CancellationException) {
+        } 
+        catch (e: CancellationException) {
             // Don't catch cancellation exceptions - let them propagate
             throw e
         } catch (e: TimeoutCancellationException) {
@@ -67,8 +74,9 @@ object Utils {
         } catch (e: RedirectResponseException) {
             // Handle 3xx responses from Ktor
             logException(e)
-            Resource.failure(error = ResponseError.BAD_REQUEST.apply { actualResponse = "Redirect error: ${e.message}" })
-        } catch (e: ServerResponseException) {
+            Resource.failure(error = ResponseError.BAD_REQUEST.apply { actualResponse = "Redirect error" })
+        }
+        catch (e: ServerResponseException) {
             // Handle 5xx responses from Ktor
             logException(e)
             when (e.response.status.value) {
@@ -79,16 +87,13 @@ object Utils {
             }.apply { actualResponse = e.message }.let { error ->
                 Resource.failure(error = error)
             }
-        } catch (e: SerializationException) {
-            logException(e)
-            Resource.failure(error = ResponseError.INTERNAL_SERVER_ERROR.apply { actualResponse = "Error parsing response: ${e.message}" })
-        } catch (e: IllegalArgumentException) {
+        }
+        catch (e: IllegalArgumentException) {
+            Log.e("SafeApiCall-caught", "IllegalArgumentException")
             logException(e)
             Resource.failure(error = ResponseError.BAD_REQUEST.apply { actualResponse = e.message })
-        } catch (e: JsonSyntaxException) {
-            logException(e)
-            Resource.failure(error = ResponseError.INTERNAL_SERVER_ERROR.apply { actualResponse = "Error parsing server response" })
-        } catch (e: SocketTimeoutException) {
+        }
+        catch (e: SocketTimeoutException) {
             logException(e)
             Resource.failure(error = ResponseError.SERVICE_UNAVAILABLE.apply { actualResponse = "Connection timed out" })
         } catch (e: UnknownHostException) {
@@ -98,6 +103,7 @@ object Utils {
             logException(e)
             Resource.failure(error = ResponseError.NETWORK_ERROR.apply { actualResponse = "Failed to connect to server" })
         } catch (e: ResponseException) {
+            Log.e("SafeApiCall-caught", "ResponseException")
             // Handle Retrofit HTTP exceptions
             logException(e)
             when (e.response.status.value) {
@@ -119,7 +125,25 @@ object Utils {
                 is FileNotFoundException -> Resource.failure(error = ResponseError.FILE_NOT_FOUND.apply { actualResponse = e.message })
                 else -> Resource.failure(error = ResponseError.NETWORK_ERROR.apply { actualResponse = e.message })
             }
-        } catch (e: Exception) {
+        }
+        catch (e: NoTransformationFoundException) {
+            Log.e("SafeApiCall-caught", "NoTransformationFoundException")
+            logException(e)
+
+            Resource.failure(error = ResponseError.INTERNAL_SERVER_ERROR.apply {
+                actualResponse = "Some error occurred. Error parsing server response."
+            })
+        }
+        catch (e: JsonConvertException) {
+            Log.e("SafeApiCall-caught", "JsonConvertException ${e.cause}")
+            logException(e)
+
+            Resource.failure(error = ResponseError.INTERNAL_SERVER_ERROR.apply {
+                actualResponse = "Some error occurred. Error parsing server response."
+            })
+        }
+        catch (e: Exception) {
+            Log.e("SafeApiCall-caught", "Exception")
             logException(e)
             Resource.failure(error = ResponseError.UNKNOWN.apply { actualResponse = e.message })
         }
@@ -128,29 +152,39 @@ object Utils {
     /**
      * Handle Ktor response exceptions by mapping to appropriate ResponseError types
      */
-    private suspend fun <T> handleKtorResponseException(e: ResponseException): Resource<T> {
-        val errorBody = try {
-            e.response.bodyAsText()
-        } catch (e: Exception) {
-            "Could not read error body"
-        }
+    suspend fun <T> handleKtorResponseException(e: ResponseException): Resource<T> {
+        val errorBody = try { e.response.bodyAsText() } catch (_: Exception) { null }
+        Log.e("SafeApiCall-Handle", "Error body: $errorBody")
+        val errorResponse = parseErrorResponse(errorBody)
+        Log.e("SafeApiCall-Handle", "Error response: $errorResponse")
+        val errorMessage = errorResponse?.message ?: "Unknown error"
 
-        return when (e.response.status.value) {
+        val error = when (e.response.status.value) {
             400 -> ResponseError.BAD_REQUEST
             401 -> ResponseError.AUTH_HEADER_NOT_FOUND
             403 -> ResponseError.UNAUTHORISED
             404 -> ResponseError.DOES_NOT_EXIST
             429 -> ResponseError.RATE_LIMIT_EXCEEDED
             else -> ResponseError.UNKNOWN
-        }.apply { actualResponse = errorBody }.let { error ->
-            Resource.failure(error = error)
+        }.apply { actualResponse = errorMessage }
+
+        return Resource.failure(error = error)
+    }
+
+
+    fun parseErrorResponse(errorBody: String?): ErrorResponse? {
+        return try {
+            if (errorBody.isNullOrBlank()) return null
+            Json { ignoreUnknownKeys = true }.decodeFromString<ErrorResponse>(errorBody)
+        } catch (e: Exception) {
+            null
         }
     }
 
     /**
      * Log exception details and stack trace
      */
-    private fun logException(e: Exception) {
+    fun logException(e: Exception) {
         e.printStackTrace()
         Log.e("SafeApiCall", "API call failed with exception: ${e.javaClass.simpleName}, message: ${e.message}")
     }
@@ -163,3 +197,12 @@ object Utils {
         return "${sanitizedName}_$timeInMills"
     }
 }
+
+@Serializable
+data class ErrorResponse(
+    val timestamp: String,
+    val status: Int,
+    val error: String,
+    val message: String,
+    val path: String?
+)

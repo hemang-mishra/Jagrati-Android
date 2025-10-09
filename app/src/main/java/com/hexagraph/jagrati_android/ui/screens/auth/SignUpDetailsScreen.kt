@@ -51,8 +51,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hexagraph.jagrati_android.model.AuthResult
-import com.hexagraph.jagrati_android.ui.components.auth.PasswordInput
-import com.hexagraph.jagrati_android.ui.components.auth.PrimaryButton
+import com.hexagraph.jagrati_android.ui.components.PasswordInput
+import com.hexagraph.jagrati_android.ui.components.PrimaryButton
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.SignUpViewModel
 import kotlinx.coroutines.delay
