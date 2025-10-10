@@ -40,8 +40,6 @@ sealed interface Screens: NavKey {
     @Serializable
     data object NavHomeRoute: Screens
 
-    @Serializable
-    data object NavAttendanceRoute: Screens
 
     // Management routes
     @Serializable

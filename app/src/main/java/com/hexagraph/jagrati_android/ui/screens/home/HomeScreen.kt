@@ -54,7 +54,6 @@ import org.koin.compose.koinInject
 @Composable
 fun HomeScreen(
     snackbarHostState: SnackbarHostState,
-    navigateToAttendancePage: () -> Unit,
     navigateToManagement: () -> Unit = {},
     navigateToVolunteerRegistration: () -> Unit = {},
     navigateToLogin: () -> Unit = {},
@@ -104,16 +103,7 @@ fun HomeScreen(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                Button(
-                    onClick = { navigateToAttendancePage() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        "Take Student Attendance",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
+
 
                 Spacer(modifier = Modifier.height(12.dp))
 

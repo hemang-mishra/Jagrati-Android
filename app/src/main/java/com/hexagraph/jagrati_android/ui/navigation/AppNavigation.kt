@@ -27,7 +27,6 @@ import com.hexagraph.jagrati_android.ui.screens.permissions.ManagePermissionsScr
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailScreen
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesScreen
-import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceScreen
 import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesScreen
@@ -184,9 +183,6 @@ fun AppNavigation(
             entry<Screens.NavHomeRoute> {
                 HomeScreen(
                     snackbarHostState = snackbarHostState,
-                    navigateToAttendancePage = {
-                        backstack.add(Screens.NavAttendanceRoute)
-                    },
                     navigateToLogin = {
                         backstack.clear()
                         backstack.add(Screens.NavLoginRoute)
@@ -196,14 +192,6 @@ fun AppNavigation(
                     },
                     navigateToVolunteerRegistration = {
                         backstack.add(Screens.NavVolunteerRegistrationRoute)
-                    }
-                )
-            }
-            entry<Screens.NavAttendanceRoute> {
-                StudentAttendanceScreen(
-                    snackbarHostState = snackbarHostState,
-                    onBackPress = {
-                        backstack.popBackStack()
                     }
                 )
             }

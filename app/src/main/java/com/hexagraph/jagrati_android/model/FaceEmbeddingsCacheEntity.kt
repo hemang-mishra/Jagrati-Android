@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Keep
 @Entity()
-data class FaceEmbeddingsEntity(
+data class FaceEmbeddingsCacheEntity(
     @PrimaryKey
     val pid: String = "",
     val embedding: FloatArray
@@ -15,7 +15,7 @@ data class FaceEmbeddingsEntity(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as FaceEmbeddingsEntity
+        other as FaceEmbeddingsCacheEntity
 
         if (pid != other.pid) return false
         if (!embedding.contentEquals(other.embedding)) return false
