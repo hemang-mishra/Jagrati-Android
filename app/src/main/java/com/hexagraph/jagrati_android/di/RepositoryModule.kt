@@ -13,6 +13,7 @@ import com.hexagraph.jagrati_android.repository.user.KtorUserRepository
 import com.hexagraph.jagrati_android.repository.user.UserRepository
 import com.hexagraph.jagrati_android.repository.volunteer.KtorVolunteerRequestRepository
 import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRequestRepository
+import com.hexagraph.jagrati_android.repository.sync.SyncRepository
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
@@ -34,4 +35,10 @@ val repositoryModule = module {
     single<VolunteerRequestRepository> {
         KtorVolunteerRequestRepository(get())
     }
+    single { SyncRepository(
+        studentDao = get(),
+        volunteerDao = get(),
+        villageDao = get(),
+        groupsDao = get()
+    ) }
 }

@@ -1,4 +1,4 @@
-package com.hexagraph.jagrati_android.ui.screens.userdetails
+package com.hexagraph.jagrati_android.ui.screens.details_sync
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,7 +45,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
-import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -55,9 +53,9 @@ import org.koin.androidx.compose.koinViewModel
  * to fetch user permissions and other details.
  */
 @Composable
-fun UserDetailsScreen(
+fun DetailsSyncScreen(
     snackbarHostState: SnackbarHostState,
-    viewModel: UserDetailsViewModel = koinViewModel(),
+    viewModel: DetailsSyncViewModel = koinViewModel(),
     onDetailsLoaded: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -82,7 +80,7 @@ fun UserDetailsScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        UserDetailsLayout(
+        DetailsSyncLayout(
             modifier = Modifier.padding(paddingValues),
             isLoading = uiState.isLoading,
             errorMessage = uiState.error?.toast,
@@ -96,7 +94,7 @@ fun UserDetailsScreen(
  * This composable is designed to be preview-friendly and not contain any business logic.
  */
 @Composable
-fun UserDetailsLayout(
+fun DetailsSyncLayout(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
     errorMessage: String?,
@@ -109,14 +107,7 @@ fun UserDetailsLayout(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.background,
-                            MaterialTheme.colorScheme.surface
-                        )
-                    )
-                )
+
         )
 
         // Main content
@@ -289,27 +280,7 @@ private fun ErrorContent(errorMessage: String, onRetry: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Secondary action - could be "Skip" or "Help"
-                OutlinedButton(
-                    onClick = { /* Could implement help/support action */ },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.secondary
-                    ),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        brush = Brush.horizontalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.secondary,
-                                MaterialTheme.colorScheme.secondary
-                            )
-                        )
-                    )
-                ) {
-                    Text(
-                        text = "Get Help",
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
+                
 
                 // Primary action - Retry
                 Button(
@@ -352,7 +323,7 @@ private fun ErrorContent(errorMessage: String, onRetry: () -> Unit) {
 @Composable
 fun UserDetailsLayoutLoadingPreview() {
     MaterialTheme {
-        UserDetailsLayout(
+        DetailsSyncLayout(
             isLoading = true,
             errorMessage = null,
             onRetry = {}
@@ -365,7 +336,7 @@ fun UserDetailsLayoutLoadingPreview() {
 @Composable
 fun UserDetailsLayoutErrorPreview() {
     JagratiAndroidTheme {
-        UserDetailsLayout(
+        DetailsSyncLayout(
             isLoading = false,
             errorMessage = "Failed to connect to server. Please check your internet connection and try again.",
             onRetry = {}
@@ -378,7 +349,7 @@ fun UserDetailsLayoutErrorPreview() {
 @Composable
 fun UserDetailsLayoutDarkPreview() {
     JagratiAndroidTheme {
-        UserDetailsLayout(
+        DetailsSyncLayout(
             isLoading = true,
             errorMessage = null,
             onRetry = {}

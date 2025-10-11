@@ -34,4 +34,8 @@ val databaseModule = module {
     single {
         get<PrimaryDatabase>().villageDao()
     }
+
+    single {
+        get<PrimaryDatabase>().volunteerDao()
+    }
 }

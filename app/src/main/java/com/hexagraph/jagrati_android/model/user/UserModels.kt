@@ -90,5 +90,12 @@ data class PermissionListResponse(
 data class UserDetailsWithRolesAndPermissions(
     val userDetails: UserSummaryDTO,
     val roles: List<RoleSummaryResponse>,
-    val permissions: PermissionListResponse
+    val permissions: PermissionListResponse,
+    val villages: List<VillageDTO> = emptyList(),
+    val groups: List<GroupDTO> = emptyList(),
+    val students: List<StudentDTO> = emptyList(),
+    val volunteers: List<VolunteerDTO> = emptyList(),
+    val volunteerProfile: VolunteerDTO? = null,
+    val faceInfo: List<FaceDataDTO> = emptyList(),
+    val isVolunteer: Boolean = false
 )

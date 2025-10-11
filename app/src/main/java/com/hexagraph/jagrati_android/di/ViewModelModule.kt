@@ -4,7 +4,7 @@ import com.hexagraph.jagrati_android.ui.screens.management.ManagementViewModel
 import com.hexagraph.jagrati_android.ui.screens.permissions.ManagePermissionsViewModel
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesViewModel
-import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsViewModel
+import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRequestViewModel
@@ -23,7 +23,7 @@ val viewModelModule = module {
     factory<ForgotPasswordViewModel>{ ForgotPasswordViewModel(get()) }
 
     // Main app ViewModels
-    factory<UserDetailsViewModel> { UserDetailsViewModel(get(), get()) }
+    factory<DetailsSyncViewModel> { DetailsSyncViewModel(get(), get(), get()) }
     factory<ManagementViewModel> { ManagementViewModel(get()) }
     factory<ManageRolesViewModel> { ManageRolesViewModel(get()) }
 

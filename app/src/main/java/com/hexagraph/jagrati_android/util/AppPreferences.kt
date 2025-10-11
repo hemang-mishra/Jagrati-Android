@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -39,6 +40,21 @@ class AppPreferences(private val context: Context) {
         // User details and roles related keys
         private val USER_DETAILS = stringPreferencesKey("user_details")
         private val USER_ROLES = stringPreferencesKey("user_roles")
+        private val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
+    }
+
+    val lastSyncTime: DataStorePreference<Long> = object : DataStorePreference<Long> {
+        override fun getFlow(): Flow<Long> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[LAST_SYNC_TIME] ?: 0L }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: Long) {
+            context.dataStore.edit { preferences ->
+                preferences[LAST_SYNC_TIME] = value
+            }
+        }
     }
 
     // Token Management
@@ -77,6 +93,8 @@ class AppPreferences(private val context: Context) {
             }
         }
     }
+
+
 
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
         context.dataStore.edit { preferences ->

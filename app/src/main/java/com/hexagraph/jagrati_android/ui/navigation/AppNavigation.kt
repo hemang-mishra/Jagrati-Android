@@ -27,7 +27,7 @@ import com.hexagraph.jagrati_android.ui.screens.permissions.ManagePermissionsScr
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailScreen
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesScreen
-import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsScreen
+import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.MyVolunteerRequestsScreen
@@ -106,7 +106,7 @@ fun AppNavigation(
 
             // User details route - loads after authentication
             entry<Screens.NavUserDetailsRoute> {
-                UserDetailsScreen(
+                DetailsSyncScreen(
                     snackbarHostState = snackbarHostState,
                     onDetailsLoaded = {
                         backstack.clear()
