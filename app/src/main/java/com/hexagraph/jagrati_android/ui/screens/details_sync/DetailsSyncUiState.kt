@@ -13,5 +13,6 @@ data class DetailsSyncUiState(
     val userDetails: UserSummaryDTO? = null,
     val roles: List<RoleSummaryResponse> = emptyList(),
     val error: ResponseError? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val isVolunteer: Boolean = false
 )

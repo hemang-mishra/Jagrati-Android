@@ -70,7 +70,8 @@ class DetailsSyncViewModel(
                                     isLoading = false,
                                     isSuccess = true,
                                     userDetails = data.userDetails,
-                                    roles = data.roles
+                                    roles = data.roles,
+                                    isVolunteer = data.isVolunteer
                                 )
                             }
                             emitMsg("User details fetched successfully")

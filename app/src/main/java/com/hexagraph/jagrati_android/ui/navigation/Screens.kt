@@ -34,7 +34,7 @@ sealed interface Screens: NavKey {
 
     // User Details route (runs at app startup after authentication)
     @Serializable
-    data object NavUserDetailsRoute: Screens
+    data object DetailsSyncRoute: Screens
 
     // Main app routes
     @Serializable
@@ -74,4 +74,7 @@ sealed interface Screens: NavKey {
     // Volunteer routes
     @Serializable
     data object NavVolunteerRegistrationRoute: Screens
+
+    @Serializable
+    data object NavNonVolunteerHomeScreen: Screens
 }

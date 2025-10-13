@@ -23,6 +23,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -68,69 +69,75 @@ fun HomeScreen(
         hasVolunteerRole = appPreferences.hasRole("VOLUNTEER").first()
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        HomeScreenHeader(
-            userData = userData,
-            onClickSettings = {},
-            onSignOut = {
-                authViewModel.signOut()
-                navigateToLogin()
-            }
-        )
+    Scaffold(
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Card(
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            elevation = CardDefaults.cardElevation(4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+                .fillMaxSize()
+                .padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    "Quick Actions",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp)
+            HomeScreenHeader(
+                userData = userData,
+                onClickSettings = {},
+                onSignOut = {
+                    authViewModel.signOut()
+                    navigateToLogin()
+                }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                elevation = CardDefaults.cardElevation(4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
-
-
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Button(
-                    onClick = { navigateToManagement() },
-                    modifier = Modifier
-                        .fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "Management",
-                        style = MaterialTheme.typography.bodyLarge
+                        "Quick Actions",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
-                }
 
-                // Volunteer registration button, visible only to users WITHOUT the VOLUNTEER role
-                if (!hasVolunteerRole) {
+
+
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Button(
-                        onClick = { navigateToVolunteerRegistration() },
+                        onClick = { navigateToManagement() },
                         modifier = Modifier
                             .fillMaxWidth()
                     ) {
                         Text(
-                            "Register as Volunteer",
+                            "Management",
                             style = MaterialTheme.typography.bodyLarge
                         )
+                    }
+
+                    // Volunteer registration button, visible only to users WITHOUT the VOLUNTEER role
+                    if (!hasVolunteerRole) {
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Button(
+                            onClick = { navigateToVolunteerRegistration() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                "Register as Volunteer",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
                     }
                 }
             }

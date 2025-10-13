@@ -26,7 +26,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -37,7 +36,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -56,7 +54,8 @@ import org.koin.androidx.compose.koinViewModel
 fun DetailsSyncScreen(
     snackbarHostState: SnackbarHostState,
     viewModel: DetailsSyncViewModel = koinViewModel(),
-    onDetailsLoaded: () -> Unit
+    redirectToVolunteerDashboard: () -> Unit,
+    redirectToNonVolunteerDashboard: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -73,7 +72,9 @@ fun DetailsSyncScreen(
 
         // Navigate to next screen when details are loaded successfully
         if (uiState.isSuccess) {
-            onDetailsLoaded()
+            if (uiState.isVolunteer)
+                redirectToVolunteerDashboard()
+            else redirectToNonVolunteerDashboard()
         }
     }
 
@@ -122,6 +123,7 @@ fun DetailsSyncLayout(
                 isLoading -> {
                     LoadingContent()
                 }
+
                 errorMessage != null -> {
                     ErrorContent(errorMessage, onRetry)
                 }
@@ -280,7 +282,7 @@ private fun ErrorContent(errorMessage: String, onRetry: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                
+
 
                 // Primary action - Retry
                 Button(
@@ -331,7 +333,7 @@ fun UserDetailsLayoutLoadingPreview() {
     }
 }
 
-@Preview(showBackground = true,)
+@Preview(showBackground = true)
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun UserDetailsLayoutErrorPreview() {
@@ -344,7 +346,7 @@ fun UserDetailsLayoutErrorPreview() {
     }
 }
 
-@Preview(showBackground = true,)
+@Preview(showBackground = true)
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun UserDetailsLayoutDarkPreview() {

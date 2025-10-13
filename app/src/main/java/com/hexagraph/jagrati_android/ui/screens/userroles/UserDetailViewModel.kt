@@ -70,7 +70,8 @@ class UserDetailViewModel(
                     Resource.Status.SUCCESS -> {
                         _uiState.update {
                             it.copy(
-                                user = result.data
+                                user = result.data,
+                                error = null
                             )
                         }
                         // After loading user, load available roles for assignment
