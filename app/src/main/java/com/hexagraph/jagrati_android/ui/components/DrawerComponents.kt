@@ -2,6 +2,7 @@ package com.hexagraph.jagrati_android.ui.components
 
 import android.content.res.Configuration
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,7 +38,7 @@ import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.theme.getBatchColors
 
 /**
- * Navigation drawer header with user profile - Modern asymmetric design.
+ * Navigation drawer header with user profile - Polished modern design with improved hierarchy.
  *
  * @param userName User's name
  * @param userEmail User's email address
@@ -56,179 +58,135 @@ fun DrawerHeader(
         modifier = modifier
             .fillMaxWidth()
     ) {
-        // Main content card
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Profile card with modern layout
+            // Profile card with improved contrast and spacing
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Avatar with colorful gradient border
-                    Box(
-                        modifier = Modifier.size(80.dp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Gradient border effect
-                        Surface(
-                            modifier = Modifier.size(80.dp),
-                            shape = CircleShape,
-                            color = Color.Transparent
+                        // Larger avatar with soft background color
+                        Box(
+                            modifier = Modifier.size(72.dp),
+                            contentAlignment = Alignment.Center
                         ) {
+                            // Soft background circle
+                            Box(
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(CircleShape)
+                                    .background(batchColors[0].copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 ProfileAvatar(
                                     userName = userName,
                                     profileImageUrl = profileImageUrl,
-                                    size = 74.dp
+                                    size = 64.dp
                                 )
                             }
-
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // User info
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = userName,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-
-                        userEmail?.let { email ->
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = email,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                fontSize = 12.sp
-                            )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.width(16.dp))
 
-                        // Status badge
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = batchColors[0].copy(alpha = 0.15f),
-                            modifier = Modifier
+                        // User info with improved typography
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "Active",
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = batchColors[0],
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp
+                                text = userName,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
+
+                            userEmail?.let { email ->
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = email,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Normal
+                                )
+                            }
                         }
                     }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Quick stats or info chips
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Info chip 1
-                Card(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = batchColors[1].copy(alpha = 0.12f)
-                    )
-                ) {
-                    Row(
+                    // Status badge - smaller and right-aligned
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = batchColors[0].copy(alpha = 0.12f),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                            .align(Alignment.TopEnd)
+                            .padding(12.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_person),
-                            contentDescription = null,
-                            tint = batchColors[1],
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Profile",
+                            text = "Active",
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall,
-                            color = batchColors[1],
+                            color = batchColors[0],
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 11.sp
-                        )
-                    }
-                }
-
-                // Info chip 2
-                Card(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = batchColors[3].copy(alpha = 0.12f)
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_notifications),
-                            contentDescription = null,
-                            tint = batchColors[3],
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Updates",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = batchColors[3],
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 11.sp
+                            fontSize = 10.sp
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
 
 /**
- * Navigation drawer item component.
+ * Section header for grouping drawer items.
+ *
+ * @param title Section title
+ * @param modifier Modifier for styling
+ */
+@Composable
+fun DrawerSectionHeader(
+    title: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = title,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 13.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        letterSpacing = 0.5.sp
+    )
+}
+
+/**
+ * Navigation drawer item component with improved visual hierarchy and consistent spacing.
  *
  * @param label Item label text
  * @param icon Drawable resource ID for the icon
@@ -256,43 +214,43 @@ fun DrawerItem(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 1.dp),
-        shape = MaterialTheme.shapes.medium,
+            .padding(horizontal = 12.dp, vertical = 3.dp),
+        shape = RoundedCornerShape(12.dp),
         color = Color.Transparent,
         onClick = onClick
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon with batch color background
+            // Icon with batch color background - filled variant style
             Surface(
-                shape = MaterialTheme.shapes.small,
-                color = iconColor.copy(alpha = 0.15f),
-                modifier = Modifier.size(44.dp)
+                shape = RoundedCornerShape(10.dp),
+                color = iconColor.copy(alpha = 0.12f),
+                modifier = Modifier.size(40.dp)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(44.dp)
+                    modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
                         painter = painterResource(id = icon),
                         contentDescription = label,
                         tint = iconColor,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
+                fontSize = 15.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -300,15 +258,15 @@ fun DrawerItem(
 }
 
 /**
- * Navigation drawer divider.
+ * Navigation drawer divider with improved spacing.
  */
 @Composable
 fun DrawerDivider(
     modifier: Modifier = Modifier
 ) {
     HorizontalDivider(
-        modifier = modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f),
+        modifier = modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
         thickness = 1.dp
     )
 }
@@ -327,10 +285,14 @@ fun DrawerHeaderPreview() {
 }
 
 @Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DrawerItemPreview() {
     JagratiAndroidTheme {
-        Column {
+        Column(
+            modifier = Modifier.background(Color(0xFFF7F8FA))
+        ) {
+            DrawerSectionHeader(title = "ADMIN CONTROLS")
             DrawerItem(
                 label = "Management",
                 icon = R.drawable.ic_management,
@@ -343,13 +305,37 @@ fun DrawerItemPreview() {
                 onClick = {},
                 colorIndex = 1
             )
+
             DrawerDivider()
+
+            DrawerSectionHeader(title = "ATTENDANCE & REGISTRATION")
+            DrawerItem(
+                label = "Take Volunteer Attendance",
+                icon = R.drawable.ic_person,
+                onClick = {},
+                colorIndex = 2
+            )
+            DrawerItem(
+                label = "Take Student Attendance",
+                icon = R.drawable.ic_person,
+                onClick = {},
+                colorIndex = 3
+            )
+            DrawerItem(
+                label = "Register Student",
+                icon = R.drawable.ic_notifications,
+                onClick = {},
+                colorIndex = 4
+            )
+
+            DrawerDivider()
+
             DrawerItem(
                 label = "Log out",
                 icon = R.drawable.ic_logout,
                 onClick = {},
                 iconTint = MaterialTheme.colorScheme.error,
-                colorIndex = 2
+                colorIndex = 0
             )
         }
     }

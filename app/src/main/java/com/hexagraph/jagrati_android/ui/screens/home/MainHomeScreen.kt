@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -39,6 +38,7 @@ import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.ui.components.DrawerDivider
 import com.hexagraph.jagrati_android.ui.components.DrawerHeader
 import com.hexagraph.jagrati_android.ui.components.DrawerItem
+import com.hexagraph.jagrati_android.ui.components.DrawerSectionHeader
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
@@ -157,11 +157,13 @@ fun DrawerContent(
 
         DrawerDivider()
 
+        DrawerSectionHeader(title = "ADMIN CONTROLS")
+
         DrawerItem(
             label = "Management",
             icon = R.drawable.ic_management,
             onClick = onManagementClick,
-            colorIndex = 1
+            colorIndex = 0
         )
 
         DrawerItem(
@@ -173,25 +175,27 @@ fun DrawerContent(
 
         DrawerDivider()
 
+        DrawerSectionHeader(title = "ATTENDANCE & REGISTRATION")
+
         DrawerItem(
             label = "Take Volunteer Attendance",
             icon = R.drawable.ic_attendance,
             onClick = onTakeVolunteerAttendanceClick,
-            colorIndex = 1
+            colorIndex = 2
         )
 
         DrawerItem(
             label = "Take Student Attendance",
             icon = R.drawable.ic_attendance,
             onClick = onTakeStudentAttendanceClick,
-            colorIndex = 1
+            colorIndex = 3
         )
 
         DrawerItem(
             label = "Register New Student",
             icon = R.drawable.ic_person_add,
             onClick = onRegisterNewStudentClick,
-            colorIndex = 1
+            colorIndex = 4
         )
 
         DrawerDivider()
