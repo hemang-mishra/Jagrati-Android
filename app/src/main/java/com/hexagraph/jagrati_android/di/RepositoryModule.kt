@@ -7,6 +7,10 @@ import com.hexagraph.jagrati_android.repository.auth.StudentRepository
 import com.hexagraph.jagrati_android.repository.auth.KtorStudentRepository
 import com.hexagraph.jagrati_android.repository.auth.AttendanceRepository
 import com.hexagraph.jagrati_android.repository.auth.KtorAttendanceRepository
+import com.hexagraph.jagrati_android.repository.auth.VillageRepository
+import com.hexagraph.jagrati_android.repository.auth.KtorVillageRepository
+import com.hexagraph.jagrati_android.repository.auth.GroupRepository
+import com.hexagraph.jagrati_android.repository.auth.KtorGroupRepository
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanImplementation
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.repository.permission.KtorPermissionRepository
@@ -34,6 +38,12 @@ val repositoryModule = module {
     }
     single<AttendanceRepository> {
         KtorAttendanceRepository(get())
+    }
+    single<VillageRepository> {
+        KtorVillageRepository(get())
+    }
+    single<GroupRepository> {
+        KtorGroupRepository(get())
     }
     single<PermissionRepository> {
         KtorPermissionRepository(get())

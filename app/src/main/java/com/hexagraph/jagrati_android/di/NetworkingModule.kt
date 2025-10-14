@@ -8,6 +8,8 @@ import com.hexagraph.jagrati_android.api.AuthProvider
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.service.auth.KtorStudentService
 import com.hexagraph.jagrati_android.service.auth.KtorAttendanceService
+import com.hexagraph.jagrati_android.service.auth.KtorVillageService
+import com.hexagraph.jagrati_android.service.auth.KtorGroupService
 import com.hexagraph.jagrati_android.service.permission.KtorPermissionService
 import com.hexagraph.jagrati_android.service.role.KtorRoleService
 import com.hexagraph.jagrati_android.service.user.KtorUserService
@@ -125,6 +127,10 @@ val networkModule = module {
     single { KtorStudentService(get(), androidApplication().getString(BASE_URL)) }
 
     single { KtorAttendanceService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorVillageService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorGroupService(get(), androidApplication().getString(BASE_URL)) }
 
     single { KtorPermissionService(get(), androidApplication().getString(BASE_URL)) }
 
