@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.service.auth
 
 import com.hexagraph.jagrati_android.model.village.LongRequest
+import com.hexagraph.jagrati_android.model.village.LongStringResponse
 import com.hexagraph.jagrati_android.model.village.StringRequest
 import com.hexagraph.jagrati_android.model.village.VillageListResponse
 import io.ktor.client.HttpClient
@@ -32,6 +33,10 @@ class KtorVillageService(
 
     suspend fun getAllActiveVillages(): VillageListResponse {
         return client.get("$baseUrl/api/village").body()
+    }
+
+    suspend fun getVillageById(villageId: Long): LongStringResponse{
+        return client.get("$baseUrl/api/village/$villageId").body()
     }
 }
 

@@ -71,6 +71,12 @@ sealed interface Screens: NavKey {
     @Serializable
     data object NavMyVolunteerRequestsRoute: Screens
 
+    @Serializable
+    data object NavVillageManagementRoute: Screens
+
+    @Serializable
+    data object NavGroupManagementRoute: Screens
+
     // Volunteer routes
     @Serializable
     data object NavVolunteerRegistrationRoute: Screens

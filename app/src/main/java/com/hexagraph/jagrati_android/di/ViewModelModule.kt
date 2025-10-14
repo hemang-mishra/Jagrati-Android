@@ -7,6 +7,8 @@ import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesViewModel
 import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesViewModel
+import com.hexagraph.jagrati_android.ui.screens.village.VillageManagementViewModel
+import com.hexagraph.jagrati_android.ui.screens.group.GroupManagementViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRequestViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
@@ -34,6 +36,10 @@ val viewModelModule = module {
     // User role management ViewModels
     factory { UserRolesViewModel(get()) }
     factory { (userPid: String) -> UserDetailViewModel(userPid, get(), get()) }
+
+    factory { VillageManagementViewModel(get(), get()) }
+
+    factory { GroupManagementViewModel(get(), get()) }
 
     // Volunteer management ViewModels
     factory { VolunteerRequestViewModel(get(), get()) }

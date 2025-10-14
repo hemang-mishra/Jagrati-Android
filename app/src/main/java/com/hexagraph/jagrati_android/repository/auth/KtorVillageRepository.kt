@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.repository.auth
 
 import com.hexagraph.jagrati_android.model.village.LongRequest
+import com.hexagraph.jagrati_android.model.village.LongStringResponse
 import com.hexagraph.jagrati_android.model.village.StringRequest
 import com.hexagraph.jagrati_android.model.village.VillageListResponse
 import com.hexagraph.jagrati_android.service.auth.KtorVillageService
@@ -27,6 +28,12 @@ class KtorVillageRepository(
     override suspend fun getAllActiveVillages(): Flow<Resource<VillageListResponse>> = flow {
         emit(Resource.loading())
         val response = safeApiCall { villageService.getAllActiveVillages() }
+        emit(response)
+    }
+
+    override suspend fun getVillageById(villageId: Long): Flow<Resource<LongStringResponse>> = flow {
+        emit(Resource.loading())
+        val response = safeApiCall { villageService.getVillageById(villageId) }
         emit(response)
     }
 }

@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.times
 import com.hexagraph.jagrati_android.model.ManagementScreen
 import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.ui.navigation.Screens
+import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -335,12 +336,15 @@ fun ManagementScreenItem(
     isCompact: Boolean = false
 ) {
     // Use batch colors based on Jagrati design guidelines
-    val accentColor = when (screenIndex % 4) {
-        0 -> MaterialTheme.colorScheme.primary
-        1 -> MaterialTheme.colorScheme.secondary
-        2 -> MaterialTheme.colorScheme.tertiary
-        else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+    val batchColors = JagratiThemeColors.batchColors
+    val accentColor = when (screenIndex % 5) {
+        0 -> batchColors[0]
+        1 -> batchColors[1]
+        2 -> batchColors[2]
+        3 -> batchColors[3]
+        else -> batchColors[4]
     }
+
 
     Card(
         modifier = Modifier

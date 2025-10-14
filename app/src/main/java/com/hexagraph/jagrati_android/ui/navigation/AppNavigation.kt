@@ -36,6 +36,8 @@ import com.hexagraph.jagrati_android.ui.screens.home.MainHomeScreen
 import com.hexagraph.jagrati_android.ui.screens.nonvolunteer.NonVolunteerScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesScreen
+import com.hexagraph.jagrati_android.ui.screens.village.VillageManagementScreen
+import com.hexagraph.jagrati_android.ui.screens.group.GroupManagementScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.MyVolunteerRequestsScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen
@@ -315,6 +317,24 @@ fun AppNavigation(
                     },
                     navigateToVolunteerRegistration = {
                         backstack.add(Screens.NavVolunteerRegistrationRoute)
+                    }
+                )
+            }
+
+            entry<Screens.NavVillageManagementRoute> {
+                VillageManagementScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            entry<Screens.NavGroupManagementRoute> {
+                GroupManagementScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
                     }
                 )
             }

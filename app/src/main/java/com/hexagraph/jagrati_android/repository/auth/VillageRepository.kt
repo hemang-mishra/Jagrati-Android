@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.repository.auth
 
 import com.hexagraph.jagrati_android.model.village.LongRequest
+import com.hexagraph.jagrati_android.model.village.LongStringResponse
 import com.hexagraph.jagrati_android.model.village.StringRequest
 import com.hexagraph.jagrati_android.model.village.VillageListResponse
 import com.hexagraph.jagrati_android.util.Resource
@@ -12,5 +13,6 @@ interface VillageRepository {
     suspend fun removeVillage(villageId: LongRequest): Flow<Resource<String>>
 
     suspend fun getAllActiveVillages(): Flow<Resource<VillageListResponse>>
+    suspend fun getVillageById(villageId: Long): Flow<Resource<LongStringResponse>>
 }
 
