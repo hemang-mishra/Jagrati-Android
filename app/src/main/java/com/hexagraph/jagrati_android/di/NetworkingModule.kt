@@ -42,7 +42,7 @@ import java.util.Locale
 import kotlin.math.exp
 
 private val BASE_URL = R.string.BASE_URL
-private const val TIMEOUT = 6000L
+private const val TIMEOUT = 10000L
 
 val networkModule = module {
 

@@ -55,6 +55,7 @@ fun MainHomeScreen(
     navigateToLogin: () -> Unit = {},
     navigateToManagement: () -> Unit,
     authViewModel: AuthViewModel = koinViewModel(),
+    navigateToStudentRegistrationScreen: ()-> Unit,
     appPreferences: AppPreferences = koinInject()
 ) {
     var userData by remember { mutableStateOf<User?>(null) }
@@ -93,7 +94,7 @@ fun MainHomeScreen(
                     },
                     onRegisterNewStudentClick = {
                         scope.launch { drawerState.close() }
-                        // TODO: Navigate to register student
+                        navigateToStudentRegistrationScreen()
                     },
                     onLogoutClick = {
                         scope.launch { drawerState.close() }

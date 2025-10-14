@@ -1,5 +1,6 @@
-package com.hexagraph.jagrati_android.ui.screens.volunteer
+package com.hexagraph.jagrati_android.ui.screens.student
 
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -26,16 +27,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,10 +45,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -65,92 +60,28 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
-import com.hexagraph.jagrati_android.util.AppPreferences
-import org.koin.compose.koinInject
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 
 @Composable
-fun VolunteerRegistrationScreen(
-    viewModel: VolunteerRequestViewModel,
+fun StudentRegistrationScreen(
+    viewModel: StudentRegistrationViewModel,
     snackbarHostState: SnackbarHostState,
     onBackPressed: () -> Unit,
-    navigateToMyRequests: () -> Unit,
-    appPreferences: AppPreferences = koinInject()
+    navigateToFacialData: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
-    val isVolunteer by appPreferences.isVolunteer.getFlow().collectAsState(initial = false)
-    var showAlreadyVolunteerDialog by remember { mutableStateOf(false) }
-
-    // Check if user is already a volunteer
-    LaunchedEffect(key1 = isVolunteer) {
-        if (isVolunteer) {
-            showAlreadyVolunteerDialog = true
-        }
-    }
-
-    // Show dialog if user is already a volunteer
-    if (showAlreadyVolunteerDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showAlreadyVolunteerDialog = false
-                onBackPressed()
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = "Already Volunteer",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(48.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Already a Volunteer",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    text = "You are already registered as a volunteer! You don't need to submit another registration request. You can access all volunteer features from the home screen.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showAlreadyVolunteerDialog = false
-                        onBackPressed()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text("Got it")
-                }
-            },
-            shape = RoundedCornerShape(16.dp)
-        )
-    }
 
     LaunchedEffect(key1 = uiState.error) {
         uiState.error?.let { error ->
-            snackbarHostState.showSnackbar(message = error.toast)
+            snackbarHostState.showSnackbar(message = error.genericToast)
             viewModel.clearErrorFlow()
         }
     }
@@ -164,77 +95,52 @@ fun VolunteerRegistrationScreen(
 
     LaunchedEffect(key1 = uiState.submissionSuccessful) {
         if (uiState.submissionSuccessful) {
-            // Reset submission status to avoid multiple navigations
             viewModel.resetSubmissionStatus()
 
-            // Navigate to My Requests screen after successful submission
-            navigateToMyRequests()
+            if (uiState.isUpdateMode) {
+                Toast.makeText(context, "Student updated successfully", Toast.LENGTH_SHORT).show()
+                onBackPressed()
+            } else {
+                Toast.makeText(context, "Feature yet to be implemented: Add facial data", Toast.LENGTH_LONG).show()
+                onBackPressed()
+            }
         }
     }
 
-    LaunchedEffect(key1 = uiState.hasPendingRequests) {
-        // Check if user has any pending requests when entering this screen
-        if (uiState.hasPendingRequests) {
-            Toast.makeText(
-                context,
-                "You have pending volunteer requests. Redirecting to My Requests.",
-                Toast.LENGTH_LONG
-            ).show()
-            navigateToMyRequests()
-        }
-    }
-
-    // Only show the form if user is not already a volunteer
-    if (!isVolunteer) {
-        VolunteerRegistrationScreenLayout(
-            uiState = uiState,
-            onBackPressed = onBackPressed,
-            onFirstNameChanged = viewModel::updateFirstName,
-            onLastNameChanged = viewModel::updateLastName,
-            onGenderChanged = viewModel::updateGender,
-            onRollNumberChanged = viewModel::updateRollNumber,
-            onAlternateEmailChanged = viewModel::updateAlternateEmail,
-            onBatchChanged = viewModel::updateBatch,
-            onProgrammeChanged = viewModel::updateProgramme,
-            onStreetAddress1Changed = viewModel::updateStreetAddress1,
-            onStreetAddress2Changed = viewModel::updateStreetAddress2,
-            onPincodeChanged = viewModel::updatePincode,
-            onCityChanged = viewModel::updateCity,
-            onStateChanged = viewModel::updateState,
-            onDateOfBirthChanged = viewModel::updateDateOfBirth,
-            onContactNumberChanged = viewModel::updateContactNumber,
-            onProfileImageUrlChanged = viewModel::updateProfileImageUrl,
-            onCollegeChanged = viewModel::updateCollege,
-            onBranchChanged = viewModel::updateBranch,
-            onYearOfStudyChanged = viewModel::updateYearOfStudy,
-            onSubmitClicked = viewModel::submitVolunteerRequest
-        )
-    }
+    StudentRegistrationScreenLayout(
+        uiState = uiState,
+        onBackPressed = onBackPressed,
+        onFirstNameChanged = viewModel::updateFirstName,
+        onLastNameChanged = viewModel::updateLastName,
+        onGenderChanged = viewModel::updateGender,
+        onYearOfBirthChanged = viewModel::updateYearOfBirth,
+        onSchoolClassChanged = viewModel::updateSchoolClass,
+        onPrimaryContactNoChanged = viewModel::updatePrimaryContactNo,
+        onSecondaryContactNoChanged = viewModel::updateSecondaryContactNo,
+        onFathersNameChanged = viewModel::updateFathersName,
+        onMothersNameChanged = viewModel::updateMothersName,
+        onVillageSelected = viewModel::updateSelectedVillageId,
+        onGroupSelected = viewModel::updateSelectedGroupId,
+        onSubmitClicked = viewModel::submitStudent
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VolunteerRegistrationScreenLayout(
-    uiState: VolunteerRequestUiState,
+fun StudentRegistrationScreenLayout(
+    uiState: StudentRegistrationUiState,
     onBackPressed: () -> Unit,
     onFirstNameChanged: (String) -> Unit,
     onLastNameChanged: (String) -> Unit,
     onGenderChanged: (String) -> Unit,
-    onRollNumberChanged: (String) -> Unit,
-    onAlternateEmailChanged: (String) -> Unit,
-    onBatchChanged: (String) -> Unit,
-    onProgrammeChanged: (String) -> Unit,
-    onStreetAddress1Changed: (String) -> Unit,
-    onStreetAddress2Changed: (String) -> Unit,
-    onPincodeChanged: (String) -> Unit,
-    onCityChanged: (String) -> Unit,
-    onStateChanged: (String) -> Unit,
-    onDateOfBirthChanged: (LocalDate?) -> Unit,
-    onContactNumberChanged: (String) -> Unit,
-    onProfileImageUrlChanged: (String) -> Unit,
-    onCollegeChanged: (String) -> Unit,
-    onBranchChanged: (String) -> Unit,
-    onYearOfStudyChanged: (Int?) -> Unit,
+    onYearOfBirthChanged: (Int?) -> Unit,
+    onSchoolClassChanged: (String) -> Unit,
+    onPrimaryContactNoChanged: (String) -> Unit,
+    onSecondaryContactNoChanged: (String) -> Unit,
+    onFathersNameChanged: (String) -> Unit,
+    onMothersNameChanged: (String) -> Unit,
+    onVillageSelected: (Long) -> Unit,
+    onGroupSelected: (Long) -> Unit,
     onSubmitClicked: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -245,7 +151,7 @@ fun VolunteerRegistrationScreenLayout(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Volunteer Registration",
+                        text = if (uiState.isUpdateMode) "Update Student" else "Student Registration",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -276,7 +182,6 @@ fun VolunteerRegistrationScreenLayout(
                     .verticalScroll(scrollState)
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                // Form header
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -289,14 +194,17 @@ fun VolunteerRegistrationScreenLayout(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Join as a Volunteer",
+                            text = if (uiState.isUpdateMode) "Update Student Details" else "Register New Student",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Please fill out the form below to apply as a volunteer",
+                            text = if (uiState.isUpdateMode)
+                                "Update the student information below"
+                            else
+                                "Please fill out the form to register a new student",
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
                             color = Color.White
@@ -306,203 +214,117 @@ fun VolunteerRegistrationScreenLayout(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Personal information section
-                FormSection(title = "Personal Information") {
-                    // First Name
-                    FormField(
+                StudentFormSection(title = "Personal Information") {
+                    StudentFormField(
                         label = "First Name",
                         value = uiState.firstName,
                         onValueChange = onFirstNameChanged,
                         error = uiState.formErrors["firstName"],
-                        isRequired = true,
-                        enabled = false
+                        isRequired = true
                     )
 
-                    // Last Name
-                    FormField(
+                    StudentFormField(
                         label = "Last Name",
                         value = uiState.lastName,
                         onValueChange = onLastNameChanged,
                         error = uiState.formErrors["lastName"],
-                        isRequired = true,
-                        enabled = false
+                        isRequired = true
                     )
 
-                    // Gender selection
-                    GenderSelectionField(
+                    StudentGenderSelectionField(
                         selectedGender = uiState.gender,
                         onGenderSelected = onGenderChanged,
                         error = uiState.formErrors["gender"]
                     )
 
-                    // Date of Birth
-                    DatePickerField(
-                        selectedDate = uiState.dateOfBirth,
-                        onDateSelected = onDateOfBirthChanged,
-                        error = uiState.formErrors["dateOfBirth"]
+                    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
+                    val birthYears = (currentYear downTo currentYear - 20).map { it.toString() }
+
+                    StudentDropdownField(
+                        label = "Year of Birth",
+                        selectedItem = uiState.yearOfBirth?.toString() ?: "",
+                        onItemSelected = { year ->
+                            onYearOfBirthChanged(year.toIntOrNull())
+                        },
+                        items = birthYears,
+                        error = uiState.formErrors["yearOfBirth"],
+                        isRequired = false
                     )
 
-                    // Contact Number
-                    FormField(
-                        label = "Contact Number",
-                        value = uiState.contactNumber,
-                        onValueChange = onContactNumberChanged,
-                        error = uiState.formErrors["contactNumber"],
-                        isRequired = true,
+                    val schoolClasses = listOf("Kindergarten","1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th","Not registered in school", "None of the above")
+
+                    StudentDropdownField(
+                        label = "School Class",
+                        selectedItem = uiState.schoolClass,
+                        onItemSelected = onSchoolClassChanged,
+                        items = schoolClasses,
+                        error = uiState.formErrors["schoolClass"],
+                        isRequired = false
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                StudentFormSection(title = "Village & Group") {
+                    VillageDropdownField(
+                        label = "Village",
+                        villages = uiState.villages,
+                        selectedVillageId = uiState.selectedVillageId,
+                        onVillageSelected = onVillageSelected,
+                        error = uiState.formErrors["village"]
+                    )
+
+                    GroupDropdownField(
+                        label = "Group",
+                        groups = uiState.groups,
+                        selectedGroupId = uiState.selectedGroupId,
+                        onGroupSelected = onGroupSelected,
+                        error = uiState.formErrors["group"]
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                StudentFormSection(title = "Contact & Family Information") {
+                    StudentFormField(
+                        label = "Primary Contact Number",
+                        value = uiState.primaryContactNo,
+                        onValueChange = onPrimaryContactNoChanged,
+                        error = uiState.formErrors["primaryContactNo"],
+                        isRequired = false,
                         keyboardType = KeyboardType.Phone,
                         maxLength = 10
                     )
 
-                    // Profile Image URL
-                    FormField(
-                        label = "Profile Image URL (Optional)",
-                        value = uiState.profileImageUrl,
-                        onValueChange = onProfileImageUrlChanged,
-                        error = uiState.formErrors["profileImageUrl"],
-                        isRequired = false
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Academic information section
-                FormSection(title = "Academic Information") {
-                    // College
-                    FormField(
-                        label = "College",
-                        value = uiState.college,
-                        onValueChange = onCollegeChanged,
-                        error = uiState.formErrors["college"],
-                        isRequired = true
-                    )
-
-                    // Roll Number
-                    FormField(
-                        label = "Roll Number",
-                        value = uiState.rollNumber,
-                        onValueChange = onRollNumberChanged,
-                        error = uiState.formErrors["rollNumber"],
-                        isRequired = true
-                    )
-
-                    // Alternate Email
-                    FormField(
-                        label = "Alternate Email (Optional)",
-                        value = uiState.alternateEmail,
-                        onValueChange = onAlternateEmailChanged,
-                        error = uiState.formErrors["alternateEmail"],
+                    StudentFormField(
+                        label = "Secondary Contact Number",
+                        value = uiState.secondaryContactNo,
+                        onValueChange = onSecondaryContactNoChanged,
+                        error = uiState.formErrors["secondaryContactNo"],
                         isRequired = false,
-                        keyboardType = KeyboardType.Email
+                        keyboardType = KeyboardType.Phone,
+                        maxLength = 10
                     )
 
-                    // Batch Dropdown (last 10 years)
-                    val currentYear = Calendar.getInstance().get(Calendar.YEAR)
-                    val batchYears = (0..9).map { (currentYear - it).toString() }
-
-                    DropdownField(
-                        label = "Batch",
-                        selectedItem = uiState.batch,
-                        onItemSelected = onBatchChanged,
-                        items = batchYears,
-                        error = uiState.formErrors["batch"]
-                    )
-
-                    // Programme Dropdown
-                    val programmes = listOf("B.Tech", "B.Des")
-
-                    DropdownField(
-                        label = "Programme",
-                        selectedItem = uiState.programme,
-                        onItemSelected = onProgrammeChanged,
-                        items = programmes,
-                        error = uiState.formErrors["programme"]
-                    )
-
-                    // Branch Dropdown
-                    val branches = listOf("CSE", "ECE", "ME", "SM", "B.Des")
-
-                    DropdownField(
-                        label = "Branch",
-                        selectedItem = uiState.branch,
-                        onItemSelected = onBranchChanged,
-                        items = branches,
-                        error = uiState.formErrors["branch"]
-                    )
-
-                    // Year of Study Dropdown
-                    val yearOptions = listOf("1st Year", "2nd Year", "3rd Year", "4th Year")
-                    val yearValues = listOf(1, 2, 3, 4)
-
-                    DropdownField(
-                        label = "Year of Study",
-                        selectedItem = uiState.yearOfStudy?.let { yearOptions[yearValues.indexOf(it)] } ?: "",
-                        onItemSelected = { selected ->
-                            val index = yearOptions.indexOf(selected)
-                            if (index != -1) {
-                                onYearOfStudyChanged(yearValues[index])
-                            }
-                        },
-                        items = yearOptions,
-                        error = uiState.formErrors["yearOfStudy"]
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Address section
-                FormSection(title = "Address Information") {
-                    // Street Address 1
-                    FormField(
-                        label = "Street Address 1",
-                        value = uiState.streetAddress1,
-                        onValueChange = onStreetAddress1Changed,
-                        error = uiState.formErrors["streetAddress1"],
-                        isRequired = true
-                    )
-
-                    // Street Address 2
-                    FormField(
-                        label = "Street Address 2 (Optional)",
-                        value = uiState.streetAddress2,
-                        onValueChange = onStreetAddress2Changed,
-                        error = uiState.formErrors["streetAddress2"],
+                    StudentFormField(
+                        label = "Father's Name",
+                        value = uiState.fathersName,
+                        onValueChange = onFathersNameChanged,
+                        error = uiState.formErrors["fathersName"],
                         isRequired = false
                     )
 
-                    // City
-                    FormField(
-                        label = "City",
-                        value = uiState.city,
-                        onValueChange = onCityChanged,
-                        error = uiState.formErrors["city"],
-                        isRequired = true
-                    )
-
-                    // State
-                    FormField(
-                        label = "State",
-                        value = uiState.state,
-                        onValueChange = onStateChanged,
-                        error = uiState.formErrors["state"],
-                        isRequired = true
-                    )
-
-                    // Pincode
-                    FormField(
-                        label = "Pincode",
-                        value = uiState.pincode,
-                        onValueChange = onPincodeChanged,
-                        error = uiState.formErrors["pincode"],
-                        isRequired = true,
-                        keyboardType = KeyboardType.Number,
-                        maxLength = 6,
-                        imeAction = ImeAction.Done
+                    StudentFormField(
+                        label = "Mother's Name",
+                        value = uiState.mothersName,
+                        onValueChange = onMothersNameChanged,
+                        error = uiState.formErrors["mothersName"],
+                        isRequired = false
                     )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Submit Button
                 Button(
                     onClick = onSubmitClicked,
                     modifier = Modifier
@@ -523,7 +345,7 @@ fun VolunteerRegistrationScreenLayout(
                         )
                     } else {
                         Text(
-                            text = "Submit Application",
+                            text = if (uiState.isUpdateMode) "Update Student" else "Register Student",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -533,7 +355,6 @@ fun VolunteerRegistrationScreenLayout(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Loading overlay
             if (uiState.isLoading) {
                 Box(
                     modifier = Modifier
@@ -551,7 +372,7 @@ fun VolunteerRegistrationScreenLayout(
 }
 
 @Composable
-fun FormSection(
+fun StudentFormSection(
     title: String,
     content: @Composable () -> Unit
 ) {
@@ -590,7 +411,7 @@ fun FormSection(
 }
 
 @Composable
-fun FormField(
+fun StudentFormField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
@@ -659,7 +480,7 @@ fun FormField(
 }
 
 @Composable
-fun GenderSelectionField(
+fun StudentGenderSelectionField(
     selectedGender: String?,
     onGenderSelected: (String) -> Unit,
     error: String?
@@ -689,8 +510,7 @@ fun GenderSelectionField(
                         onClick = { onGenderSelected(gender) }
                     )
                     Text(
-                        text = gender.lowercase()
-                            .replaceFirstChar { it.uppercase() },
+                        text = gender.lowercase().replaceFirstChar { it.uppercase() },
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -714,118 +534,20 @@ fun GenderSelectionField(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerField(
-    selectedDate: LocalDate?,
-    onDateSelected: (LocalDate?) -> Unit,
-    error: String?
-) {
-    var showDialog by remember { mutableStateOf(false) }
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            text = "Date of Birth *",
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
-            border = BorderStroke(
-                width = 1.dp,
-                color = if (error != null) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
-            ),
-            onClick = { showDialog = true }
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = selectedDate?.format(
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                    ) ?: "Select a date",
-                    color = if (selectedDate == null) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    else MaterialTheme.colorScheme.onSurface
-                )
-
-                Icon(
-                    painter = painterResource(R.drawable.ic_calendar_month),
-                    contentDescription = "Select Date",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-
-        AnimatedVisibility(
-            visible = error != null,
-            enter = fadeIn(animationSpec = tween(150)),
-            exit = fadeOut(animationSpec = tween(150))
-        ) {
-            error?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 4.dp, start = 4.dp)
-                )
-            }
-        }
-    }
-
-    if (showDialog) {
-        val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = selectedDate?.atStartOfDay(ZoneId.systemDefault())
-                ?.toInstant()?.toEpochMilli()
-        )
-
-        DatePickerDialog(
-            onDismissRequest = { showDialog = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val localDate = Instant.ofEpochMilli(millis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate()
-                        onDateSelected(localDate)
-                    }
-                    showDialog = false
-                }) {
-                    Text("Confirm")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-}
-
-@Composable
-fun DropdownField(
+fun StudentDropdownField(
     label: String,
     selectedItem: String,
     onItemSelected: (String) -> Unit,
     items: List<String>,
-    error: String?
+    error: String?,
+    isRequired: Boolean = true
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
-            text = "$label *",
+            text = label + if (isRequired) " *" else "",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
@@ -898,55 +620,204 @@ fun DropdownField(
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun VolunteerRegistrationPreview() {
-    JagratiAndroidTheme {
-        val previewState = VolunteerRequestUiState(
-            firstName = "John",
-            lastName = "Doe",
-            gender = "MALE",
-            rollNumber = "2021DCS001",
-            alternateEmail = "john.doe@example.com",
-            batch = "2021",
-            programme = "B.Tech",
-            streetAddress1 = "123 Main St",
-            streetAddress2 = "Apartment 4B",
-            pincode = "482001",
-            city = "Jabalpur",
-            state = "Madhya Pradesh",
-            dateOfBirth = LocalDate.of(2000, 1, 15),
-            contactNumber = "9876543210",
-            college = "IIITDM Jabalpur",
-            branch = "CSE",
-            yearOfStudy = 3,
-            formErrors = mapOf(
-                "pincode" to "Please enter a valid 6-digit pincode"
-            )
+fun VillageDropdownField(
+    label: String,
+    villages: Map<Long, String>,
+    selectedVillageId: Long?,
+    onVillageSelected: (Long) -> Unit,
+    error: String?
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedVillageName = selectedVillageId?.let { villages[it] } ?: ""
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "$label *",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium
         )
 
-        VolunteerRegistrationScreenLayout(
-            uiState = previewState,
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(
+                width = 1.dp,
+                color = if (error != null) MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
+            ),
+            onClick = { expanded = true }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = selectedVillageName.ifEmpty { "Select $label" },
+                    color = if (selectedVillageName.isEmpty()) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    else MaterialTheme.colorScheme.onSurface
+                )
+
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Select $label",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth(0.9f)
+            ) {
+                villages.forEach { (id, name) ->
+                    DropdownMenuItem(
+                        text = { Text(text = name) },
+                        onClick = {
+                            onVillageSelected(id)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = error != null,
+            enter = fadeIn(animationSpec = tween(150)),
+            exit = fadeOut(animationSpec = tween(150))
+        ) {
+            error?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupDropdownField(
+    label: String,
+    groups: Map<Long, String>,
+    selectedGroupId: Long?,
+    onGroupSelected: (Long) -> Unit,
+    error: String?
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedGroupName = selectedGroupId?.let { groups[it] } ?: ""
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "$label *",
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(
+                width = 1.dp,
+                color = if (error != null) MaterialTheme.colorScheme.error
+                else MaterialTheme.colorScheme.outline.copy(alpha = 0.7f)
+            ),
+            onClick = { expanded = true }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = selectedGroupName.ifEmpty { "Select $label" },
+                    color = if (selectedGroupName.isEmpty()) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    else MaterialTheme.colorScheme.onSurface
+                )
+
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = "Select $label",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier.fillMaxWidth(0.9f)
+            ) {
+                groups.forEach { (id, name) ->
+                    DropdownMenuItem(
+                        text = { Text(text = name) },
+                        onClick = {
+                            onGroupSelected(id)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = error != null,
+            enter = fadeIn(animationSpec = tween(150)),
+            exit = fadeOut(animationSpec = tween(150))
+        ) {
+            error?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun StudentRegistrationScreenPreview() {
+    JagratiAndroidTheme {
+        StudentRegistrationScreenLayout(
+            uiState = StudentRegistrationUiState(
+                firstName = "Rahul",
+                lastName = "Sharma",
+                villages = mapOf(1L to "Village A", 2L to "Village B"),
+                groups = mapOf(1L to "Group 1", 2L to "Group 2")
+            ),
             onBackPressed = {},
             onFirstNameChanged = {},
             onLastNameChanged = {},
             onGenderChanged = {},
-            onRollNumberChanged = {},
-            onAlternateEmailChanged = {},
-            onBatchChanged = {},
-            onProgrammeChanged = {},
-            onStreetAddress1Changed = {},
-            onStreetAddress2Changed = {},
-            onPincodeChanged = {},
-            onCityChanged = {},
-            onStateChanged = {},
-            onDateOfBirthChanged = {},
-            onContactNumberChanged = {},
-            onProfileImageUrlChanged = {},
-            onCollegeChanged = {},
-            onBranchChanged = {},
-            onYearOfStudyChanged = {},
+            onYearOfBirthChanged = {},
+            onSchoolClassChanged = {},
+            onPrimaryContactNoChanged = {},
+            onSecondaryContactNoChanged = {},
+            onFathersNameChanged = {},
+            onMothersNameChanged = {},
+            onVillageSelected = {},
+            onGroupSelected = {},
             onSubmitClicked = {}
         )
     }
 }
+

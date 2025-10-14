@@ -83,4 +83,10 @@ sealed interface Screens: NavKey {
 
     @Serializable
     data object NavNonVolunteerHomeScreen: Screens
+
+    // Student routes
+    @Serializable
+    data class NavStudentRegistrationRoute(
+        val pid: String? = null
+    ): Screens
 }

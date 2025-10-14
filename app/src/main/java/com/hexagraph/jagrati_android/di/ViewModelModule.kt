@@ -5,6 +5,7 @@ import com.hexagraph.jagrati_android.ui.screens.permissions.ManagePermissionsVie
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesViewModel
 import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncViewModel
+import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesViewModel
 import com.hexagraph.jagrati_android.ui.screens.village.VillageManagementViewModel
@@ -44,4 +45,7 @@ val viewModelModule = module {
     // Volunteer management ViewModels
     factory { VolunteerRequestViewModel(get(), get()) }
     factory { ManageVolunteerRequestsViewModel(get()) }
+
+    // Student management ViewModels
+    factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), pid) }
 }

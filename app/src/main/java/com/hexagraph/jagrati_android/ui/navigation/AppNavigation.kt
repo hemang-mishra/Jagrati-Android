@@ -41,6 +41,7 @@ import com.hexagraph.jagrati_android.ui.screens.group.GroupManagementScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.MyVolunteerRequestsScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen
+import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -201,6 +202,9 @@ fun AppNavigation(
                     },
                     navigateToManagement = {
                         backstack.add(Screens.NavManagementRoute)
+                    },
+                    navigateToStudentRegistrationScreen = {
+                        backstack.add(Screens.NavStudentRegistrationRoute())
                     }
                 )
 //                HomeScreen(
@@ -344,6 +348,23 @@ fun AppNavigation(
                     viewModel = koinViewModel(),
                     snackbarHostState = snackbarHostState,
                     onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            // Student management screens
+            entry<Screens.NavStudentRegistrationRoute> { it ->
+                val pid = it.pid
+
+                StudentRegistrationScreen(
+                    viewModel = koinViewModel { parametersOf(pid) },
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    navigateToFacialData = { studentPid ->
+                        // TODO: Navigate to facial data screen when implemented
                         backstack.popBackStack()
                     }
                 )

@@ -110,7 +110,7 @@ fun ManageRolesScreenLayout(
                         Text(
                             "${uiState.roles.size} active roles",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                         )
                     }
                 },
@@ -118,8 +118,8 @@ fun ManageRolesScreenLayout(
                     FilledTonalIconButton(
                         onClick = onBackPressed,
                         colors = IconButtonDefaults.filledTonalIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.1f),
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            contentColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Icon(
@@ -129,7 +129,7 @@ fun ManageRolesScreenLayout(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },

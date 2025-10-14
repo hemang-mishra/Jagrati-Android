@@ -43,6 +43,7 @@ class AppPreferences(private val context: Context) {
         private val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
         private val VILLAGES = stringPreferencesKey("villages")
         private val GROUPS = stringPreferencesKey("groups")
+        private val IS_VOLUNTEER = stringPreferencesKey("is_volunteer")
     }
 
     val lastSyncTime: DataStorePreference<Long> = object : DataStorePreference<Long> {
@@ -55,6 +56,20 @@ class AppPreferences(private val context: Context) {
         override suspend fun set(value: Long) {
             context.dataStore.edit { preferences ->
                 preferences[LAST_SYNC_TIME] = value
+            }
+        }
+    }
+
+    val isVolunteer: DataStorePreference<Boolean> = object : DataStorePreference<Boolean> {
+        override fun getFlow(): Flow<Boolean> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[IS_VOLUNTEER]?.toBoolean() ?: false }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: Boolean) {
+            context.dataStore.edit { preferences ->
+                preferences[IS_VOLUNTEER] = value.toString()
             }
         }
     }

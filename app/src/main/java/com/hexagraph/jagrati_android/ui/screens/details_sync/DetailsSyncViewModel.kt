@@ -119,6 +119,7 @@ class DetailsSyncViewModel(
 
         // Store user roles in preferences
         appPreferences.saveUserRoles(data.roles)
+        appPreferences.isVolunteer.set(data.isVolunteer)
 
         // Map permission names to AllPermissions enum values
         val permissions = data.permissions.permissions.mapNotNull { permission ->
