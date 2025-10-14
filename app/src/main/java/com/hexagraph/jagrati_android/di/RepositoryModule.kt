@@ -11,6 +11,8 @@ import com.hexagraph.jagrati_android.repository.auth.VillageRepository
 import com.hexagraph.jagrati_android.repository.auth.KtorVillageRepository
 import com.hexagraph.jagrati_android.repository.auth.GroupRepository
 import com.hexagraph.jagrati_android.repository.auth.KtorGroupRepository
+import com.hexagraph.jagrati_android.repository.auth.FaceDataRepository
+import com.hexagraph.jagrati_android.repository.auth.KtorFaceDataRepository
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanImplementation
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.repository.permission.KtorPermissionRepository
@@ -44,6 +46,9 @@ val repositoryModule = module {
     }
     single<GroupRepository> {
         KtorGroupRepository(get())
+    }
+    single<FaceDataRepository> {
+        KtorFaceDataRepository(get())
     }
     single<PermissionRepository> {
         KtorPermissionRepository(get())
