@@ -77,7 +77,8 @@ class KtorUserService(
      *
      * @return User details with assigned roles and permissions
      */
-    suspend fun getCurrentUserDetails(): UserDetailsWithRolesAndPermissions {
-        return client.get("$baseUrl/api/users/me").body()
+    suspend fun getCurrentUserDetails(timeMillis: Long): UserDetailsWithRolesAndPermissions {
+        return client.get("$baseUrl/api/users/me/$timeMillis")
+            .body()
     }
 }

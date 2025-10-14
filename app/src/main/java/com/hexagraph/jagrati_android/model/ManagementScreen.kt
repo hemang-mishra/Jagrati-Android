@@ -55,5 +55,22 @@ enum class ManagementScreen(
         section = "Roles and Permissions",
         screen = Screens.NavMyVolunteerRequestsRoute,
         permissionsRequired = listOf()
-    );
+    ),
+    VILLAGE_MANAGEMENT(
+        screenName = "Village Management",
+        screen = Screens.NavVillageManagementRoute,
+        section = "Village and Groups",
+        permissionsRequired = listOf(
+            AllPermissions.VILLAGE_MANAGE,
+        )
+    ),
+    GROUP_MANAGEMENT(
+        screenName = "Group Management",
+        screen = Screens.NavGroupManagementRoute,
+        section = "Village and Groups",
+        permissionsRequired = listOf(
+            AllPermissions.GROUP_MANAGE,
+        )
+    ),
+    ;
 }

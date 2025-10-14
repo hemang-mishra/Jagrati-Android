@@ -2,7 +2,7 @@ package com.hexagraph.jagrati_android.service.face_recognition
 
 import android.content.Context
 import android.util.Log
-import com.hexagraph.jagrati_android.model.FaceEmbeddingsEntity
+import com.hexagraph.jagrati_android.model.FaceEmbeddingsCacheEntity
 import com.hexagraph.jagrati_android.model.ProcessedImage
 import com.hexagraph.jagrati_android.model.dao.EmbeddingsDAO
 import com.hexagraph.jagrati_android.util.AIIntegration
@@ -16,6 +16,8 @@ import com.hexagraph.jagrati_android.util.AIIntegration.preprocessBitmapForMobil
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.Collections
+import java.util.PriorityQueue
 import javax.inject.Inject
 
 class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: EmbeddingsDAO):
@@ -52,7 +54,7 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
         face: ProcessedImage,
         faces: List<ProcessedImage>,
         context: Context
-    ): ProcessedImage? {
+    ): List<ProcessedImage>? {
         synchronized(this) {
             if (AIIntegration.isRunning) return@synchronized
             isRunning = true
@@ -85,8 +87,8 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
                 )
                 val singleStart = System.currentTimeMillis()
 
-                var image: ProcessedImage? = null
-                var minDistance = Float.MAX_VALUE
+                val thresholdDistance = Float.MAX_VALUE
+                val minHeap = PriorityQueue<Pair<Float, ProcessedImage>>(Collections.reverseOrder())
 
                 for (data in faces) {
                     val testPid = data.pid
@@ -130,12 +132,11 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
 
                                 // Cache embedding
                                 faceEmbeddingsDAO.upsertEmbeddings(
-                                    FaceEmbeddingsEntity(
+                                    FaceEmbeddingsCacheEntity(
                                         pid = testPid,
                                         embedding = embedding
                                     )
                                 )
-
 
                                 embedding
                             }
@@ -163,16 +164,18 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
                         calculateCosineSimilarity(referenceOutputBuffer, testBuffer).getOrNull()
                             ?: throw Throwable("Unable to calculate Cosine Similarity")
 
-                    if (distance < minDistance) {
-                        minDistance = distance
-                        image = data.copy(distance = distance, similarity = similarity)
+                    if (distance < thresholdDistance) {
+                        if(minHeap.size >= 5){
+                            minHeap.remove()
+                        }
+                        minHeap.offer(Pair(distance, data.copy(distance = distance, similarity = similarity)))
                     }
                 }
 
                 val end = System.currentTimeMillis()
                 Log.i("FaceRecognitionServiceImpl", "Pre test took ${singleStart - start}ms Face recognition took ${end - start} ms")
                 context.faceNetInterceptor.close()
-                image
+                minHeap.toList().map { it.second }
             }
         } catch (th: Throwable) {
             Log.e("FaceRecognitionServiceImpl", th.message ?: "Error while recognizing face")

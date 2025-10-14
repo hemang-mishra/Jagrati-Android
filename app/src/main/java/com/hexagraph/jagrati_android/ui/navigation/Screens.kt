@@ -34,14 +34,12 @@ sealed interface Screens: NavKey {
 
     // User Details route (runs at app startup after authentication)
     @Serializable
-    data object NavUserDetailsRoute: Screens
+    data object DetailsSyncRoute: Screens
 
     // Main app routes
     @Serializable
     data object NavHomeRoute: Screens
 
-    @Serializable
-    data object NavAttendanceRoute: Screens
 
     // Management routes
     @Serializable
@@ -73,7 +71,22 @@ sealed interface Screens: NavKey {
     @Serializable
     data object NavMyVolunteerRequestsRoute: Screens
 
+    @Serializable
+    data object NavVillageManagementRoute: Screens
+
+    @Serializable
+    data object NavGroupManagementRoute: Screens
+
     // Volunteer routes
     @Serializable
     data object NavVolunteerRegistrationRoute: Screens
+
+    @Serializable
+    data object NavNonVolunteerHomeScreen: Screens
+
+    // Student routes
+    @Serializable
+    data class NavStudentRegistrationRoute(
+        val pid: String? = null
+    ): Screens
 }

@@ -45,9 +45,9 @@ class KtorUserRepository(
         emit(response)
     }
 
-    override suspend fun getCurrentUserPermissions(): Flow<Resource<UserDetailsWithRolesAndPermissions>> = flow {
+    override suspend fun getCurrentUserPermissions(timeMillis: Long): Flow<Resource<UserDetailsWithRolesAndPermissions>> = flow {
         emit(Resource.loading())
-        val response = safeApiCall { userService.getCurrentUserDetails() }
+        val response = safeApiCall { userService.getCurrentUserDetails(timeMillis) }
         emit(response)
     }
 }

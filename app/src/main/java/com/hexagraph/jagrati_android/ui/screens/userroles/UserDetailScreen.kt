@@ -440,7 +440,7 @@ fun EnhancedUserProfileCard(user: UserWithRolesResponse) {
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    JagratiThemeColors.orange,
+                                    JagratiThemeColors.red,
                                     JagratiThemeColors.purple
                                 )
                             )

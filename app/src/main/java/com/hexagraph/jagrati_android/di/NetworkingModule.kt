@@ -6,10 +6,16 @@ import com.hexagraph.jagrati_android.BuildConfig
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.api.AuthProvider
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
+import com.hexagraph.jagrati_android.service.auth.KtorStudentService
+import com.hexagraph.jagrati_android.service.auth.KtorAttendanceService
+import com.hexagraph.jagrati_android.service.auth.KtorVillageService
+import com.hexagraph.jagrati_android.service.auth.KtorGroupService
+import com.hexagraph.jagrati_android.service.auth.KtorFaceDataService
 import com.hexagraph.jagrati_android.service.permission.KtorPermissionService
 import com.hexagraph.jagrati_android.service.role.KtorRoleService
 import com.hexagraph.jagrati_android.service.user.KtorUserService
 import com.hexagraph.jagrati_android.service.volunteer.KtorVolunteerRequestService
+import com.hexagraph.jagrati_android.service.volunteer.KtorVolunteerService
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.okhttp.OkHttp
@@ -36,7 +42,7 @@ import java.util.Locale
 import kotlin.math.exp
 
 private val BASE_URL = R.string.BASE_URL
-private const val TIMEOUT = 6000L
+private const val TIMEOUT = 10000L
 
 val networkModule = module {
 
@@ -119,6 +125,16 @@ val networkModule = module {
 
     single { KtorAuthService(get(), androidApplication().getString(BASE_URL)) }
 
+    single { KtorStudentService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorAttendanceService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorVillageService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorGroupService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorFaceDataService(get(), androidApplication().getString(BASE_URL)) }
+
     single { KtorPermissionService(get(), androidApplication().getString(BASE_URL)) }
 
     single { KtorRoleService(get(), androidApplication().getString(BASE_URL)) }
@@ -126,4 +142,6 @@ val networkModule = module {
     single { KtorUserService(get(), androidApplication().getString(BASE_URL)) }
 
     single { KtorVolunteerRequestService(get(), androidApplication().getString(BASE_URL)) }
+
+    single { KtorVolunteerService(get(), androidApplication().getString(BASE_URL)) }
 }

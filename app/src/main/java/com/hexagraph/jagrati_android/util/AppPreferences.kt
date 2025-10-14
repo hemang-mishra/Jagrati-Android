@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -39,6 +40,38 @@ class AppPreferences(private val context: Context) {
         // User details and roles related keys
         private val USER_DETAILS = stringPreferencesKey("user_details")
         private val USER_ROLES = stringPreferencesKey("user_roles")
+        private val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
+        private val VILLAGES = stringPreferencesKey("villages")
+        private val GROUPS = stringPreferencesKey("groups")
+        private val IS_VOLUNTEER = stringPreferencesKey("is_volunteer")
+    }
+
+    val lastSyncTime: DataStorePreference<Long> = object : DataStorePreference<Long> {
+        override fun getFlow(): Flow<Long> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[LAST_SYNC_TIME] ?: 0L }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: Long) {
+            context.dataStore.edit { preferences ->
+                preferences[LAST_SYNC_TIME] = value
+            }
+        }
+    }
+
+    val isVolunteer: DataStorePreference<Boolean> = object : DataStorePreference<Boolean> {
+        override fun getFlow(): Flow<Boolean> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[IS_VOLUNTEER]?.toBoolean() ?: false }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: Boolean) {
+            context.dataStore.edit { preferences ->
+                preferences[IS_VOLUNTEER] = value.toString()
+            }
+        }
     }
 
     // Token Management
@@ -77,6 +110,8 @@ class AppPreferences(private val context: Context) {
             }
         }
     }
+
+
 
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
         context.dataStore.edit { preferences ->
@@ -213,7 +248,66 @@ class AppPreferences(private val context: Context) {
         userRoles.set(emptyList())
     }
 
-    // Clear all data
+    val villages: DataStorePreference<Map<Long, String>> = object : DataStorePreference<Map<Long, String>> {
+        override fun getFlow(): Flow<Map<Long, String>> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { preferences ->
+                    val villagesJson = preferences[VILLAGES] ?: return@map emptyMap()
+                    try {
+                        val type = object : TypeToken<Map<Long, String>>() {}.type
+                        gson.fromJson<Map<Long, String>>(villagesJson, type)
+                    } catch (e: Exception) {
+                        emptyMap()
+                    }
+                }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: Map<Long, String>) {
+            context.dataStore.edit { preferences ->
+                preferences[VILLAGES] = gson.toJson(value)
+            }
+        }
+    }
+
+    suspend fun saveVillages(villages: Map<Long, String>) {
+        this.villages.set(villages)
+    }
+
+    suspend fun clearVillages() {
+        this.villages.set(emptyMap())
+    }
+
+    val groups: DataStorePreference<Map<Long, String>> = object : DataStorePreference<Map<Long, String>> {
+        override fun getFlow(): Flow<Map<Long, String>> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { preferences ->
+                    val groupsJson = preferences[GROUPS] ?: return@map emptyMap()
+                    try {
+                        val type = object : TypeToken<Map<Long, String>>() {}.type
+                        gson.fromJson<Map<Long, String>>(groupsJson, type)
+                    } catch (e: Exception) {
+                        emptyMap()
+                    }
+                }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: Map<Long, String>) {
+            context.dataStore.edit { preferences ->
+                preferences[GROUPS] = gson.toJson(value)
+            }
+        }
+    }
+
+    suspend fun saveGroups(groups: Map<Long, String>) {
+        this.groups.set(groups)
+    }
+
+    suspend fun clearGroups() {
+        this.groups.set(emptyMap())
+    }
+
     suspend fun clearAll() {
         context.dataStore.edit { preferences ->
             preferences.clear()

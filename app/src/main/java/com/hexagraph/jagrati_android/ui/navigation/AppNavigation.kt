@@ -1,10 +1,14 @@
 package com.hexagraph.jagrati_android.ui.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
@@ -27,13 +31,17 @@ import com.hexagraph.jagrati_android.ui.screens.permissions.ManagePermissionsScr
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailScreen
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesScreen
-import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceScreen
-import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsScreen
+import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncScreen
+import com.hexagraph.jagrati_android.ui.screens.home.MainHomeScreen
+import com.hexagraph.jagrati_android.ui.screens.nonvolunteer.NonVolunteerScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesScreen
+import com.hexagraph.jagrati_android.ui.screens.village.VillageManagementScreen
+import com.hexagraph.jagrati_android.ui.screens.group.GroupManagementScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.MyVolunteerRequestsScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen
+import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -63,7 +71,7 @@ fun AppNavigation(
     var backstack = rememberNavBackStack(
         when {
             !isOnboardingCompleted -> Screens.NavOnboardingRoute
-            isAuthenticated -> Screens.NavUserDetailsRoute // Load user details first if authenticated
+            isAuthenticated -> Screens.DetailsSyncRoute // Load user details first if authenticated
             else -> Screens.NavLoginRoute
         }
     )
@@ -91,7 +99,7 @@ fun AppNavigation(
                         onboardingPreferences.setOnboardingCompleted()
                         if (isAuthenticated) {
                             backstack.clear()
-                            backstack.add(Screens.NavUserDetailsRoute) // Go to UserDetails screen if authenticated
+                            backstack.add(Screens.DetailsSyncRoute) // Go to UserDetails screen if authenticated
                         } else {
                             backstack.clear()
                             backstack.add(Screens.NavLoginRoute)
@@ -106,10 +114,14 @@ fun AppNavigation(
             }
 
             // User details route - loads after authentication
-            entry<Screens.NavUserDetailsRoute> {
-                UserDetailsScreen(
+            entry<Screens.DetailsSyncRoute> {
+                DetailsSyncScreen(
                     snackbarHostState = snackbarHostState,
-                    onDetailsLoaded = {
+                    redirectToNonVolunteerDashboard = {
+                        backstack.clear()
+                        backstack.add(Screens.NavNonVolunteerHomeScreen)
+                    },
+                    redirectToVolunteerDashboard = {
                         backstack.clear()
                         backstack.add(Screens.NavHomeRoute)
                     }
@@ -122,7 +134,7 @@ fun AppNavigation(
                     snackbarHostState = snackbarHostState,
                     navigateToHome = {
                         backstack.clear()
-                        backstack.add(Screens.NavUserDetailsRoute) // Go to UserDetails first
+                        backstack.add(Screens.DetailsSyncRoute) // Go to UserDetails first
                     },
                     navigateToSignUp = {
                         backstack.add(Screens.NavSignUpEmailRoute)
@@ -182,11 +194,8 @@ fun AppNavigation(
             }
             // Main app routes
             entry<Screens.NavHomeRoute> {
-                HomeScreen(
+                MainHomeScreen(
                     snackbarHostState = snackbarHostState,
-                    navigateToAttendancePage = {
-                        backstack.add(Screens.NavAttendanceRoute)
-                    },
                     navigateToLogin = {
                         backstack.clear()
                         backstack.add(Screens.NavLoginRoute)
@@ -194,18 +203,23 @@ fun AppNavigation(
                     navigateToManagement = {
                         backstack.add(Screens.NavManagementRoute)
                     },
-                    navigateToVolunteerRegistration = {
-                        backstack.add(Screens.NavVolunteerRegistrationRoute)
+                    navigateToStudentRegistrationScreen = {
+                        backstack.add(Screens.NavStudentRegistrationRoute())
                     }
                 )
-            }
-            entry<Screens.NavAttendanceRoute> {
-                StudentAttendanceScreen(
-                    snackbarHostState = snackbarHostState,
-                    onBackPress = {
-                        backstack.popBackStack()
-                    }
-                )
+//                HomeScreen(
+//                    snackbarHostState = snackbarHostState,
+//                    navigateToLogin = {
+//                        backstack.clear()
+//                        backstack.add(Screens.NavLoginRoute)
+//                    },
+//                    navigateToManagement = {
+//                        backstack.add(Screens.NavManagementRoute)
+//                    },
+//                    navigateToVolunteerRegistration = {
+//                        backstack.add(Screens.NavVolunteerRegistrationRoute)
+//                    }
+//                )
             }
 
             // Management screens
@@ -311,6 +325,24 @@ fun AppNavigation(
                 )
             }
 
+            entry<Screens.NavVillageManagementRoute> {
+                VillageManagementScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            entry<Screens.NavGroupManagementRoute> {
+                GroupManagementScreen(
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
             entry<Screens.NavManageVolunteerRequestsRoute> {
                 ManageVolunteerRequestsScreen(
                     viewModel = koinViewModel(),
@@ -319,6 +351,50 @@ fun AppNavigation(
                         backstack.popBackStack()
                     }
                 )
+            }
+
+            // Student management screens
+            entry<Screens.NavStudentRegistrationRoute> { it ->
+                val pid = it.pid
+
+                StudentRegistrationScreen(
+                    viewModel = koinViewModel { parametersOf(pid) },
+                    snackbarHostState = snackbarHostState,
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    navigateToFacialData = { studentPid ->
+                        // TODO: Navigate to facial data screen when implemented
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            entry<Screens.NavNonVolunteerHomeScreen>{
+                //Add NonVolunteer HomeScreen
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                        .background(Color.Cyan)
+                ){
+                    NonVolunteerScreen(
+                        snackbarHostState = snackbarHostState,
+                        navigateToEvents = { /* TODO: Implement navigation to events */ },
+                        navigateToCreateVolunteerRequest = {
+                            backstack.add(Screens.NavVolunteerRegistrationRoute)
+                        },
+                        navigateToMyVolunteerRequests = {
+                            backstack.add(Screens.NavMyVolunteerRequestsRoute)
+                        },
+                        navigateToSettings = {
+                            backstack.add(Screens.NavManagementRoute)
+                        },
+                        navigateToLogin = {
+                            backstack.clear()
+                            backstack.add(Screens.NavLoginRoute)
+                        },
+                        authViewModel = authViewModel,
+                    )
+                   }
             }
         }
     )

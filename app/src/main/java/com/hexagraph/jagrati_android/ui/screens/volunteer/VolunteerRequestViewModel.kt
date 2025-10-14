@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -60,6 +61,12 @@ class VolunteerRequestViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             checkVolunteerRole()
             loadMyVolunteerRequests()
+            _firstName.update {
+                appPreferences.userDetails.get()?.firstName ?: ""
+            }
+            _lastName.update {
+                appPreferences.userDetails.get()?.lastName ?: ""
+            }
         }
     }
 

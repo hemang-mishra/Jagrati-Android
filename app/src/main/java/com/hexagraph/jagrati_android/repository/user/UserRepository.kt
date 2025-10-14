@@ -52,5 +52,5 @@ interface UserRepository {
      *
      * @return Flow of Resource containing list of permissions for the current user
      */
-    suspend fun getCurrentUserPermissions(): Flow<Resource<UserDetailsWithRolesAndPermissions>>
+    suspend fun getCurrentUserPermissions(timeMillis: Long): Flow<Resource<UserDetailsWithRolesAndPermissions>>
 }

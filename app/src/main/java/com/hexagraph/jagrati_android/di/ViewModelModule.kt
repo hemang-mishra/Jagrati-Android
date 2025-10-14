@@ -1,15 +1,15 @@
 package com.hexagraph.jagrati_android.di
 
-import com.hexagraph.jagrati_android.ui.screens.addStudent.AddStudentViewModel
 import com.hexagraph.jagrati_android.ui.screens.management.ManagementViewModel
-import com.hexagraph.jagrati_android.ui.screens.omniscan.OmniScanViewModel
 import com.hexagraph.jagrati_android.ui.screens.permissions.ManagePermissionsViewModel
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesViewModel
-import com.hexagraph.jagrati_android.ui.screens.studentAttendance.StudentAttendanceViewModel
-import com.hexagraph.jagrati_android.ui.screens.userdetails.UserDetailsViewModel
+import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncViewModel
+import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesViewModel
+import com.hexagraph.jagrati_android.ui.screens.village.VillageManagementViewModel
+import com.hexagraph.jagrati_android.ui.screens.group.GroupManagementViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRequestViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
@@ -26,10 +26,7 @@ val viewModelModule = module {
     factory<ForgotPasswordViewModel>{ ForgotPasswordViewModel(get()) }
 
     // Main app ViewModels
-    factory<OmniScanViewModel> { OmniScanViewModel(get(), get(), get()) }
-    factory<AddStudentViewModel> { AddStudentViewModel(get()) }
-    factory<StudentAttendanceViewModel>{ StudentAttendanceViewModel(get(), get(), get()) }
-    factory<UserDetailsViewModel> { UserDetailsViewModel(get(), get()) }
+    factory<DetailsSyncViewModel> { DetailsSyncViewModel(get(), get(), get()) }
     factory<ManagementViewModel> { ManagementViewModel(get()) }
     factory<ManageRolesViewModel> { ManageRolesViewModel(get()) }
 
@@ -41,7 +38,14 @@ val viewModelModule = module {
     factory { UserRolesViewModel(get()) }
     factory { (userPid: String) -> UserDetailViewModel(userPid, get(), get()) }
 
+    factory { VillageManagementViewModel(get(), get()) }
+
+    factory { GroupManagementViewModel(get(), get()) }
+
     // Volunteer management ViewModels
     factory { VolunteerRequestViewModel(get(), get()) }
     factory { ManageVolunteerRequestsViewModel(get()) }
+
+    // Student management ViewModels
+    factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), pid) }
 }

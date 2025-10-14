@@ -19,14 +19,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -43,53 +45,108 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
+import com.hexagraph.jagrati_android.util.AppPreferences
+import org.koin.compose.koinInject
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import java.util.Locale
 
 @Composable
 fun VolunteerRegistrationScreen(
     viewModel: VolunteerRequestViewModel,
     snackbarHostState: SnackbarHostState,
     onBackPressed: () -> Unit,
-    navigateToMyRequests: () -> Unit
+    navigateToMyRequests: () -> Unit,
+    appPreferences: AppPreferences = koinInject()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val isVolunteer by appPreferences.isVolunteer.getFlow().collectAsState(initial = false)
+    var showAlreadyVolunteerDialog by remember { mutableStateOf(false) }
+
+    // Check if user is already a volunteer
+    LaunchedEffect(key1 = isVolunteer) {
+        if (isVolunteer) {
+            showAlreadyVolunteerDialog = true
+        }
+    }
+
+    // Show dialog if user is already a volunteer
+    if (showAlreadyVolunteerDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showAlreadyVolunteerDialog = false
+                onBackPressed()
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = "Already Volunteer",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(48.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Already a Volunteer",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "You are already registered as a volunteer! You don't need to submit another registration request. You can access all volunteer features from the home screen.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showAlreadyVolunteerDialog = false
+                        onBackPressed()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Got it")
+                }
+            },
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
 
     LaunchedEffect(key1 = uiState.error) {
         uiState.error?.let { error ->
@@ -115,7 +172,7 @@ fun VolunteerRegistrationScreen(
         }
     }
 
-    LaunchedEffect(key1 = Unit) {
+    LaunchedEffect(key1 = uiState.hasPendingRequests) {
         // Check if user has any pending requests when entering this screen
         if (uiState.hasPendingRequests) {
             Toast.makeText(
@@ -127,29 +184,32 @@ fun VolunteerRegistrationScreen(
         }
     }
 
-    VolunteerRegistrationScreenLayout(
-        uiState = uiState,
-        onBackPressed = onBackPressed,
-        onFirstNameChanged = viewModel::updateFirstName,
-        onLastNameChanged = viewModel::updateLastName,
-        onGenderChanged = viewModel::updateGender,
-        onRollNumberChanged = viewModel::updateRollNumber,
-        onAlternateEmailChanged = viewModel::updateAlternateEmail,
-        onBatchChanged = viewModel::updateBatch,
-        onProgrammeChanged = viewModel::updateProgramme,
-        onStreetAddress1Changed = viewModel::updateStreetAddress1,
-        onStreetAddress2Changed = viewModel::updateStreetAddress2,
-        onPincodeChanged = viewModel::updatePincode,
-        onCityChanged = viewModel::updateCity,
-        onStateChanged = viewModel::updateState,
-        onDateOfBirthChanged = viewModel::updateDateOfBirth,
-        onContactNumberChanged = viewModel::updateContactNumber,
-        onProfileImageUrlChanged = viewModel::updateProfileImageUrl,
-        onCollegeChanged = viewModel::updateCollege,
-        onBranchChanged = viewModel::updateBranch,
-        onYearOfStudyChanged = viewModel::updateYearOfStudy,
-        onSubmitClicked = viewModel::submitVolunteerRequest
-    )
+    // Only show the form if user is not already a volunteer
+    if (!isVolunteer) {
+        VolunteerRegistrationScreenLayout(
+            uiState = uiState,
+            onBackPressed = onBackPressed,
+            onFirstNameChanged = viewModel::updateFirstName,
+            onLastNameChanged = viewModel::updateLastName,
+            onGenderChanged = viewModel::updateGender,
+            onRollNumberChanged = viewModel::updateRollNumber,
+            onAlternateEmailChanged = viewModel::updateAlternateEmail,
+            onBatchChanged = viewModel::updateBatch,
+            onProgrammeChanged = viewModel::updateProgramme,
+            onStreetAddress1Changed = viewModel::updateStreetAddress1,
+            onStreetAddress2Changed = viewModel::updateStreetAddress2,
+            onPincodeChanged = viewModel::updatePincode,
+            onCityChanged = viewModel::updateCity,
+            onStateChanged = viewModel::updateState,
+            onDateOfBirthChanged = viewModel::updateDateOfBirth,
+            onContactNumberChanged = viewModel::updateContactNumber,
+            onProfileImageUrlChanged = viewModel::updateProfileImageUrl,
+            onCollegeChanged = viewModel::updateCollege,
+            onBranchChanged = viewModel::updateBranch,
+            onYearOfStudyChanged = viewModel::updateYearOfStudy,
+            onSubmitClicked = viewModel::submitVolunteerRequest
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -178,7 +238,6 @@ fun VolunteerRegistrationScreenLayout(
     onSubmitClicked: () -> Unit
 ) {
     val scrollState = rememberScrollState()
-    val pullRefreshState = rememberPullToRefreshState()
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -200,9 +259,8 @@ fun VolunteerRegistrationScreenLayout(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         }
@@ -222,7 +280,7 @@ fun VolunteerRegistrationScreenLayout(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -234,14 +292,14 @@ fun VolunteerRegistrationScreenLayout(
                             text = "Join as a Volunteer",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = Color.White
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Please fill out the form below to apply as a volunteer",
                             style = MaterialTheme.typography.bodyMedium,
                             textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = Color.White
                         )
                     }
                 }
@@ -256,7 +314,8 @@ fun VolunteerRegistrationScreenLayout(
                         value = uiState.firstName,
                         onValueChange = onFirstNameChanged,
                         error = uiState.formErrors["firstName"],
-                        isRequired = true
+                        isRequired = true,
+                        enabled = false
                     )
 
                     // Last Name
@@ -265,7 +324,8 @@ fun VolunteerRegistrationScreenLayout(
                         value = uiState.lastName,
                         onValueChange = onLastNameChanged,
                         error = uiState.formErrors["lastName"],
-                        isRequired = true
+                        isRequired = true,
+                        enabled = false
                     )
 
                     // Gender selection
@@ -435,7 +495,8 @@ fun VolunteerRegistrationScreenLayout(
                         error = uiState.formErrors["pincode"],
                         isRequired = true,
                         keyboardType = KeyboardType.Number,
-                        maxLength = 6
+                        maxLength = 6,
+                        imeAction = ImeAction.Done
                     )
                 }
 
@@ -535,10 +596,14 @@ fun FormField(
     onValueChange: (String) -> Unit,
     error: String?,
     isRequired: Boolean,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     keyboardType: KeyboardType = KeyboardType.Text,
-    maxLength: Int? = null
+    maxLength: Int? = null,
+    imeAction: ImeAction = ImeAction.Next
 ) {
+    val focusManager = LocalFocusManager.current
+
     Column(
         modifier = modifier.fillMaxWidth()
     ) {
@@ -558,9 +623,21 @@ fun FormField(
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                imeAction = imeAction
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    focusManager.moveFocus(FocusDirection.Down)
+                },
+                onDone = {
+                    focusManager.clearFocus()
+                }
+            ),
             isError = error != null,
             singleLine = true,
+            enabled = enabled,
             shape = RoundedCornerShape(8.dp)
         )
 

@@ -1,7 +1,6 @@
 package com.hexagraph.jagrati_android.di
 
 import androidx.room.Room
-import com.hexagraph.jagrati_android.model.databases.EmbeddingsDatabase
 import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -12,15 +11,7 @@ val databaseModule = module {
         Room.databaseBuilder(
             androidContext(),
             PrimaryDatabase::class.java,
-            "face_info_db"
-        ).build()
-    }
-
-    single {
-        Room.databaseBuilder(
-            androidContext(),
-            EmbeddingsDatabase::class.java,
-            "face_embedding_db"
+            "primary_db"
         ).build()
     }
 
@@ -33,10 +24,18 @@ val databaseModule = module {
     }
 
     single {
-        get<PrimaryDatabase>().attendanceDao()
+        get<PrimaryDatabase>().embeddingsDao()
     }
 
     single {
-        get<EmbeddingsDatabase>().embeddingsDao()
+        get<PrimaryDatabase>().groupsDao()
+    }
+
+    single {
+        get<PrimaryDatabase>().villageDao()
+    }
+
+    single {
+        get<PrimaryDatabase>().volunteerDao()
     }
 }

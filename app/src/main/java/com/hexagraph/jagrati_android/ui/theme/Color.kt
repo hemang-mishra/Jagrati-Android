@@ -8,23 +8,23 @@ import androidx.compose.ui.graphics.Color
 
 // Brand Colors from your palette
 object JagratiColors {
-    val Orange = Color(0xFFF17E01)
+    val Red = Color(0xFFE53935) // Vibrant red replacing orange
     val Purple = Color(0xFFAA9FF8)
-    val Yellow = Color(0x0FEEC434)
+    val Yellow = Color(0xFFEEC434)
     val Turquoise = Color(0xFF3FB8AF)
     val Brown = Color(0xFFA65700)
-    val DarkBrown = Color(0xFF332118)
     val LightGray = Color(0xFFFAF7F2)
-    val Black = Color(0xFF121212)
+    val Black = Color(0xFF000000)
+    val DarkGray = Color(0xFF1E1E1E) // Neutral dark gray for dark theme
 }
 
 // Light Theme Colors
 val LightColorScheme = lightColorScheme(
-    // Primary - Orange (main brand color)
-    primary = JagratiColors.Orange,
+    // Primary - Red (main brand color)
+    primary = JagratiColors.Red,
     onPrimary = Color.White,
-    primaryContainer = JagratiColors.Orange.copy(alpha = 0.1f),
-    onPrimaryContainer = JagratiColors.Orange,
+    primaryContainer = JagratiColors.Red.copy(alpha = 0.1f),
+    onPrimaryContainer = JagratiColors.Red,
 
     // Secondary - Purple (contrast color)
     secondary = JagratiColors.Purple,
@@ -49,7 +49,7 @@ val LightColorScheme = lightColorScheme(
     onBackground = Color.Black,
 
     // Error (keep standard)
-    error = Color(0xFFBA1A1A),
+    error = Color(0xFFD32F2F),
     onError = Color.White,
     errorContainer = Color(0xFFFFDAD6),
     onErrorContainer = Color(0xFF410002),
@@ -61,36 +61,36 @@ val LightColorScheme = lightColorScheme(
     // Inverse colors
     inverseSurface = Color.Black,
     inverseOnSurface = Color.White,
-    inversePrimary = JagratiColors.Orange.copy(alpha = 0.8f),
+    inversePrimary = JagratiColors.Red.copy(alpha = 0.8f),
 
     // Surface tint
-    surfaceTint = JagratiColors.Orange
+    surfaceTint = JagratiColors.Red
 )
 
 // Dark Theme Colors
 val DarkColorScheme = darkColorScheme(
-    // Primary - Orange (adjusted for dark theme)
-    primary = JagratiColors.Orange.copy(alpha = 0.9f),
-    onPrimary = Color.Black,
-    primaryContainer = JagratiColors.Orange.copy(alpha = 0.2f),
-    onPrimaryContainer = JagratiColors.Orange,
+    // Primary - Red (adjusted for dark theme)
+    primary = JagratiColors.Red,
+    onPrimary = Color.White,
+    primaryContainer = JagratiColors.Red.copy(alpha = 0.2f),
+    onPrimaryContainer = JagratiColors.Red.copy(alpha = 0.9f),
 
     // Secondary - Purple (adjusted for dark theme)
-    secondary = JagratiColors.Purple.copy(alpha = 0.8f),
-    onSecondary = Color.Black,
+    secondary = JagratiColors.Purple,
+    onSecondary = Color.White,
     secondaryContainer = JagratiColors.Purple.copy(alpha = 0.2f),
-    onSecondaryContainer = JagratiColors.Purple,
+    onSecondaryContainer = JagratiColors.Purple.copy(alpha = 0.9f),
 
     // Tertiary - Turquoise (using turquoise instead of yellow for better dark theme contrast)
     tertiary = JagratiColors.Turquoise,
-    onTertiary = Color.Black,
+    onTertiary = Color.White,
     tertiaryContainer = JagratiColors.Turquoise.copy(alpha = 0.2f),
     onTertiaryContainer = JagratiColors.Turquoise,
 
-    // Surface colors
-    surface = JagratiColors.DarkBrown,
+    // Surface colors - Using neutral dark gray instead of brown
+    surface = JagratiColors.DarkGray,
     onSurface = Color.White,
-    surfaceVariant = JagratiColors.DarkBrown.copy(alpha = 0.8f),
+    surfaceVariant = Color(0xFF2A2A2A),
     onSurfaceVariant = Color.White.copy(alpha = 0.8f),
 
     // Background
@@ -98,8 +98,8 @@ val DarkColorScheme = darkColorScheme(
     onBackground = Color.White,
 
     // Error (adjusted for dark theme)
-    error = Color(0xFFFFB4AB),
-    onError = Color(0xFF690005),
+    error = Color(0xFFEF5350),
+    onError = Color.White,
     errorContainer = Color(0xFF93000A),
     onErrorContainer = Color(0xFFFFDAD6),
 
@@ -110,15 +110,15 @@ val DarkColorScheme = darkColorScheme(
     // Inverse colors
     inverseSurface = Color.White,
     inverseOnSurface = Color.Black,
-    inversePrimary = JagratiColors.Orange,
+    inversePrimary = JagratiColors.Red,
 
     // Surface tint
-    surfaceTint = JagratiColors.Orange.copy(alpha = 0.8f)
+    surfaceTint = JagratiColors.Red.copy(alpha = 0.8f)
 )
 
 // Additional custom colors for batch divisions, etc.
 object CustomColors {
-    val BatchOrange = JagratiColors.Orange
+    val BatchRed = JagratiColors.Red
     val BatchPurple = JagratiColors.Purple
     val BatchYellow = JagratiColors.Yellow
     val BatchTurquoise = JagratiColors.Turquoise
@@ -131,18 +131,18 @@ object CustomColors {
 
     // Light theme batch colors
     val lightBatchColors = listOf(
-        BatchOrange,
+        BatchRed,
         BatchPurple,
-        BatchOrange,
+        BatchYellow,
         BatchTurquoise,
         BatchBrown
     )
 
     // Dark theme batch colors (slightly adjusted for better visibility)
     val darkBatchColors = listOf(
-        BatchOrange.copy(alpha = 0.9f),
-        BatchPurple.copy(alpha = 0.8f),
-        BatchYellow.copy(alpha = 0.9f),
+        BatchRed,
+        BatchPurple,
+        BatchYellow,
         BatchTurquoise,
         BatchBrown.copy(alpha = 0.8f)
     )

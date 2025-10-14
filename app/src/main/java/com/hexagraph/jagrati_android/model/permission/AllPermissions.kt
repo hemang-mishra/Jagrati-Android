@@ -38,8 +38,10 @@ enum class AllPermissions(val module: Module, val action: Action) {
     ATTENDANCE_MARK_STUDENT(Module.ATTENDANCE, Action.CREATE),
     ATTENDANCE_MARK_VOLUNTEER(Module.ATTENDANCE, Action.CREATE),
     ATTENDANCE_READ(Module.ATTENDANCE, Action.READ),
-    ATTENDANCE_UPDATE(Module.ATTENDANCE, Action.UPDATE),
-    ATTENDANCE_DELETE(Module.ATTENDANCE, Action.DELETE),
+    ATTENDANCE_UPDATE_STUDENT(Module.ATTENDANCE, Action.UPDATE),
+    ATTENDANCE_UPDATE_VOLUNTEER(Module.ATTENDANCE, Action.UPDATE),
+    ATTENDANCE_DELETE_STUDENT(Module.ATTENDANCE, Action.DELETE),
+    ATTENDANCE_DELETE_VOLUNTEER(Module.ATTENDANCE, Action.DELETE),
     ATTENDANCE_GENERATE_REPORTS(Module.ATTENDANCE, Action.GENERATE_REPORT),
 
     // CLASSWORK Module
@@ -101,17 +103,14 @@ enum class AllPermissions(val module: Module, val action: Action) {
     FACE_AUTH_VERIFY(Module.FACE_AUTH, Action.CHECK),
 
     // GROUP_MANAGEMENT Module
-    GROUP_CREATE(Module.GROUP_MANAGEMENT, Action.CREATE),
-    GROUP_READ(Module.GROUP_MANAGEMENT, Action.READ),
-    GROUP_UPDATE(Module.GROUP_MANAGEMENT, Action.UPDATE),
-    GROUP_DELETE(Module.GROUP_MANAGEMENT, Action.DELETE),
+    GROUP_MANAGE(Module.GROUP_MANAGEMENT, Action.MANAGE),
+    VILLAGE_MANAGE(Module.GROUP_MANAGEMENT, Action.MANAGE),
     GROUP_ASSIGN_STUDENTS(Module.GROUP_MANAGEMENT, Action.ASSIGN),
     GROUP_MANAGE_VOLUNTEERS(Module.GROUP_MANAGEMENT, Action.MANAGE);
 
     fun getPermissionName(): String = this.name
     fun getDescription(): String = "${action.name.lowercase().replaceFirstChar { it.uppercase() }} ${module.name.lowercase().replaceFirstChar { it.uppercase() }}"
 }
-
 enum class Module {
     STUDENT,
     VOLUNTEER,
