@@ -3,6 +3,8 @@ package com.hexagraph.jagrati_android.di
 import android.app.Application
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
 import com.hexagraph.jagrati_android.repository.auth.KtorAuthRepository
+import com.hexagraph.jagrati_android.repository.auth.StudentRepository
+import com.hexagraph.jagrati_android.repository.auth.KtorStudentRepository
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanImplementation
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.repository.permission.KtorPermissionRepository
@@ -24,6 +26,9 @@ val repositoryModule = module {
 
     single<AuthRepository>{
         KtorAuthRepository(get(), get(), get())
+    }
+    single<StudentRepository> {
+        KtorStudentRepository(get())
     }
     single<PermissionRepository> {
         KtorPermissionRepository(get())
