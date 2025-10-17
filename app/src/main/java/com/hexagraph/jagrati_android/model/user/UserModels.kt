@@ -67,7 +67,7 @@ data class UserSummaryDTO(
 ){
     fun toUser(): User =
         User(
-            uid = pid,
+            pid = pid,
             firstName = firstName,
             lastName = lastName,
             email = email,
@@ -96,6 +96,5 @@ data class UserDetailsWithRolesAndPermissions(
     val students: List<StudentDTO> = emptyList(),
     val volunteers: List<VolunteerDTO> = emptyList(),
     val volunteerProfile: VolunteerDTO? = null,
-    val faceInfo: List<FaceDataDTO> = emptyList(),
     val isVolunteer: Boolean = false
 )

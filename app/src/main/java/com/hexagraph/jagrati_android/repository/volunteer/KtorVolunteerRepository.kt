@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.repository.volunteer
 
 import com.hexagraph.jagrati_android.model.user.VolunteerDTO
+import com.hexagraph.jagrati_android.model.volunteer.UpdateVolunteerRequest
 import com.hexagraph.jagrati_android.model.volunteer.VolunteerListResponse
 import com.hexagraph.jagrati_android.service.volunteer.KtorVolunteerService
 import com.hexagraph.jagrati_android.util.Resource
@@ -22,5 +23,10 @@ class KtorVolunteerRepository(
         val response = safeApiCall { volunteerService.getVolunteerByPid(pid) }
         emit(response)
     }
-}
 
+    override suspend fun updateMyDetails(updateVolunteerRequest: UpdateVolunteerRequest): Flow<Resource<VolunteerDTO>> = flow {
+        emit(Resource.loading())
+        val response = safeApiCall { volunteerService.updateMyDetails(updateVolunteerRequest) }
+        emit(response)
+    }
+}

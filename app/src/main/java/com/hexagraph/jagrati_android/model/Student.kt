@@ -25,8 +25,8 @@ data class Student(
     @ColumnInfo(name = "gender")
     val gender: String,
 
-    @ColumnInfo(name = "profile_pic")
-    val profilePic: String? = null,
+    @ColumnInfo(name = "profile_pic_details")
+    val profilePic: ImageKitResponse? = null,
 
     @ColumnInfo(name = "school_class")
     val schoolClass: String? = null,

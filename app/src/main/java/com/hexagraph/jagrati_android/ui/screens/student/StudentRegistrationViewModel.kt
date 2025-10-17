@@ -2,9 +2,12 @@ package com.hexagraph.jagrati_android.ui.screens.student
 
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ResponseError
+import com.hexagraph.jagrati_android.model.Student
+import com.hexagraph.jagrati_android.model.dao.StudentDao
 import com.hexagraph.jagrati_android.model.student.StudentRequest
 import com.hexagraph.jagrati_android.model.student.StudentResponse
 import com.hexagraph.jagrati_android.model.student.UpdateStudentRequest
+import com.hexagraph.jagrati_android.model.student.toStudent
 import com.hexagraph.jagrati_android.repository.auth.StudentRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
@@ -43,6 +46,7 @@ data class StudentRegistrationUiState(
 
 class StudentRegistrationViewModel(
     private val studentRepository: StudentRepository,
+    private val studentDao: StudentDao,
     private val appPreferences: AppPreferences,
     private val pidToUpdate: String?
 ) : BaseViewModel<StudentRegistrationUiState>() {
@@ -282,6 +286,10 @@ class StudentRegistrationViewModel(
             when {
                 resource.isSuccess -> {
                     emitMsg("Student registered successfully!")
+                    // Addiong to DAO after registration
+                    studentDao.upsertStudentDetails(
+                        request.toStudent()
+                    )
                     _submissionSuccessful.update { true }
                     _isLoading.update { false }
                 }

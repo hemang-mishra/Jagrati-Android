@@ -5,7 +5,7 @@ import com.hexagraph.jagrati_android.model.user.UserSummaryDTO
 /**
  * Data class representing a user in the application.
  *
- * @property uid Unique identifier for the user
+ * @property pid Unique identifier for the user
  * @property email Email address of the user
  * @property firstName Display first name of the user
  * @property lastName Display last name of the user
@@ -13,7 +13,7 @@ import com.hexagraph.jagrati_android.model.user.UserSummaryDTO
  * @property photoUrl URL to the user's profile photo
  */
 data class User(
-    val uid: String = "",
+    val pid: String = "",
     val email: String = "",
     val firstName: String = "",
     val lastName: String = "",
@@ -22,7 +22,7 @@ data class User(
 ){
     fun toUserSummaryDTO(): UserSummaryDTO {
         return UserSummaryDTO(
-            pid = uid,
+            pid = pid,
             email = email,
             firstName = firstName,
             lastName = lastName,

@@ -1,10 +1,16 @@
 package com.hexagraph.jagrati_android.util
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.icu.text.SimpleDateFormat
 import android.net.http.HttpException
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresExtension
+import coil3.ImageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
 import com.hexagraph.jagrati_android.model.ResponseError
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.HttpRequestTimeoutException
@@ -29,6 +35,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.JsonConvertException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import java.io.File
 import java.time.LocalDateTime
 
 /**
@@ -196,6 +203,29 @@ object Utils {
         val sanitizedName = name.replace(Regex("[^a-zA-Z0-9]"), "_")
         return "${sanitizedName}_$timeInMills"
     }
+
+    fun bitmapToFile(context: Context, bitmap: Bitmap, fileName: String): File{
+        val file = File(context.cacheDir, fileName)
+        file.outputStream().use { out->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        }
+        return file
+    }
+
+    suspend fun getBitmapFromURL(context: Context, url: String): Bitmap? {
+        val loader = ImageLoader(context)
+        val request = ImageRequest.Builder(context)
+            .data(url)
+            .allowHardware(false)
+            .build()
+        val result = loader.execute(request)
+        return if (result is SuccessResult) {
+            (result.image as? BitmapDrawable)?.bitmap
+        } else {
+            null
+        }
+    }
+
 }
 
 @Serializable

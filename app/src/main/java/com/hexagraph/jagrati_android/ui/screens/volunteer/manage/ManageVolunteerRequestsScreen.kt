@@ -528,16 +528,7 @@ fun VolunteerRequestCard(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                 ) {
-                    if (!request.profileImageUrl.isNullOrBlank()) {
-                        AsyncImage(
-                            model = request.profileImageUrl,
-                            contentDescription = "Profile Image",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                        )
-                    } else {
+
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -548,7 +539,7 @@ fun VolunteerRequestCard(
                                 color = MaterialTheme.colorScheme.primary
                             )
                         }
-                    }
+
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -1074,7 +1065,6 @@ private fun createMockRequest(
         programme = programme,
         dateOfBirth = LocalDate.of(2000, 1, 1),
         contactNumber = "9876543210",
-        profileImageUrl = null,
         college = "IIITDM Jabalpur",
         branch = branch,
         yearOfStudy = yearOfStudy,

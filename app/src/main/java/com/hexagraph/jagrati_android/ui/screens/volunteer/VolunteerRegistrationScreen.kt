@@ -203,7 +203,6 @@ fun VolunteerRegistrationScreen(
             onStateChanged = viewModel::updateState,
             onDateOfBirthChanged = viewModel::updateDateOfBirth,
             onContactNumberChanged = viewModel::updateContactNumber,
-            onProfileImageUrlChanged = viewModel::updateProfileImageUrl,
             onCollegeChanged = viewModel::updateCollege,
             onBranchChanged = viewModel::updateBranch,
             onYearOfStudyChanged = viewModel::updateYearOfStudy,
@@ -231,7 +230,6 @@ fun VolunteerRegistrationScreenLayout(
     onStateChanged: (String) -> Unit,
     onDateOfBirthChanged: (LocalDate?) -> Unit,
     onContactNumberChanged: (String) -> Unit,
-    onProfileImageUrlChanged: (String) -> Unit,
     onCollegeChanged: (String) -> Unit,
     onBranchChanged: (String) -> Unit,
     onYearOfStudyChanged: (Int?) -> Unit,
@@ -351,15 +349,6 @@ fun VolunteerRegistrationScreenLayout(
                         isRequired = true,
                         keyboardType = KeyboardType.Phone,
                         maxLength = 10
-                    )
-
-                    // Profile Image URL
-                    FormField(
-                        label = "Profile Image URL (Optional)",
-                        value = uiState.profileImageUrl,
-                        onValueChange = onProfileImageUrlChanged,
-                        error = uiState.formErrors["profileImageUrl"],
-                        isRequired = false
                     )
                 }
 
@@ -942,7 +931,6 @@ fun VolunteerRegistrationPreview() {
             onStateChanged = {},
             onDateOfBirthChanged = {},
             onContactNumberChanged = {},
-            onProfileImageUrlChanged = {},
             onCollegeChanged = {},
             onBranchChanged = {},
             onYearOfStudyChanged = {},

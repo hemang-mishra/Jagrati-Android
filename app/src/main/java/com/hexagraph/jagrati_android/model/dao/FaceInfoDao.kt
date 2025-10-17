@@ -18,16 +18,10 @@ interface FaceInfoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(data: FaceInfo)
 
-    @Query("SELECT * FROM FaceInfo WHERE pid = :id")
-    fun face(id: String): Flow<FaceInfo>
-
-    @Query("SELECT * FROM FaceInfo ")
-    fun faces(): Flow<List<FaceInfo>>
-
-    @Query("SELECT * FROM FaceInfo ")
-    suspend fun faceList(): List<FaceInfo>
+    @Query("SELECT pid FROM FaceInfo ")
+    suspend fun facePIDsList(): List<String>
 
     @Query("SELECT * FROM FaceInfo WHERE pid = :id")
-    suspend fun getFaceById(id: String): FaceInfo
+    suspend fun getFaceById(id: String): FaceInfo?
 
 }

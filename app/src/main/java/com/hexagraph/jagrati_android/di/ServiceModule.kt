@@ -9,7 +9,7 @@ import org.koin.dsl.module
 
 val serviceModule = module{
     single<FaceRecognitionService> {
-        FaceRecognitionServiceImpl(get())
+        FaceRecognitionServiceImpl(get(),  get())
     }
 
     single<ImageKitService> {

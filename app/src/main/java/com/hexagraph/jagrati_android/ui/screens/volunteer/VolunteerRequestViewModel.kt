@@ -44,7 +44,6 @@ class VolunteerRequestViewModel(
     private val _state = MutableStateFlow("")
     private val _dateOfBirth = MutableStateFlow<LocalDate?>(null)
     private val _contactNumber = MutableStateFlow("")
-    private val _profileImageUrl = MutableStateFlow("")
     private val _college = MutableStateFlow("IIITDM Jabalpur")
     private val _branch = MutableStateFlow("")
     private val _yearOfStudy = MutableStateFlow<Int?>(null)
@@ -90,7 +89,6 @@ class VolunteerRequestViewModel(
             _state,
             _dateOfBirth,
             _contactNumber,
-            _profileImageUrl,
             _college,
             _branch,
             _yearOfStudy,
@@ -117,14 +115,13 @@ class VolunteerRequestViewModel(
             val state = flows[15] as String
             val dateOfBirth = flows[16] as LocalDate?
             val contactNumber = flows[17] as String
-            val profileImageUrl = flows[18] as String
-            val college = flows[19] as String
-            val branch = flows[20] as String
-            val yearOfStudy = flows[21] as Int?
-            val formErrors = flows[22] as Map<String, String>
-            val submissionSuccessful = flows[23] as Boolean
-            val error = flows[24] as ResponseError?
-            val successMsg = flows[25] as String?
+            val college = flows[18] as String
+            val branch = flows[19] as String
+            val yearOfStudy = flows[20] as Int?
+            val formErrors = flows[21] as Map<String, String>
+            val submissionSuccessful = flows[22] as Boolean
+            val error = flows[23] as ResponseError?
+            val successMsg = flows[24] as String?
 
             VolunteerRequestUiState(
                 myRequests = myRequests,
@@ -145,7 +142,6 @@ class VolunteerRequestViewModel(
                 state = state,
                 dateOfBirth = dateOfBirth,
                 contactNumber = contactNumber,
-                profileImageUrl = profileImageUrl,
                 college = college,
                 branch = branch,
                 yearOfStudy = yearOfStudy,
@@ -262,11 +258,6 @@ class VolunteerRequestViewModel(
     fun updateContactNumber(value: String) {
         _contactNumber.value = value
         validateField("contactNumber", value)
-    }
-
-    fun updateProfileImageUrl(value: String) {
-        _profileImageUrl.value = value
-        // Optional field, no validation needed
     }
 
     fun updateCollege(value: String) {
@@ -420,7 +411,6 @@ class VolunteerRequestViewModel(
                 state = _state.value.takeIf { it.isNotBlank() },
                 dateOfBirth = formattedDate,
                 contactNumber = _contactNumber.value.takeIf { it.isNotBlank() },
-                profileImageUrl = _profileImageUrl.value.takeIf { it.isNotBlank() },
                 college = _college.value.takeIf { it.isNotBlank() },
                 branch = _branch.value.takeIf { it.isNotBlank() },
                 yearOfStudy = _yearOfStudy.value
@@ -472,7 +462,6 @@ data class VolunteerRequestUiState(
     val state: String = "",
     val dateOfBirth: LocalDate? = null,
     val contactNumber: String = "",
-    val profileImageUrl: String = "",
     val college: String = "IIITDM Jabalpur",
     val branch: String = "",
     val yearOfStudy: Int? = null,

@@ -6,7 +6,6 @@ import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.model.auth.ForgotPasswordRequest
 import com.hexagraph.jagrati_android.model.auth.GoogleLoginRequest
 import com.hexagraph.jagrati_android.model.auth.LoginRequest
-import com.hexagraph.jagrati_android.model.auth.RefreshRequest
 import com.hexagraph.jagrati_android.model.auth.RegisterRequest
 import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
 import com.hexagraph.jagrati_android.util.AppPreferences
@@ -16,7 +15,6 @@ import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.plugin
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 
@@ -55,7 +53,7 @@ class KtorAuthRepository(
                 refreshTokens()
                 // Create user object
                 val user = User(
-                    uid = "", // We don't have the user ID from the token response
+                    pid = "", // We don't have the user ID from the token response
                     email = email,
                     firstName = "", // We don't have the display name from the token response
                     lastName = "", // We don't have the last name from the token response
@@ -88,7 +86,7 @@ class KtorAuthRepository(
                 refreshTokens()
                 // Create user object - we'll need to get user details from the token or make another API call
                 val user = User(
-                    uid = "", // We don't have the user ID from the token response
+                    pid = "", // We don't have the user ID from the token response
                     email = "", // We don't have the email from the token response
                     firstName = "", // We don't have the display name from the token response
                     lastName = "", // We don't have the last name from the token response

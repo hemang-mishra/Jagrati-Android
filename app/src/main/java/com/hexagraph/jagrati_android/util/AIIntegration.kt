@@ -24,7 +24,7 @@ object AIIntegration {
 
     private const val IMAGE_MEAN = 128.0f
     private const val IMAGE_STD = 128.0f
-    const val DEFAULT_SIMILARITY = 0.8f
+    const val DEFAULT_SIMILARITY = 0.9f
     var isRunning = false
 
     private fun getInterceptor(path: String, context: Context): Interpreter {

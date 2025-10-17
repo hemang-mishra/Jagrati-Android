@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -56,6 +57,7 @@ fun MainHomeScreen(
     navigateToManagement: () -> Unit,
     authViewModel: AuthViewModel = koinViewModel(),
     navigateToStudentRegistrationScreen: ()-> Unit,
+    updateFacialData: (String) -> Unit,
     appPreferences: AppPreferences = koinInject()
 ) {
     var userData by remember { mutableStateOf<User?>(null) }
@@ -126,7 +128,12 @@ fun MainHomeScreen(
                     1 -> AttendanceSummaryScreen()
                     2 -> SyllabusScreen()
                     3 -> NotificationsScreen()
-                    4 -> ProfileScreen(userData = userData)
+                    4 -> ProfileScreen(
+                        userData = userData,
+                        updateFacialData = {
+                            userData?.pid?.let { pid -> updateFacialData(pid) }
+                        }
+                    )
                 }
             }
         }
@@ -327,11 +334,20 @@ fun NotificationsScreen() {
 }
 
 @Composable
-fun ProfileScreen(userData: User?) {
+fun ProfileScreen(userData: User?,
+                  updateFacialData: ()-> Unit
+                  ) {
     MockScreen(
         title = "Profile",
         description = "Manage your profile information and preferences.\n\nUser: ${userData?.firstName ?: "Guest"}"
     )
+    Box(modifier = Modifier.fillMaxSize()){
+        Button(
+            onClick = updateFacialData
+        ) {
+            Text("Upsert facial data")
+        }
+    }
 }
 
 /**

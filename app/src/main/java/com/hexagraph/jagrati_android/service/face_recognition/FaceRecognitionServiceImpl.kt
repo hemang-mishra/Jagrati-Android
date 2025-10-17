@@ -5,7 +5,9 @@ import android.util.Log
 import com.hexagraph.jagrati_android.model.FaceEmbeddingsCacheEntity
 import com.hexagraph.jagrati_android.model.ProcessedImage
 import com.hexagraph.jagrati_android.model.dao.EmbeddingsDAO
+import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
 import com.hexagraph.jagrati_android.util.AIIntegration
+import com.hexagraph.jagrati_android.util.AIIntegration.DEFAULT_SIMILARITY
 import com.hexagraph.jagrati_android.util.AIIntegration.FACE_NET_EMBEDDING_SIZE
 import com.hexagraph.jagrati_android.util.AIIntegration.FACE_NET_IMAGE_SIZE
 import com.hexagraph.jagrati_android.util.AIIntegration.calculateCosineSimilarity
@@ -20,7 +22,16 @@ import java.util.Collections
 import java.util.PriorityQueue
 import javax.inject.Inject
 
-class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: EmbeddingsDAO):
+data class FaceRecognitionResult(
+    val pid: String,
+    val distance: Float,
+    val similarity: Float
+){
+    val matchesCriteria get():Boolean = (similarity) > DEFAULT_SIMILARITY
+}
+
+class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: EmbeddingsDAO,
+    val faceInfoDao: FaceInfoDao):
     FaceRecognitionService {
     override fun mobileNet(face: ProcessedImage, context: Context): Result<Float> = runCatching {
         val referenceInput = face.faceBitmap?.let { bitmap ->
@@ -52,9 +63,9 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
 
     override fun recognizeFace(
         face: ProcessedImage,
-        faces: List<ProcessedImage>,
+        facePids: List<String>,
         context: Context
-    ): List<ProcessedImage>? {
+    ): List<FaceRecognitionResult>? {
         synchronized(this) {
             if (AIIntegration.isRunning) return@synchronized
             isRunning = true
@@ -88,15 +99,14 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
                 val singleStart = System.currentTimeMillis()
 
                 val thresholdDistance = Float.MAX_VALUE
-                val minHeap = PriorityQueue<Pair<Float, ProcessedImage>>(Collections.reverseOrder())
+                val minHeap = PriorityQueue<Pair<Float, FaceRecognitionResult>>(Collections.reverseOrder())
 
-                for (data in faces) {
-                    val testPid = data.pid
-
+                for (testPid in facePids) {
                     val testEmbedding: FloatArray =
                         faceEmbeddingsDAO.getEmbeddingsByPid(testPid)?.embedding
                             ?: run {
-                                val testInputBuffer = data.faceBitmap?.let {
+                                val data = faceInfoDao.getFaceById(testPid)?.processedImage(context)
+                                val testInputBuffer = data?.faceBitmap?.let {
                                     preprocessBitmapForMobileFaceNet(
                                         it,
                                         FACE_NET_IMAGE_SIZE
@@ -168,7 +178,11 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
                         if(minHeap.size >= 5){
                             minHeap.remove()
                         }
-                        minHeap.offer(Pair(distance, data.copy(distance = distance, similarity = similarity)))
+                        minHeap.offer(Pair(distance, FaceRecognitionResult(
+                            pid = testPid,
+                            distance = distance,
+                            similarity = similarity
+                        )))
                     }
                 }
 
