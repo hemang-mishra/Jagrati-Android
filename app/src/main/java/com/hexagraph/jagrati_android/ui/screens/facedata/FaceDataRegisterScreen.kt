@@ -6,11 +6,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -308,6 +310,39 @@ fun CameraPreviewSection(
                 }, ContextCompat.getMainExecutor(ctx))
 
                 previewView
+            },
+            update = { previewView ->
+                val ctx = previewView.context
+                val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
+                cameraProviderFuture.addListener({
+                    val cameraProvider = cameraProviderFuture.get()
+
+                    val preview = Preview.Builder().build().also{
+                        it.surfaceProvider = previewView.surfaceProvider
+                    }
+                    val imageAnalysis = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+                        .also {
+                            it.setAnalyzer(cameraExecutor, getImageAnalyzer(lensFacing, paint, cameraExecutor))
+                        }
+
+                    val cameraSelector = CameraSelector.Builder()
+                        .requireLensFacing(lensFacing)
+                        .build()
+
+                    try {
+                        cameraProvider.unbindAll()
+                        cameraProvider.bindToLifecycle(
+                            lifecycleOwner,
+                            cameraSelector,
+                            preview,
+                            imageAnalysis
+                        )
+                    } catch (e: Exception){
+                        Log.d("CameraPreviewSection", "Camera binding failed", e)
+                    }
+                }, ContextCompat.getMainExecutor(ctx))
             },
             modifier = Modifier.fillMaxSize()
         )
