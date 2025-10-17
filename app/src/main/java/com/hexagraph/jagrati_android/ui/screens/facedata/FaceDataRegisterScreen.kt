@@ -46,6 +46,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
+import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 @Composable
@@ -101,7 +102,7 @@ fun FaceDataRegisterScreenLayout(
     onRetake: () -> Unit,
     onDiscard: () -> Unit,
     onSave: () -> Unit,
-    getImageAnalyzer: (Int, Paint, java.util.concurrent.Executor) -> ImageAnalysis.Analyzer,
+    getImageAnalyzer: (Int, Paint, Executor) -> ImageAnalysis.Analyzer,
     onImageFromGallery: (Bitmap, Paint) -> Unit
 ) {
     val context = LocalContext.current
@@ -208,7 +209,7 @@ fun FaceDataRegisterScreenLayout(
                         },
                         onCapture = onCapture,
                         onPickImage = { imagePickerLauncher.launch("image/*") },
-                        hasFaceDetected = uiState.capturedImage != null,
+                        hasFaceDetected = uiState.capturedImage?.face != null,
                         isLoading = uiState.isLoading
                     )
                 } else {
@@ -264,9 +265,9 @@ fun FaceDataRegisterScreenLayout(
 fun CameraPreviewSection(
     lensFacing: Int,
     lifecycleOwner: LifecycleOwner,
-    getImageAnalyzer: (Int, Paint, java.util.concurrent.Executor) -> ImageAnalysis.Analyzer,
+    getImageAnalyzer: (Int, Paint, Executor) -> ImageAnalysis.Analyzer,
     paint: Paint,
-    cameraExecutor: java.util.concurrent.Executor,
+    cameraExecutor: Executor,
     onFlipCamera: () -> Unit,
     onCapture: () -> Unit,
     onPickImage: () -> Unit,
