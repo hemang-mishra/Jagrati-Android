@@ -24,28 +24,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.hexagraph.jagrati_android.R
-import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
+import com.hexagraph.jagrati_android.model.ProcessedImage
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -110,7 +105,10 @@ fun FaceDataRegisterScreenLayout(
     var lensFacing by remember { mutableIntStateOf(CameraSelector.LENS_FACING_FRONT) }
     var hasCameraPermission by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
         )
     }
     val paint = remember { Paint() }
@@ -195,6 +193,7 @@ fun FaceDataRegisterScreenLayout(
             if (hasCameraPermission) {
                 if (uiState.isCameraActive) {
                     CameraPreviewSection(
+                        processedImage = uiState.capturedImage,
                         lensFacing = lensFacing,
                         lifecycleOwner = lifecycleOwner,
                         getImageAnalyzer = getImageAnalyzer,
@@ -218,7 +217,6 @@ fun FaceDataRegisterScreenLayout(
                             processedImage = processedImage,
                             isLoading = uiState.isLoading,
                             onRetake = onRetake,
-                            onDiscard = onDiscard,
                             onSave = onSave
                         )
                     }
@@ -263,6 +261,7 @@ fun FaceDataRegisterScreenLayout(
 
 @Composable
 fun CameraPreviewSection(
+    processedImage: ProcessedImage?,
     lensFacing: Int,
     lifecycleOwner: LifecycleOwner,
     getImageAnalyzer: (Int, Paint, Executor) -> ImageAnalysis.Analyzer,
@@ -290,7 +289,10 @@ fun CameraPreviewSection(
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .build()
                         .also {
-                            it.setAnalyzer(cameraExecutor, getImageAnalyzer(lensFacing, paint, cameraExecutor))
+                            it.setAnalyzer(
+                                cameraExecutor,
+                                getImageAnalyzer(lensFacing, paint, cameraExecutor)
+                            )
                         }
 
                     val cameraSelector = CameraSelector.Builder()
@@ -318,14 +320,17 @@ fun CameraPreviewSection(
                 cameraProviderFuture.addListener({
                     val cameraProvider = cameraProviderFuture.get()
 
-                    val preview = Preview.Builder().build().also{
+                    val preview = Preview.Builder().build().also {
                         it.surfaceProvider = previewView.surfaceProvider
                     }
                     val imageAnalysis = ImageAnalysis.Builder()
                         .setBackpressureStrategy(STRATEGY_KEEP_ONLY_LATEST)
                         .build()
                         .also {
-                            it.setAnalyzer(cameraExecutor, getImageAnalyzer(lensFacing, paint, cameraExecutor))
+                            it.setAnalyzer(
+                                cameraExecutor,
+                                getImageAnalyzer(lensFacing, paint, cameraExecutor)
+                            )
                         }
 
                     val cameraSelector = CameraSelector.Builder()
@@ -340,7 +345,7 @@ fun CameraPreviewSection(
                             preview,
                             imageAnalysis
                         )
-                    } catch (e: Exception){
+                    } catch (e: Exception) {
                         Log.d("CameraPreviewSection", "Camera binding failed", e)
                     }
                 }, ContextCompat.getMainExecutor(ctx))
@@ -466,153 +471,142 @@ fun CameraPreviewSection(
 
 @Composable
 fun CapturePreviewSection(
-    processedImage: com.hexagraph.jagrati_android.model.ProcessedImage,
+    processedImage: ProcessedImage,
     isLoading: Boolean,
     onRetake: () -> Unit,
-    onDiscard: () -> Unit,
     onSave: () -> Unit
 ) {
-    var showConfirmDialog by remember { mutableStateOf(true) }
-
     Box(modifier = Modifier.fillMaxSize()) {
-        processedImage.faceBitmap?.let { faceBitmap ->
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Card(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(vertical = 16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(vertical = 16.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                    shape = RoundedCornerShape(16.dp)
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    // Show the full captured image
+                    processedImage.image?.let { fullImage ->
                         Image(
-                            bitmap = faceBitmap.asImageBitmap(),
-                            contentDescription = "Captured Face",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
+                            bitmap = fullImage.asImageBitmap(),
+                            contentDescription = "Captured Image",
+                            modifier = Modifier.fillMaxSize()
                         )
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                        // Overlay the detected face region with a highlight
+                        processedImage.face?.let { face ->
+                            val boundingBox = face.boundingBox
+                            val imageWidth = fullImage.width.toFloat()
+                            val imageHeight = fullImage.height.toFloat()
 
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Saving face data...",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = onRetake,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Retake")
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            ) {
+                                androidx.compose.foundation.Canvas(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    val scaleX = size.width / imageWidth
+                                    val scaleY = size.height / imageHeight
+
+                                    val left = boundingBox.left * scaleX
+                                    val top = boundingBox.top * scaleY
+                                    val right = boundingBox.right * scaleX
+                                    val bottom = boundingBox.bottom * scaleY
+
+                                    // Draw bounding box
+                                    drawRoundRect(
+                                        color = androidx.compose.ui.graphics.Color.Green,
+                                        topLeft = androidx.compose.ui.geometry.Offset(left, top),
+                                        size = androidx.compose.ui.geometry.Size(
+                                            right - left,
+                                            bottom - top
+                                        ),
+                                        style = androidx.compose.ui.graphics.drawscope.Stroke(
+                                            width = 4.dp.toPx()
+                                        ),
+                                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx())
+                                    )
+                                }
+                            }
                         }
-
-                        Button(
-                            onClick = onSave,
-                            modifier = Modifier.weight(1f),
-                            enabled = !isLoading
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
+                    } ?: run {
+                        // Fallback to face bitmap if full image is not available
+                        processedImage.faceBitmap?.let { faceBitmap ->
+                            Image(
+                                bitmap = faceBitmap.asImageBitmap(),
+                                contentDescription = "Captured Face",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Save")
                         }
                     }
                 }
             }
-        }
 
-        if (showConfirmDialog && !isLoading) {
-            Dialog(onDismissRequest = { }) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    shape = RoundedCornerShape(16.dp)
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(48.dp),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Saving face data...",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            } else {
+                Text(
+                    text = "Is the face clearly visible?",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    OutlinedButton(
+                        onClick = onRetake,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Retake")
+                    }
+
+                    Button(
+                        onClick = onSave,
+                        modifier = Modifier.weight(1f),
+                        enabled = !isLoading
                     ) {
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.primary
+                            modifier = Modifier.size(20.dp)
                         )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = "Face Captured",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = "Is the face clearly visible?",
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-                                    showConfirmDialog = false
-                                    onDiscard()
-                                },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("No, Retake")
-                            }
-
-                            Button(
-                                onClick = { showConfirmDialog = false },
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("Yes, Continue")
-                            }
-                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Save")
                     }
                 }
             }
