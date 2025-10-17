@@ -23,19 +23,19 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.hexagraph.jagrati_android.model.FaceInfo
-import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
+import com.hexagraph.jagrati_android.model.dao.EmbeddingsDAO
+import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.util.FileUtility.writeBitmapIntoFile
 import com.hexagraph.jagrati_android.util.MediaUtils.bitmap
-import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
 class OmniScanImplementation @Inject constructor(
     private val faceRecognitionService: FaceRecognitionService,
     private val application: Application,
-    private val db: PrimaryDatabase
+    private val faceInfoDao: FaceInfoDao,
+    private val faceEmbeddingsDAO: EmbeddingsDAO
 ): OmniScanRepository {
     override fun cameraSelector(lensFacing: Int): CameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
 //    val cameraExecutor: Executor by lazy { Executors.newSingleThreadExecutor() }
@@ -49,30 +49,31 @@ class OmniScanImplementation @Inject constructor(
         FaceDetection.getClient(options)
     }
 
-    // Functions to handle local database operations
-    override val faces: Flow<List<FaceInfo>> = db.faceInfoDao().faces()
-    suspend fun faceList(): List<FaceInfo> = db.faceInfoDao().faceList()
 
-    override suspend fun saveFace(image: ProcessedImage) = runCatching {
+    override suspend fun saveFaceLocally(image: ProcessedImage) = runCatching {
         val info = image.faceInfo
-        val images = faceList().map { it.processedImage(application) }
+        val imagePids = faceInfoDao.facePIDsList()
         if (image.faceBitmap == null) throw Throwable("Face is empty")
-        if (images.find { image.pid == it.pid } != null) throw Throwable("Person Already Exist.")
-//        if ((faceRecognitionService.recognizeFace(image, images, application)?.matchesCriteria == true)) throw Throwable("Face Already Exist.")
+        //If person with same pid already exist, we will assume their face data is being updated, so we will delete the older ones
+        if (imagePids.find { image.pid == it } != null) {
+            deleteFace(image.pid)
+        }
+        if ((faceRecognitionService.recognizeFace(image, imagePids, application)?.any{ it.matchesCriteria}) == true) throw Throwable("Face Already Exist.")
         image.faceBitmap.let { application.writeBitmapIntoFile(info.faceFileName, it).getOrNull() }
         image.frame?.let { application.writeBitmapIntoFile(info.frameFileName, it).getOrNull() }
         image.image?.let { application.writeBitmapIntoFile(info.imageFileName, it).getOrNull() }
-        db.faceInfoDao().insert(info)
+        faceInfoDao.insert(info)
     }.onFailure {
         Log.e("MediaUtils", it.message ?: "Error while saving face")
     }
 
-    suspend fun deleteFace(face: FaceInfo) = runCatching {
-        if (face.pid == null) throw Throwable("Invalid Face Id")
-        db.faceInfoDao().delete(face.pid)
+    suspend fun deleteFace(pid: String) = runCatching {
+        val face = faceInfoDao.getFaceById(pid) ?: throw Throwable("Face not found")
+        faceInfoDao.delete(face.pid)
         application.deleteFile(face.faceFileName)
         application.deleteFile(face.frameFileName)
         application.deleteFile(face.imageFileName)
+        faceEmbeddingsDAO.deleteEmbeddingsByPid(pid)
     }.onFailure {
         Log.e("MediaUtils", it.message ?: "Error while deleting face")
     }
@@ -127,6 +128,17 @@ class OmniScanImplementation @Inject constructor(
         return@runCatching ProcessedImage(image = bitmap, frame = frame, face = face, trackingId = face?.trackingId, faceBitmap = faceBitmap)
     }.onFailure {
         Log.e("MediaUtils", it.message ?: "Error while processing image")
+    }
+
+    override suspend fun processImageFromBitmap(
+        bitmap: Bitmap,
+        paint: Paint
+    ): Result<ProcessedImage> = runCatching {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val faces = com.google.android.gms.tasks.Tasks.await(faceDetector.process(image))
+        processImage(CameraSelector.LENS_FACING_BACK, faces, bitmap, paint).getOrThrow()
+    }.onFailure {
+        Log.e("MediaUtils", it.message ?: "Error while processing image from bitmap")
     }
 
     private fun biggestFace(faces: MutableList<Face>): Face? {

@@ -42,6 +42,8 @@ import com.hexagraph.jagrati_android.ui.screens.volunteer.MyVolunteerRequestsScr
 import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen
 import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationScreen
+import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterScreen
+import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -205,6 +207,9 @@ fun AppNavigation(
                     },
                     navigateToStudentRegistrationScreen = {
                         backstack.add(Screens.NavStudentRegistrationRoute())
+                    },
+                    updateFacialData = {
+                        backstack.add(Screens.NavFaceDataRegisterRoute(it))
                     }
                 )
 //                HomeScreen(
@@ -364,7 +369,18 @@ fun AppNavigation(
                         backstack.popBackStack()
                     },
                     navigateToFacialData = { studentPid ->
-                        // TODO: Navigate to facial data screen when implemented
+                        backstack.add(Screens.NavFaceDataRegisterRoute(studentPid))
+                    }
+                )
+            }
+
+            // Face data screens
+            entry<Screens.NavFaceDataRegisterRoute> { it ->
+                val pid = it.pid
+
+                FaceDataRegisterScreen(
+                    viewModel = koinViewModel<FaceDataRegisterViewModel> { parametersOf(pid) },
+                    onNavigateBack = {
                         backstack.popBackStack()
                     }
                 )

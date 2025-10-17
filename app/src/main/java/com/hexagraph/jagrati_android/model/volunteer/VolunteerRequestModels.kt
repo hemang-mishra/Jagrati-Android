@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.model.volunteer
 
+import com.hexagraph.jagrati_android.model.ImageKitResponse
 import com.hexagraph.jagrati_android.util.LocalDateSerializer
 import com.hexagraph.jagrati_android.util.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
@@ -55,7 +56,6 @@ data class DetailedVolunteerRequestResponse(
     @Serializable(with = LocalDateSerializer::class)
     val dateOfBirth: LocalDate,
     val contactNumber: String?,
-    val profileImageUrl: String?,
     val college: String?,
     val branch: String?,
     val yearOfStudy: Int?,
@@ -118,7 +118,6 @@ data class CreateVolunteerRequest(
     val state: String?,
     val dateOfBirth: String,  // Will be parsed to LocalDate
     val contactNumber: String?,
-    val profileImageUrl: String?,
     val college: String?,
     val branch: String?,
     val yearOfStudy: Int?

@@ -20,7 +20,8 @@ import java.io.File
  * Ktor client implementation for the ImageKit service.
  */
 class KtorImageKitService(
-    private val client: HttpClient,
+    private val imageKitClient: HttpClient,
+    private val serverClient: HttpClient,
     private val baseUrl: String
 ) : ImageKitService {
 
@@ -34,7 +35,7 @@ class KtorImageKitService(
      */
     override suspend fun getImageKitCredentials(): Result<ImageKitCredentials> {
         return try {
-            val response = client.get("$baseUrl/api/image-kit").body<ImageKitCredentials>()
+            val response = serverClient.get("$baseUrl/api/image-kit").body<ImageKitCredentials>()
             Result.success(response)
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching ImageKit credentials: ${e.message}")
@@ -62,7 +63,7 @@ class KtorImageKitService(
 
             // The safeApiCall wrapper is assumed to handle exceptions and wrap the response
             val apiResponse = Utils.safeApiCall<ImageKitResponse> {
-                client.submitFormWithBinaryData(
+                imageKitClient.submitFormWithBinaryData(
                     url = UPLOAD_URL,
                     formData = formData {
                         append("file", file.readBytes(), Headers.build {

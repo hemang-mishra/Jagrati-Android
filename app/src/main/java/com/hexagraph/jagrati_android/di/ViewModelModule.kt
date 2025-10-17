@@ -16,6 +16,7 @@ import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.ForgotPasswordViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.LoginViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.SignUpViewModel
+import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
@@ -47,5 +48,8 @@ val viewModelModule = module {
     factory { ManageVolunteerRequestsViewModel(get()) }
 
     // Student management ViewModels
-    factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), pid) }
+    factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), get(),pid) }
+
+    // Face data ViewModels
+    factory { (pid: String) -> FaceDataRegisterViewModel(get(),  get(), get(), get(), get(),get(),get(),get(),pid) }
 }

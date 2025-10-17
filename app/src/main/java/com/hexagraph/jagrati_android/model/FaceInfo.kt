@@ -15,9 +15,6 @@ data class FaceInfo(
     @PrimaryKey
     val pid: String = "",
     val name: String,
-    val faceLink: String = "",
-    val frameLink: String = "",
-    val imageLink: String = "",
     val width: Int = 0,
     val height: Int = 0,
     val faceWidth: Int = 0,
