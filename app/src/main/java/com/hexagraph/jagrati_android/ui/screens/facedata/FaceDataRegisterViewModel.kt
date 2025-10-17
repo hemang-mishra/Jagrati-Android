@@ -2,6 +2,7 @@ package com.hexagraph.jagrati_android.ui.screens.facedata
 
 import android.app.Application
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
@@ -24,6 +25,7 @@ import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionSer
 import com.hexagraph.jagrati_android.service.image_service.ImageKitService
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.Utils
 import com.hexagraph.jagrati_android.util.Utils.bitmapToFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +53,7 @@ class FaceDataRegisterViewModel(
     private val _isLoading = MutableStateFlow(false)
     private var student: Student? = null
     private var volunteer: Volunteer? = null
+    private var acceptingCaptureFromCamera = true
     private val _pid = MutableStateFlow(pid)
     private val _capturedImage = MutableStateFlow<ProcessedImage?>(null)
     private val _isCameraActive = MutableStateFlow(true)
@@ -128,6 +131,7 @@ class FaceDataRegisterViewModel(
     fun getImageAnalyzer(lensFacing: Int, paint: Paint, cameraExecutor: Executor): ImageAnalysis.Analyzer {
         return omniScanRepository.imageAnalyzer(lensFacing, paint, cameraExecutor) { result ->
             result.onSuccess { processedImage ->
+                if(acceptingCaptureFromCamera)
                 _capturedImage.update { processedImage.copy(pid = pid) }
             }.onFailure { error ->
                 emitError(ResponseError.UNKNOWN.apply {
@@ -171,14 +175,19 @@ class FaceDataRegisterViewModel(
         _isCameraActive.update { true }
     }
 
-    fun processImageFromGallery(bitmap: Bitmap, paint: Paint, onSuccess: () -> Unit) {
+    fun processImageFromGallery(bitmap: Bitmap, paint: Paint, onSuccess: () -> Unit, onNoFaceDetected: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.update { true }
             try {
                 val result = omniScanRepository.processImageFromBitmap(bitmap, paint)
 
                 result.onSuccess { processedImage ->
+                    if(processedImage.face == null) {
+                        onNoFaceDetected()
+                        return@onSuccess
+                    }
                     val imageWithPid = processedImage.copy(pid = pid, name = _personName.value)
+                    acceptingCaptureFromCamera = false
                     _capturedImage.update { imageWithPid }
                     _isCameraActive.update { false }
                     onSuccess()
@@ -293,12 +302,22 @@ class FaceDataRegisterViewModel(
         onSuccess: (imageResponse: ImageKitResponse) -> Unit
     ) {
         try {
-            val imageResponse = processedImage.image?.let {
-                val imageFile = bitmapToFile(
-                    context,
-                    it,
-                    processedImage.faceInfo.imageFileName
+            val imageResponse = processedImage.image?.let { bitmap ->
+                // Compress bitmap to target size (50 KB) and get file directly
+                val targetBytes = 25 * 1024L
+                val imageFile = Utils.compressBitmapToFile(
+                    context = context,
+                    bitmap = bitmap,
+                    fileName = processedImage.faceInfo.imageFileName,
+                    targetBytes = targetBytes
                 )
+
+                if (imageFile == null) {
+                    Log.e("FaceDataRegisterVM", "Failed to compress image to target size")
+                    return@let null
+                }
+
+                Log.d("FaceDataRegisterVM", "Compressed image to ${imageFile.length()} bytes (target: $targetBytes)")
                 imageKitService.uploadImageFromFile(context, imageFile)
             }
 

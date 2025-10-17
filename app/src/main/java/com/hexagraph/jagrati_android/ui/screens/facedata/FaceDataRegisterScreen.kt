@@ -41,6 +41,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.ProcessedImage
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -51,6 +52,7 @@ fun FaceDataRegisterScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
@@ -82,7 +84,11 @@ fun FaceDataRegisterScreen(
             viewModel.getImageAnalyzer(lensFacing, paint, executor)
         },
         onImageFromGallery = { bitmap, paint ->
-            viewModel.processImageFromGallery(bitmap, paint) {}
+            viewModel.processImageFromGallery(bitmap, paint, onNoFaceDetected = {
+                scope.launch {
+                    snackbarHostState.showSnackbar("No face detected in the selected image")
+                }
+            }, onSuccess = {})
         }
     )
 }
@@ -505,40 +511,44 @@ fun CapturePreviewSection(
                             modifier = Modifier.fillMaxSize()
                         )
 
-                        // Overlay the detected face region with a highlight
-                        processedImage.face?.let { face ->
-                            val boundingBox = face.boundingBox
-                            val imageWidth = fullImage.width.toFloat()
-                            val imageHeight = fullImage.height.toFloat()
-
-                            Box(
+                        // Show detected face in a card at bottom right
+                        processedImage.faceBitmap?.let { faceBitmap ->
+                            Card(
                                 modifier = Modifier
-                                    .fillMaxSize()
+                                    .align(Alignment.BottomEnd)
+                                    .padding(16.dp)
+                                    .size(120.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surface
+                                )
                             ) {
-                                androidx.compose.foundation.Canvas(
-                                    modifier = Modifier.fillMaxSize()
-                                ) {
-                                    val scaleX = size.width / imageWidth
-                                    val scaleY = size.height / imageHeight
-
-                                    val left = boundingBox.left * scaleX
-                                    val top = boundingBox.top * scaleY
-                                    val right = boundingBox.right * scaleX
-                                    val bottom = boundingBox.bottom * scaleY
-
-                                    // Draw bounding box
-                                    drawRoundRect(
-                                        color = androidx.compose.ui.graphics.Color.Green,
-                                        topLeft = androidx.compose.ui.geometry.Offset(left, top),
-                                        size = androidx.compose.ui.geometry.Size(
-                                            right - left,
-                                            bottom - top
-                                        ),
-                                        style = androidx.compose.ui.graphics.drawscope.Stroke(
-                                            width = 4.dp.toPx()
-                                        ),
-                                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(8.dp.toPx())
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    Image(
+                                        bitmap = faceBitmap.asImageBitmap(),
+                                        contentDescription = "Detected Face",
+                                        modifier = Modifier.fillMaxSize()
                                     )
+
+                                    // Label
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
+                                            .fillMaxWidth()
+                                            .background(
+                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.9f)
+                                            )
+                                            .padding(vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "Face Detected",
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.align(Alignment.Center)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -571,6 +581,44 @@ fun CapturePreviewSection(
                     color = MaterialTheme.colorScheme.onSurface
                 )
             } else {
+                // Rationale message
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Face Detection Tips",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Ensure the face is larger and properly visible in the frame for accurate recognition. Good lighting and a clear frontal view improve detection quality.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+
                 Text(
                     text = "Is the face clearly visible?",
                     style = MaterialTheme.typography.titleMedium,
