@@ -18,7 +18,6 @@ import com.hexagraph.jagrati_android.repository.auth.AttendanceRepository
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
-import com.hexagraph.jagrati_android.util.Resource
 import com.hexagraph.jagrati_android.util.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +27,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executor
 
@@ -51,6 +51,8 @@ class AttendanceMarkingViewModel(
     private val _showBottomSheet = MutableStateFlow(false)
     private val _isMarkingAttendance = MutableStateFlow(false)
     private var acceptingCaptureFromCamera = true
+
+    private val semaphore = Semaphore(1)
 
     override val uiState: StateFlow<AttendanceMarkingUiState> = createUiStateFlow()
 
@@ -103,10 +105,24 @@ class AttendanceMarkingViewModel(
             paint = paint,
             cameraExecutor = executor,
             onFaceInfo = { result ->
-                result.onSuccess { processedImage ->
-                    if (acceptingCaptureFromCamera && !_showBottomSheet.value) {
-                        recognizeFacesLive(processedImage)
+                result.onSuccess {
+                    processedImage ->
+                    viewModelScope.launch(Dispatchers.IO) {
+                        val acquired = semaphore.tryAcquire()
+                        if (!acquired) return@launch
+
+                        try {
+                            if (acceptingCaptureFromCamera && !_showBottomSheet.value) {
+                                recognizeFacesLive(processedImage)
+                            }
+                        } catch (e: Exception) {
+                            Log.e("AttendanceMarkingViewModel", "Live recognition failed: ${e.message}")
+                        } finally {
+                            semaphore.release()
+                        }
                     }
+
+
                 }.onFailure {
                     Log.e("AttendanceMarkingViewModel", "Face detection failed: ${it.message}")
                 }
@@ -114,13 +130,12 @@ class AttendanceMarkingViewModel(
         )
     }
 
-    private fun recognizeFacesLive(processedImage: ProcessedImage) {
-        viewModelScope.launch(Dispatchers.IO) {
+    private suspend fun recognizeFacesLive(processedImage: ProcessedImage) {
             try {
                 val facePids = faceInfoDao.facePIDsList()
                 if (facePids.isEmpty() || processedImage.faceBitmap == null) {
                     _liveRecognizedFaces.update { emptyList() }
-                    return@launch
+                    return
                 }
 
                 val results = faceRecognitionService.recognizeFace(
@@ -143,7 +158,6 @@ class AttendanceMarkingViewModel(
             } catch (e: Exception) {
                 Log.e("AttendanceMarkingViewModel", "Face recognition failed: ${e.message}")
                 _liveRecognizedFaces.update { emptyList() }
-            }
         }
     }
 

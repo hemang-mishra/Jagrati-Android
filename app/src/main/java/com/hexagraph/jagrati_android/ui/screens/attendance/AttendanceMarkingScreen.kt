@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -86,6 +87,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.hexagraph.jagrati_android.R
+import com.hexagraph.jagrati_android.model.ProcessedImage
+import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
 import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
@@ -158,7 +161,7 @@ fun AttendanceMarkingScreenLayout(
     onDismissBottomSheet: () -> Unit,
     getImageAnalyzer: (Int, Paint, java.util.concurrent.Executor) -> ImageAnalysis.Analyzer,
     onImageFromGallery: (Bitmap, Paint) -> Unit,
-    onUpdateCapturedImage: (com.hexagraph.jagrati_android.model.ProcessedImage) -> Unit
+    onUpdateCapturedImage: (ProcessedImage) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -424,11 +427,11 @@ fun CameraPreview(
     lensFacing: Int,
     lifecycleOwner: androidx.lifecycle.LifecycleOwner,
     getImageAnalyzer: () -> ImageAnalysis.Analyzer,
-    onProcessedImage: (com.hexagraph.jagrati_android.model.ProcessedImage) -> Unit
+    onProcessedImage: (ProcessedImage) -> Unit
 ) {
     val context = LocalContext.current
     val previewView = remember { PreviewView(context) }
-    val cameraProviderFuture = remember { androidx.camera.lifecycle.ProcessCameraProvider.getInstance(context) }
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
     LaunchedEffect(lensFacing) {
         val cameraProvider = cameraProviderFuture.get()
@@ -608,25 +611,10 @@ fun RecognizedPersonCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (person.isStudent)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.secondary
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = person.name.split(" ").mapNotNull { it.firstOrNull() }.take(2).joinToString(""),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
+            ProfileAvatar(
+                userName = person.name,
+                profileImageUrl = person.profileImageUrl
+            )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
