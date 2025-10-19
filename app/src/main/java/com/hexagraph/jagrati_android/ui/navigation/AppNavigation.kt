@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -23,7 +22,6 @@ import com.hexagraph.jagrati_android.ui.screens.auth.ForgotPasswordScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.LoginScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.SignUpDetailsScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.SignUpEmailScreen
-import com.hexagraph.jagrati_android.ui.screens.home.HomeScreen
 import com.hexagraph.jagrati_android.ui.screens.management.ManagementScreen
 import com.hexagraph.jagrati_android.ui.screens.onboarding.OnboardingScreen
 import com.hexagraph.jagrati_android.ui.screens.onboarding.PermissionsScreen
@@ -42,6 +40,8 @@ import com.hexagraph.jagrati_android.ui.screens.volunteer.MyVolunteerRequestsScr
 import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen
 import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationScreen
+import com.hexagraph.jagrati_android.ui.screens.studentlist.StudentListScreen
+import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
@@ -70,7 +70,7 @@ fun AppNavigation(
     // Check if user is authenticated
     val isAuthenticated = authViewModel.isUserAuthenticated()
 
-    var backstack = rememberNavBackStack(
+    val backstack = rememberNavBackStack(
         when {
             !isOnboardingCompleted -> Screens.NavOnboardingRoute
             isAuthenticated -> Screens.DetailsSyncRoute // Load user details first if authenticated
@@ -207,6 +207,12 @@ fun AppNavigation(
                     },
                     navigateToStudentRegistrationScreen = {
                         backstack.add(Screens.NavStudentRegistrationRoute())
+                    },
+                    navigateToStudentList = {
+                        backstack.add(Screens.NavStudentListRoute)
+                    },
+                    navigateToVolunteerList = {
+                        backstack.add(Screens.NavVolunteerListRoute)
                     },
                     updateFacialData = {
                         backstack.add(Screens.NavFaceDataRegisterRoute(it))
@@ -368,9 +374,34 @@ fun AppNavigation(
                     onBackPressed = {
                         backstack.popBackStack()
                     },
-                    navigateToFacialData = { studentPid ->
-                        backstack.add(Screens.NavFaceDataRegisterRoute(studentPid))
+                    navigateToFacialData = {pid->
+                        backstack.popBackStack()
+                        backstack.add(Screens.NavFaceDataRegisterRoute(pid))
                     }
+                )
+            }
+
+            entry<Screens.NavStudentListRoute> {
+                StudentListScreen(
+                    onBackPress = {
+                        backstack.popBackStack()
+                    },
+                    onStudentClick = { pid: String ->
+                        // TODO: Navigate to student profile
+                    },
+                    snackbarHostState = snackbarHostState
+                )
+            }
+
+            entry<Screens.NavVolunteerListRoute> {
+                VolunteerListScreen(
+                    onBackPress = {
+                        backstack.popBackStack()
+                    },
+                    onVolunteerClick = { pid: String ->
+                        // TODO: Navigate to volunteer profile
+                    },
+                    snackbarHostState = snackbarHostState
                 )
             }
 

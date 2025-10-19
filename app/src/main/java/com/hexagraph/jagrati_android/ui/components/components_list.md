@@ -4,6 +4,38 @@ This document lists all reusable UI components in the Jagrati Android applicatio
 
 ---
 
+## 📄 PersonCard.kt
+
+### PersonCard
+A reusable card component for displaying person information (students/volunteers) with profile avatar, title, subtitle, and extra information.
+
+**Data Class:**
+- `PersonCardData` - Data model containing:
+  - `title: String` - Person's name
+  - `subtitle: String` - Secondary info (village for students, roll number for volunteers)
+  - `extra: String` - Additional info (group for students, batch for volunteers)
+  - `profileImageUrl: String?` - Optional profile image URL
+
+**Extension Functions:**
+- `Student.toPersonCardData(villageName: String, groupName: String): PersonCardData` - Converts Student to card data
+- `Volunteer.toPersonCardData(): PersonCardData` - Converts Volunteer to card data
+
+**Parameters:**
+- `data: PersonCardData` - Card data to display
+- `onClick: () -> Unit` - Callback when card is clicked
+- `modifier: Modifier` - Styling modifier (default: Modifier)
+
+**Features:**
+- Uses ProfileAvatar for profile pictures
+- Supports text overflow with ellipsis
+- Material 3 card styling with elevation
+- Click interaction support
+- Consistent layout for both students and volunteers
+- Primary color accent for extra information
+- Responsive design with proper spacing
+
+---
+
 ## 📄 ScreenHeader.kt
 
 ### ScreenHeader
@@ -294,13 +326,14 @@ Visual separator for drawer sections.
 
 | File | Component Count | Primary Use Case |
 |------|----------------|------------------|
+| PersonCard.kt | 1 | Person information card |
 | ScreenHeader.kt | 1 | Navigation headers |
 | StudentList.kt | 1 | List item display |
 | TextFields.kt | 5 | Form inputs & actions |
 | GreetingCard.kt | 2 | User greeting & profile |
 | ActionCard.kt | 2 | Action & info cards |
 | DrawerComponents.kt | 3 | Navigation drawer |
-| **Total** | **14** | |
+| **Total** | **15** | |
 
 ---
 

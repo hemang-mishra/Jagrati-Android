@@ -99,6 +99,7 @@ dependencies {
 
     //Coil
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 
     // Ktor client
     implementation(libs.ktor.client.android)

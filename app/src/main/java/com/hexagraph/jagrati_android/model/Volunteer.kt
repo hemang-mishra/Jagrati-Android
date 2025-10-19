@@ -136,7 +136,7 @@ fun Volunteer.updateRequestToEntity(request: UpdateVolunteerRequest): Volunteer 
         college = request.college ?: this.college,
         branch = request.branch ?: this.branch,
         yearOfStudy = request.yearOfStudy ?: this.yearOfStudy,
-        profilePic = request.profilePicDetails ?: this.profilePic
+        profilePic = request.profilePic ?: this.profilePic
     )
 }
 
@@ -157,6 +157,6 @@ fun Volunteer.toUpdateVolunteerRequest(): UpdateVolunteerRequest = UpdateVolunte
     contactNumber = contactNumber,
     college = college,
     branch = branch,
-    profilePicDetails = profilePic,
+    profilePic = profilePic,
     yearOfStudy = yearOfStudy
 )

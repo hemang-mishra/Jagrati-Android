@@ -90,6 +90,12 @@ sealed interface Screens: NavKey {
         val pid: String? = null
     ): Screens
 
+    @Serializable
+    data object NavStudentListRoute: Screens
+
+    @Serializable
+    data object NavVolunteerListRoute: Screens
+
     // Face data routes
     @Serializable
     data class NavFaceDataRegisterRoute(

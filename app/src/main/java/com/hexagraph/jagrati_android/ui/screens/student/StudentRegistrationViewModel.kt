@@ -74,6 +74,7 @@ class StudentRegistrationViewModel(
     private val _submissionSuccessful = MutableStateFlow(false)
 
     override val uiState: StateFlow<StudentRegistrationUiState> = createUiStateFlow()
+    var pid: String? = pidToUpdate
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -266,6 +267,7 @@ class StudentRegistrationViewModel(
 
     private suspend fun registerNewStudent() {
         val pid = Utils.PIDGenerator(name = _firstName.value + _lastName.value)
+        this.pid = pid
 
         val request = StudentRequest(
             pid = pid,
