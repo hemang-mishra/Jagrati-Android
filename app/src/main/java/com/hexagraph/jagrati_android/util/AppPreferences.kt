@@ -178,7 +178,7 @@ class AppPreferences(private val context: Context) {
                 .map { preferences ->
                     val userDetailsJson = preferences[USER_DETAILS] ?: return@map null
                     try {
-                        gson.fromJson(userDetailsJson, UserSummaryDTO::class.java).toUser()
+                        gson.fromJson(userDetailsJson, User::class.java)
                     } catch (e: Exception) {
                         null
                     }
@@ -187,20 +187,14 @@ class AppPreferences(private val context: Context) {
 
         override suspend fun set(value: User?) {
             context.dataStore.edit { preferences ->
-                if (value == null) {
-                    preferences.remove(USER_DETAILS)
-                } else {
-                    // This would require a toDTO method on User which we don't have,
-                    // so this is just a placeholder. The actual implementation should use saveUserDetails.
-                    throw UnsupportedOperationException("Cannot directly set User objects. Use saveUserDetails instead.")
-                }
+                preferences[USER_DETAILS] = gson.toJson(value)
             }
         }
     }
 
     suspend fun saveUserDetails(userDetails: UserSummaryDTO) {
         context.dataStore.edit { preferences ->
-            preferences[USER_DETAILS] = gson.toJson(userDetails)
+            preferences[USER_DETAILS] = gson.toJson(userDetails.toUser())
         }
     }
 

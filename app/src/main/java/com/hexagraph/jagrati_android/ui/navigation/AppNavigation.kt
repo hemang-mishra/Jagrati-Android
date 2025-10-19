@@ -368,8 +368,9 @@ fun AppNavigation(
                     onBackPressed = {
                         backstack.popBackStack()
                     },
-                    navigateToFacialData = { studentPid ->
-                        backstack.add(Screens.NavFaceDataRegisterRoute(studentPid))
+                    navigateToFacialData = {pid->
+                        backstack.popBackStack()
+                        backstack.add(Screens.NavFaceDataRegisterRoute(pid))
                     }
                 )
             }

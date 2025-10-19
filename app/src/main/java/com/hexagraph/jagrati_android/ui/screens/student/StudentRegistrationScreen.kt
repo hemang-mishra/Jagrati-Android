@@ -99,10 +99,12 @@ fun StudentRegistrationScreen(
 
             if (uiState.isUpdateMode) {
                 Toast.makeText(context, "Student updated successfully", Toast.LENGTH_SHORT).show()
+                if(viewModel.pid != null)
+                navigateToFacialData(viewModel.pid!!)
                 onBackPressed()
             } else {
-                Toast.makeText(context, "Feature yet to be implemented: Add facial data", Toast.LENGTH_LONG).show()
-                onBackPressed()
+                if(viewModel.pid != null)
+                navigateToFacialData(viewModel.pid!!)
             }
         }
     }

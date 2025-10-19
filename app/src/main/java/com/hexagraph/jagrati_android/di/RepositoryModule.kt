@@ -61,9 +61,12 @@ val repositoryModule = module {
         KtorVolunteerRepository(get())
     }
     single { SyncRepository(
+        context = androidApplication(),
         studentDao = get(),
         volunteerDao = get(),
         villageDao = get(),
-        groupsDao = get()
+        groupsDao = get(),
+        omniScanRepository = get(),
+        appPreferences = get()
     ) }
 }

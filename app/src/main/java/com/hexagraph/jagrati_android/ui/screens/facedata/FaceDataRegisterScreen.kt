@@ -4,8 +4,10 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -134,9 +136,20 @@ fun FaceDataRegisterScreenLayout(
     ) { uri: Uri? ->
         uri?.let {
             try {
+                val orientationColumn = arrayOf(MediaStore.Images.Media.ORIENTATION)
+                val cursor = context.contentResolver.query(uri, orientationColumn, null, null, null)
+                var orientation = 0
+
+                cursor?.use { if(it.moveToFirst()) orientation = it.getInt(0)}
                 val inputStream = context.contentResolver.openInputStream(uri)
-                val bitmap = BitmapFactory.decodeStream(inputStream)
+                var bitmap = BitmapFactory.decodeStream(inputStream)
                 inputStream?.close()
+
+                if(orientation > 0){
+                    val matrix = Matrix()
+                    matrix.postRotate(orientation.toFloat())
+                    bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                }
                 bitmap?.let { bmp ->
                     onImageFromGallery(bmp, paint)
                 }

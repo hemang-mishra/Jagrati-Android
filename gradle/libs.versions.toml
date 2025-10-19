@@ -1,7 +1,8 @@
 [versions]
 agp = "8.13.0"
-cameraCore = "1.5.0-beta01"
-coilCompose = "3.1.0"
+cameraCore = "1.5.1"
+coil= "3.3.0"
+coilNetworkOkhttp = "3.3.0"
 converterGson = "2.11.0"
 datastorePreferences = "1.1.7"
 faceDetection = "16.1.7"
@@ -34,7 +35,7 @@ googleid = "1.1.1"
 nav3Core = "1.0.0-alpha06"
 nav3Lifecycle = "1.0.0-alpha04"
 
-chucker = "4.1.0"
+chucker = "4.2.0"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
@@ -51,7 +52,9 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomRuntime" }
-coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilNetworkOkhttp" }
+coil-network-okhttp3 = { module = "io.coil-kt:coil-network-okhttp3", version.ref = "coil" }
 face-detection = { module = "com.google.mlkit:face-detection", version.ref = "faceDetection" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }

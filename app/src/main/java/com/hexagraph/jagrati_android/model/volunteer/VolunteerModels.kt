@@ -29,7 +29,7 @@ data class UpdateVolunteerRequest(
     val contactNumber: String?,
     val college: String?,
     val branch: String?,
-    val profilePicDetails: ImageKitResponse?,
+    val profilePic: ImageKitResponse?,
     val yearOfStudy: Int?
 ) {
     fun toVolunteer(pid: String, isActive: Boolean = true): Volunteer = Volunteer(
@@ -51,7 +51,7 @@ data class UpdateVolunteerRequest(
         college = college,
         branch = branch,
         yearOfStudy = yearOfStudy,
-        profilePic = profilePicDetails,
+        profilePic = profilePic,
         isActive = isActive
     )
 }

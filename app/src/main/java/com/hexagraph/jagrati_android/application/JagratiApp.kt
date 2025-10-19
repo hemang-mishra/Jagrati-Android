@@ -1,6 +1,9 @@
 package com.hexagraph.jagrati_android.application
 
 import android.app.Application
+import coil3.ImageLoader
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.util.CoilUtils
 import com.hexagraph.jagrati_android.di.databaseModule
 import com.hexagraph.jagrati_android.di.networkModule
 import com.hexagraph.jagrati_android.di.preferencesModule
@@ -16,7 +19,6 @@ class JagratiApp : Application() {
     override fun onCreate() {
         super.onCreate()
         startKoin {
-//            androidLogger()
             androidContext(this@JagratiApp)
             modules(viewModelModule,
                 databaseModule,

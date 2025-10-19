@@ -44,6 +44,8 @@ import java.time.LocalDateTime
 import kotlin.math.min
 import kotlin.math.roundToInt
 import androidx.core.graphics.scale
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.toBitmap
 import kotlin.compareTo
 import kotlin.math.max
 import kotlin.math.sqrt
@@ -242,16 +244,30 @@ object Utils {
     }
 
     suspend fun getBitmapFromURL(context: Context, url: String): Bitmap? {
-        val loader = ImageLoader(context)
-        val request = ImageRequest.Builder(context)
-            .data(url)
-            .allowHardware(false)
-            .build()
-        val result = loader.execute(request)
-        return if (result is SuccessResult) {
-            (result.image as? BitmapDrawable)?.bitmap
-        } else {
-            null
+        try {
+            Log.d("Utils", "Attempting to load image from: $url")
+            val loader = ImageLoader.Builder(context).components {
+                add(OkHttpNetworkFetcherFactory())
+            }
+                .build()
+            val request = ImageRequest.Builder(context)
+                .data(url)
+                .allowHardware(false)
+                .build()
+
+
+            val result = loader.execute(request)
+            return if (result is SuccessResult) {
+                Log.d("Utils", "Image loaded successfully from: $url")
+                result.image.toBitmap()
+            } else {
+                Log.e("Utils", "Failed to load image: $result")
+                null
+            }
+        } catch (e: Exception) {
+            Log.e("Utils", "Exception loading image: ${e.javaClass.name}: ${e.message}")
+            e.printStackTrace()
+            return null
         }
     }
 

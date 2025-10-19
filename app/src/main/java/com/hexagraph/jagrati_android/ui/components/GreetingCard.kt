@@ -25,13 +25,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.ImageLoader
 import coil3.compose.AsyncImage
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.request.ImageRequest
+import coil3.request.ImageResult
+import coil3.request.allowHardware
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 
 /**
@@ -166,11 +172,18 @@ fun ProfileAvatar(
     size: Dp = 60.dp
 ) {
     val firstLetter = userName.firstOrNull()?.uppercase() ?: "U"
-
+    val context = LocalContext.current
     if (profileImageUrl != null && profileImageUrl.isNotBlank()) {
+        val loader = ImageLoader.Builder(context)
+            .components { OkHttpNetworkFetcherFactory() }
+            .build()
         // Display profile image if available
         AsyncImage(
-            model = profileImageUrl,
+            model = ImageRequest.Builder(context)
+                .data(profileImageUrl)
+                .allowHardware(false)
+                .build(),
+            imageLoader = loader,
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = modifier

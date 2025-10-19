@@ -66,7 +66,9 @@ fun MainHomeScreen(
     var selectedBottomNavItem by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(key1 = Unit) {
-        userData = appPreferences.userDetails.get()
+        appPreferences.userDetails.getFlow().collect {
+            userData = it
+        }
     }
 
     ModalNavigationDrawer(
