@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -53,6 +54,7 @@ import org.koin.androidx.compose.koinViewModel
 fun StudentListScreen(
     onBackPress: () -> Unit,
     onStudentClick: (String) -> Unit,
+    onSearchClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     viewModel: StudentListViewModel = koinViewModel()
 ) {
@@ -80,6 +82,7 @@ fun StudentListScreen(
         onGroupSelected = viewModel::filterByGroup,
         onBackPress = onBackPress,
         onStudentClick = onStudentClick,
+        onSearchClick = onSearchClick,
         snackbarHostState = snackbarHostState
     )
 }
@@ -95,6 +98,7 @@ fun StudentListScreenLayout(
     selectedGroup: Groups?,
     onVillageSelected: (Village?) -> Unit,
     onGroupSelected: (Groups?) -> Unit,
+    onSearchClick: () -> Unit,
     onBackPress: () -> Unit,
     onStudentClick: (String) -> Unit,
     snackbarHostState: SnackbarHostState
@@ -117,6 +121,14 @@ fun StudentListScreenLayout(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onSearchClick) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search"
                         )
                     }
                 },
@@ -295,8 +307,8 @@ fun StudentListScreenPreview() {
             onGroupSelected = {},
             onBackPress = {},
             onStudentClick = {},
+            onSearchClick = {},
             snackbarHostState = remember { SnackbarHostState() }
         )
     }
 }
-

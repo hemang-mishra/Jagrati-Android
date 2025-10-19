@@ -3,6 +3,7 @@ package com.hexagraph.jagrati_android.ui.screens.home
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -60,7 +61,8 @@ fun MainHomeScreen(
     navigateToStudentList: () -> Unit = {},
     navigateToVolunteerList: () -> Unit = {},
     updateFacialData: (String) -> Unit,
-    appPreferences: AppPreferences = koinInject()
+    onSearchClick: () -> Unit,
+    appPreferences: AppPreferences = koinInject(),
 ) {
     var userData by remember { mutableStateOf<User?>(null) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -135,6 +137,7 @@ fun MainHomeScreen(
             ) {
                 when (selectedBottomNavItem) {
                     0 -> HomeContentScreen(
+                        onSearchClick = onSearchClick,
                         onOpenDrawer = { scope.launch { drawerState.open() } }
                     )
                     1 -> AttendanceSummaryScreen()
@@ -333,12 +336,48 @@ fun BottomNavigationBar(
 // Mock Screens for each bottom navigation item
 
 @Composable
-fun HomeContentScreen(onOpenDrawer: () -> Unit) {
-    MockScreen(
-        title = "Home",
-        description = "Welcome to Jagrati! This is the home screen where you'll see quick actions and important updates.",
-        onMenuClick = onOpenDrawer
-    )
+fun HomeContentScreen(
+    onOpenDrawer: () -> Unit,
+    onSearchClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            androidx.compose.material3.IconButton(
+                onClick = onOpenDrawer,
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_touch_app_24),
+                    contentDescription = "Open Menu",
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+            androidx.compose.material3.OutlinedButton(
+                onClick = onSearchClick,
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_person),
+                    contentDescription = "Search",
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("Search Students & Volunteers")
+            }
+        }
+
+        MockScreen(
+            title = "Home",
+            description = "Welcome to Jagrati! This is the home screen where you'll see quick actions and important updates.",
+            onMenuClick = null
+        )
+    }
 }
 
 @Composable

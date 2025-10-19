@@ -44,6 +44,7 @@ import com.hexagraph.jagrati_android.ui.screens.studentlist.StudentListScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
+import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -214,23 +215,13 @@ fun AppNavigation(
                     navigateToVolunteerList = {
                         backstack.add(Screens.NavVolunteerListRoute)
                     },
+                    onSearchClick = {
+                        backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
                     updateFacialData = {
                         backstack.add(Screens.NavFaceDataRegisterRoute(it))
                     }
                 )
-//                HomeScreen(
-//                    snackbarHostState = snackbarHostState,
-//                    navigateToLogin = {
-//                        backstack.clear()
-//                        backstack.add(Screens.NavLoginRoute)
-//                    },
-//                    navigateToManagement = {
-//                        backstack.add(Screens.NavManagementRoute)
-//                    },
-//                    navigateToVolunteerRegistration = {
-//                        backstack.add(Screens.NavVolunteerRegistrationRoute)
-//                    }
-//                )
             }
 
             // Management screens
@@ -389,6 +380,9 @@ fun AppNavigation(
                     onStudentClick = { pid: String ->
                         // TODO: Navigate to student profile
                     },
+                    onSearchClick = {
+                        backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
                     snackbarHostState = snackbarHostState
                 )
             }
@@ -400,6 +394,33 @@ fun AppNavigation(
                     },
                     onVolunteerClick = { pid: String ->
                         // TODO: Navigate to volunteer profile
+                    },
+                    onSearchClick = {
+                        backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
+                    snackbarHostState = snackbarHostState
+                )
+            }
+
+            entry<Screens.NavUnifiedSearchRoute> {
+                UnifiedSearchScreen(
+                    onBackPress = {
+                        backstack.popBackStack()
+                    },
+                    onSelect = { pid: String, isStudent: Boolean ->
+                        // TODO: Navigate to student or volunteer profile based on isStudent flag
+                    },
+                    snackbarHostState = snackbarHostState
+                )
+            }
+
+            entry<Screens.NavUnifiedSearchRoute> {
+                UnifiedSearchScreen(
+                    onBackPress = {
+                        backstack.popBackStack()
+                    },
+                    onSelect = { pid: String, isStudent: Boolean ->
+                        //Mark attendance using attendance view model
                     },
                     snackbarHostState = snackbarHostState
                 )

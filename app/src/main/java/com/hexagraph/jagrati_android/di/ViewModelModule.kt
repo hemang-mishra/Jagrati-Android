@@ -6,6 +6,9 @@ import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailView
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesViewModel
 import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncViewModel
 import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationViewModel
+import com.hexagraph.jagrati_android.ui.screens.studentlist.StudentListViewModel
+import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListViewModel
+import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserRolesViewModel
 import com.hexagraph.jagrati_android.ui.screens.village.VillageManagementViewModel
@@ -17,8 +20,6 @@ import com.hexagraph.jagrati_android.ui.viewmodels.auth.ForgotPasswordViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.LoginViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.SignUpViewModel
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
-import com.hexagraph.jagrati_android.ui.screens.studentlist.StudentListViewModel
-import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListViewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
@@ -49,6 +50,9 @@ val viewModelModule = module {
     factory { VolunteerRequestViewModel(get(), get()) }
     factory { ManageVolunteerRequestsViewModel(get()) }
     factory { VolunteerListViewModel(get()) }
+
+    // Search ViewModels
+    factory { UnifiedSearchViewModel(get(), get(), get(), get()) }
 
     // Student management ViewModels
     factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), get(),pid) }
