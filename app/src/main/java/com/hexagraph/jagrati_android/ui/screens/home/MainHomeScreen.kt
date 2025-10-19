@@ -57,6 +57,8 @@ fun MainHomeScreen(
     navigateToManagement: () -> Unit,
     authViewModel: AuthViewModel = koinViewModel(),
     navigateToStudentRegistrationScreen: ()-> Unit,
+    navigateToStudentList: () -> Unit = {},
+    navigateToVolunteerList: () -> Unit = {},
     updateFacialData: (String) -> Unit,
     appPreferences: AppPreferences = koinInject()
 ) {
@@ -99,6 +101,14 @@ fun MainHomeScreen(
                     onRegisterNewStudentClick = {
                         scope.launch { drawerState.close() }
                         navigateToStudentRegistrationScreen()
+                    },
+                    onStudentListClick = {
+                        scope.launch { drawerState.close() }
+                        navigateToStudentList()
+                    },
+                    onVolunteerListClick = {
+                        scope.launch { drawerState.close() }
+                        navigateToVolunteerList()
                     },
                     onLogoutClick = {
                         scope.launch { drawerState.close() }
@@ -155,7 +165,9 @@ fun DrawerContent(
     onTakeVolunteerAttendanceClick: () -> Unit,
     onTakeStudentAttendanceClick: () -> Unit,
     onRegisterNewStudentClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    onStudentListClick: () -> Unit = {},
+    onVolunteerListClick: () -> Unit = {}
 ) {
     Column(modifier = Modifier.fillMaxSize()
         .verticalScroll(rememberScrollState())) {
@@ -181,6 +193,24 @@ fun DrawerContent(
             icon = R.drawable.ic_settings,
             onClick = onSettingsClick,
             colorIndex = 1
+        )
+
+        DrawerDivider()
+
+        DrawerSectionHeader(title = "LISTS")
+
+        DrawerItem(
+            label = "Student List",
+            icon = R.drawable.ic_person,
+            onClick = onStudentListClick,
+            colorIndex = 2
+        )
+
+        DrawerItem(
+            label = "Volunteer List",
+            icon = R.drawable.ic_person,
+            onClick = onVolunteerListClick,
+            colorIndex = 3
         )
 
         DrawerDivider()
