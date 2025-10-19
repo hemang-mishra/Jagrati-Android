@@ -99,7 +99,7 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
                 val singleStart = System.currentTimeMillis()
 
                 val thresholdDistance = Float.MAX_VALUE
-                val minHeap = PriorityQueue<Pair<Float, FaceRecognitionResult>>(Collections.reverseOrder())
+                val minHeap = PriorityQueue<Pair<Float, FaceRecognitionResult>>(compareByDescending { it.first })
 
                 for (testPid in facePids) {
                     val testEmbedding: FloatArray =

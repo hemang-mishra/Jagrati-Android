@@ -17,6 +17,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
+import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingScreen
+import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingViewModel
 import com.hexagraph.jagrati_android.ui.screens.auth.EmailVerificationScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.ForgotPasswordScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.LoginScreen
@@ -220,6 +222,9 @@ fun AppNavigation(
                     },
                     updateFacialData = {
                         backstack.add(Screens.NavFaceDataRegisterRoute(it))
+                    },
+                    navigateToAttendanceMarking = {
+                        backstack.add(Screens.NavAttendanceMarkingRoute)
                     }
                 )
             }
@@ -408,21 +413,19 @@ fun AppNavigation(
                         backstack.popBackStack()
                     },
                     onSelect = { pid: String, isStudent: Boolean ->
-                        // TODO: Navigate to student or volunteer profile based on isStudent flag
+                        // Navigate to student or volunteer profile based on isStudent flag
                     },
                     snackbarHostState = snackbarHostState
                 )
             }
 
-            entry<Screens.NavUnifiedSearchRoute> {
-                UnifiedSearchScreen(
-                    onBackPress = {
+            // Attendance marking screen
+            entry<Screens.NavAttendanceMarkingRoute> {
+                AttendanceMarkingScreen(
+                    viewModel = koinViewModel<AttendanceMarkingViewModel>(),
+                    onNavigateBack = {
                         backstack.popBackStack()
-                    },
-                    onSelect = { pid: String, isStudent: Boolean ->
-                        //Mark attendance using attendance view model
-                    },
-                    snackbarHostState = snackbarHostState
+                    }
                 )
             }
 

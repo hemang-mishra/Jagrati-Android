@@ -107,4 +107,7 @@ sealed interface Screens: NavKey {
     data class NavFaceDataRegisterRoute(
         val pid: String
     ): Screens
+
+    @Serializable
+    data object NavAttendanceMarkingRoute: Screens
 }

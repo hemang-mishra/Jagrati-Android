@@ -62,6 +62,7 @@ fun MainHomeScreen(
     navigateToVolunteerList: () -> Unit = {},
     updateFacialData: (String) -> Unit,
     onSearchClick: () -> Unit,
+    navigateToAttendanceMarking: () -> Unit = {},
     appPreferences: AppPreferences = koinInject(),
 ) {
     var userData by remember { mutableStateOf<User?>(null) }
@@ -94,11 +95,11 @@ fun MainHomeScreen(
                     },
                     onTakeVolunteerAttendanceClick = {
                         scope.launch { drawerState.close() }
-                        // TODO: Navigate to volunteer attendance
+                        navigateToAttendanceMarking()
                     },
                     onTakeStudentAttendanceClick = {
                         scope.launch { drawerState.close() }
-                        // TODO: Navigate to student attendance
+                        navigateToAttendanceMarking()
                     },
                     onRegisterNewStudentClick = {
                         scope.launch { drawerState.close() }
