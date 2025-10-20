@@ -28,6 +28,7 @@ data class FaceRecognitionResult(
     val similarity: Float
 ){
     val matchesCriteria get():Boolean = (similarity) > DEFAULT_SIMILARITY
+    val matchesCriteriaForSaving get():Boolean = (similarity) > 0.95f
 }
 
 class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: EmbeddingsDAO,

@@ -1,7 +1,9 @@
 package com.hexagraph.jagrati_android.ui.screens.group
 
 import androidx.lifecycle.viewModelScope
+import com.hexagraph.jagrati_android.model.Groups
 import com.hexagraph.jagrati_android.model.ResponseError
+import com.hexagraph.jagrati_android.model.dao.GroupsDao
 import com.hexagraph.jagrati_android.model.group.GroupResponse
 import com.hexagraph.jagrati_android.model.village.LongRequest
 import com.hexagraph.jagrati_android.model.village.NameDescriptionRequest
@@ -30,7 +32,7 @@ data class GroupManagementUiState(
 
 class GroupManagementViewModel(
     private val groupRepository: GroupRepository,
-    private val appPreferences: AppPreferences
+    private val groupsDao: GroupsDao
 ) : BaseViewModel<GroupManagementUiState>() {
 
     private val _uiState = MutableStateFlow(GroupManagementUiState())
@@ -157,8 +159,10 @@ class GroupManagementViewModel(
 
     private suspend fun saveGroupsToPreferences(groups: List<GroupResponse>) {
         try {
-            val groupMap = groups.associate { it.id to it.data }
-            appPreferences.saveGroups(groupMap)
+            groups.forEach { groupsDao.upsertGroup(Groups(
+                id = it.id,
+                name = it.data
+            )) }
         } catch (e: Exception) {
             e.printStackTrace()
         }

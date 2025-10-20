@@ -107,6 +107,7 @@ class AttendanceMarkingViewModel(
             onFaceInfo = { result ->
                 result.onSuccess {
                     processedImage ->
+                    updateCapturedImage(processedImage)
                     viewModelScope.launch(Dispatchers.IO) {
                         val acquired = semaphore.tryAcquire()
                         if (!acquired) return@launch
@@ -147,11 +148,11 @@ class AttendanceMarkingViewModel(
                 Log.d("AttendanceMarkingViewModel", "Live recognition results: $results")
 
                 if (results != null && results.isNotEmpty()) {
-                    val topMatches = results.filter { it.matchesCriteria }.take(3)
+                    val topMatches = results.filter { it.matchesCriteria }
                     val recognizedPersons = topMatches.mapNotNull { result ->
                         getPersonDetails(result.pid, result.similarity)
                     }
-                    _liveRecognizedFaces.update { recognizedPersons }
+                    _liveRecognizedFaces.update { recognizedPersons.sortedByDescending { it.similarity } }
                 } else {
                     _liveRecognizedFaces.update { emptyList() }
                 }
@@ -162,6 +163,7 @@ class AttendanceMarkingViewModel(
     }
 
     fun captureFace() {
+        val capturedImage = _capturedImage.value
         acceptingCaptureFromCamera = false
         _isCameraActive.update { false }
 
@@ -169,7 +171,6 @@ class AttendanceMarkingViewModel(
             try {
                 _isLoading.update { true }
 
-                val capturedImage = _capturedImage.value
                 if (capturedImage?.faceBitmap == null) {
                     emitError(ResponseError.BAD_REQUEST.apply {
                         actualResponse = "No face detected. Please try again."

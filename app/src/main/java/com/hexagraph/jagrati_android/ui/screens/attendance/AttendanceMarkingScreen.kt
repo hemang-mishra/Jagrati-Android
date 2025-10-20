@@ -39,8 +39,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -74,6 +76,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -248,12 +251,11 @@ fun AttendanceMarkingScreenLayout(
                 },
                 actions = {
                     IconButton(
-                        onClick = { imagePickerLauncher.launch("image/*") },
-                        enabled = uiState.isCameraActive
+                        onClick = { /* TODO: Add action for this button */ }
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_gallery),
-                            contentDescription = "Pick from gallery",
+                            painter = painterResource(R.drawable.ic_camera),
+                            contentDescription = "Action button",
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -303,21 +305,23 @@ fun AttendanceMarkingScreenLayout(
 
             AnimatedVisibility(
                 visible = uiState.liveRecognizedFaces.isNotEmpty() && uiState.isCameraActive,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { -it }),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { -it }),
+                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 16.dp)
+                    .align(Alignment.BottomEnd)
+                    .padding(bottom = 180.dp, start = 16.dp, end = 16.dp)
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom)
                 ) {
-                    uiState.liveRecognizedFaces.forEach { person ->
-                        LiveRecognitionCard(person)
+                    val list = uiState.liveRecognizedFaces.take(5)
+                    val size = list.size
+                    list.reversed().forEachIndexed { index, person ->
+                        val opacity = (0.5f/size)*index + 0.5f
+                        LiveRecognitionCard(person, opacity)
                     }
                 }
             }
@@ -327,12 +331,8 @@ fun AttendanceMarkingScreenLayout(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
-                            )
-                        )
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                        RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
                     )
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -350,10 +350,40 @@ fun AttendanceMarkingScreenLayout(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 } else if (uiState.isCameraActive) {
+                    Text(
+                        text = "Ready to capture",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        IconButton(
+                            onClick = {
+                                lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT) {
+                                    CameraSelector.LENS_FACING_BACK
+                                } else {
+                                    CameraSelector.LENS_FACING_FRONT
+                                }
+                            },
+                            modifier = Modifier
+                                .size(56.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_flip_camera),
+                                contentDescription = "Flip Camera",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
@@ -374,13 +404,23 @@ fun AttendanceMarkingScreenLayout(
                                 modifier = Modifier.size(36.dp)
                             )
                         }
+
+                        IconButton(
+                            onClick = { imagePickerLauncher.launch("image/*") },
+                            modifier = Modifier
+                                .size(56.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.secondaryContainer,
+                                    CircleShape
+                                )
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_gallery),
+                                contentDescription = "Pick Image",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Tap to capture",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
                 } else {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -471,71 +511,52 @@ fun CameraPreview(
 }
 
 @Composable
-fun LiveRecognitionCard(person: RecognizedPerson) {
+fun LiveRecognitionCard(person: RecognizedPerson, opacity: Float = 1f) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .width(120.dp)
+            .height(140.dp)
+            .alpha(opacity)
+        ,
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+            containerColor = Color(0xFFE53935)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .fillMaxSize()
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            // Profile Picture - takes majority of the space
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (person.isStudent)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.secondary
-                    ),
+                    .size(80.dp)
+                    .clip(CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = person.name.first().toString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                ProfileAvatar(
+                    userName = person.name,
+                    profileImageUrl = person.profileImageUrl,
+                    modifier = Modifier.fillMaxSize()
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = person.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = person.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = "${(person.similarity * 100).toInt()}%",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = JagratiThemeColors.red
-                )
-                Text(
-                    text = "Match",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
-                )
-            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Name and similarity percentage
+            Text(
+                text = "${person.name} (${(person.similarity * 100).toInt()}%)",
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
         }
     }
 }
@@ -577,7 +598,8 @@ fun RecognizedFacesBottomSheet(
                 contentPadding = PaddingValues(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(recognizedFaces, key = { it.pid }) { person ->
+                val sortedFaces = recognizedFaces.sortedByDescending { it.similarity }
+                items(sortedFaces, key = { it.pid }) { person ->
                     RecognizedPersonCard(
                         person = person,
                         isMarkingAttendance = isMarkingAttendance,
@@ -665,4 +687,3 @@ fun RecognizedPersonCard(
         }
     }
 }
-
