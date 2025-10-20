@@ -58,7 +58,7 @@ class OmniScanImplementation @Inject constructor(
         if (imagePids.find { image.pid == it } != null) {
             deleteFace(image.pid)
         }
-        if ((faceRecognitionService.recognizeFace(image, imagePids, application)?.any{ it.matchesCriteria}) == true) throw Throwable("Face Already Exist.")
+        if ((faceRecognitionService.recognizeFace(image, imagePids, application)?.any{ it.matchesCriteriaForSaving}) == true) throw Throwable("Face Already Exist.")
         image.faceBitmap.let { application.writeBitmapIntoFile(info.faceFileName, it).getOrNull() }
         image.frame?.let { application.writeBitmapIntoFile(info.frameFileName, it).getOrNull() }
         image.image?.let { application.writeBitmapIntoFile(info.imageFileName, it).getOrNull() }

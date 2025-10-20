@@ -96,9 +96,23 @@ sealed interface Screens: NavKey {
     @Serializable
     data object NavVolunteerListRoute: Screens
 
+    @Serializable
+    data object NavUnifiedSearchRoute: Screens
+
+    @Serializable
+    data class NavUnifiedSearchAttendanceRoute(
+        val dateMillis: Long
+    ): Screens
+
     // Face data routes
     @Serializable
     data class NavFaceDataRegisterRoute(
         val pid: String
     ): Screens
+
+    @Serializable
+    data object NavCameraAttendanceMarkingRoute: Screens
+
+    @Serializable
+    data object NavCameraSearchRoute: Screens
 }

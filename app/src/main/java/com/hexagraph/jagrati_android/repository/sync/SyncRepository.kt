@@ -37,7 +37,7 @@ class SyncRepository(
                 }
                 val processedImage = omniScanRepository.processImageFromBitmap(bitamp, Paint())
                 processedImage.onSuccess {
-                    omniScanRepository.saveFaceLocally(it)
+                    omniScanRepository.saveFaceLocally(it.copy(pid = studentDto.pid, name = studentDto.firstName))
                 }
             }
         }
@@ -52,7 +52,7 @@ class SyncRepository(
                 }
                 val processedImage = omniScanRepository.processImageFromBitmap(bitamp, Paint())
                 processedImage.onSuccess {
-                    omniScanRepository.saveFaceLocally(it)
+                    omniScanRepository.saveFaceLocally(it.copy(pid = volunteerDto.pid, name = volunteerDto.firstName))
                 }
             }
 

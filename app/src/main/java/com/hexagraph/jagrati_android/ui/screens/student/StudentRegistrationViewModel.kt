@@ -3,7 +3,9 @@ package com.hexagraph.jagrati_android.ui.screens.student
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.Student
+import com.hexagraph.jagrati_android.model.dao.GroupsDao
 import com.hexagraph.jagrati_android.model.dao.StudentDao
+import com.hexagraph.jagrati_android.model.dao.VillageDao
 import com.hexagraph.jagrati_android.model.student.StudentRequest
 import com.hexagraph.jagrati_android.model.student.StudentResponse
 import com.hexagraph.jagrati_android.model.student.UpdateStudentRequest
@@ -47,7 +49,8 @@ data class StudentRegistrationUiState(
 class StudentRegistrationViewModel(
     private val studentRepository: StudentRepository,
     private val studentDao: StudentDao,
-    private val appPreferences: AppPreferences,
+    private val villagesDao: VillageDao,
+    private val groupsDao: GroupsDao,
     private val pidToUpdate: String?
 ) : BaseViewModel<StudentRegistrationUiState>() {
 
@@ -79,13 +82,13 @@ class StudentRegistrationViewModel(
     init {
         viewModelScope.launch(Dispatchers.IO) {
             launch {
-                appPreferences.villages.getFlow().collect { villages ->
-                    _villages.update { villages }
+                villagesDao.getAllActiveVillages().collect { villages ->
+                    _villages.update { villages.associate { Pair(it.id, it.name) } }
                 }
             }
             launch {
-                appPreferences.groups.getFlow().collect { groups ->
-                    _groups.update { groups }
+                groupsDao.getAllActiveGroups().collect { groups ->
+                    _groups.update { groups.associate { Pair(it.id, it.name) } }
                 }
             }
             if (pidToUpdate != null) {

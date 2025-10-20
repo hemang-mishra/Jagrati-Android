@@ -28,6 +28,7 @@ data class FaceRecognitionResult(
     val similarity: Float
 ){
     val matchesCriteria get():Boolean = (similarity) > DEFAULT_SIMILARITY
+    val matchesCriteriaForSaving get():Boolean = (similarity) > 0.95f
 }
 
 class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: EmbeddingsDAO,
@@ -99,7 +100,7 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
                 val singleStart = System.currentTimeMillis()
 
                 val thresholdDistance = Float.MAX_VALUE
-                val minHeap = PriorityQueue<Pair<Float, FaceRecognitionResult>>(Collections.reverseOrder())
+                val minHeap = PriorityQueue<Pair<Float, FaceRecognitionResult>>(compareByDescending { it.first })
 
                 for (testPid in facePids) {
                     val testEmbedding: FloatArray =

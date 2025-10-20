@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -51,6 +52,7 @@ import org.koin.androidx.compose.koinViewModel
 fun VolunteerListScreen(
     onBackPress: () -> Unit,
     onVolunteerClick: (String) -> Unit,
+    onSearchClick: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     viewModel: VolunteerListViewModel = koinViewModel()
 ) {
@@ -75,6 +77,7 @@ fun VolunteerListScreen(
         onBatchSelected = viewModel::filterByBatch,
         onBackPress = onBackPress,
         onVolunteerClick = onVolunteerClick,
+        onSearchClick = onSearchClick,
         snackbarHostState = snackbarHostState
     )
 }
@@ -89,6 +92,7 @@ fun VolunteerListScreenLayout(
     onBatchSelected: (String?) -> Unit,
     onBackPress: () -> Unit,
     onVolunteerClick: (String) -> Unit,
+    onSearchClick: () -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     var showBatchFilter by remember { mutableStateOf(false) }
@@ -108,6 +112,14 @@ fun VolunteerListScreenLayout(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onSearchClick) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search"
                         )
                     }
                 },
@@ -247,6 +259,7 @@ fun VolunteerListScreenPreview() {
             onBatchSelected = {},
             onBackPress = {},
             onVolunteerClick = {},
+            onSearchClick = {},
             snackbarHostState = remember { SnackbarHostState() }
         )
     }

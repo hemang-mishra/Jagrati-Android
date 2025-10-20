@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.ui.navigation
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entry
@@ -17,6 +19,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
+import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingScreen
+import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingViewModel
 import com.hexagraph.jagrati_android.ui.screens.auth.EmailVerificationScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.ForgotPasswordScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.LoginScreen
@@ -44,6 +48,8 @@ import com.hexagraph.jagrati_android.ui.screens.studentlist.StudentListScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
+import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchScreen
+import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -214,23 +220,16 @@ fun AppNavigation(
                     navigateToVolunteerList = {
                         backstack.add(Screens.NavVolunteerListRoute)
                     },
+                    onSearchClick = {
+                        backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
                     updateFacialData = {
                         backstack.add(Screens.NavFaceDataRegisterRoute(it))
+                    },
+                    navigateToAttendanceMarking = {
+                        backstack.add(Screens.NavCameraAttendanceMarkingRoute)
                     }
                 )
-//                HomeScreen(
-//                    snackbarHostState = snackbarHostState,
-//                    navigateToLogin = {
-//                        backstack.clear()
-//                        backstack.add(Screens.NavLoginRoute)
-//                    },
-//                    navigateToManagement = {
-//                        backstack.add(Screens.NavManagementRoute)
-//                    },
-//                    navigateToVolunteerRegistration = {
-//                        backstack.add(Screens.NavVolunteerRegistrationRoute)
-//                    }
-//                )
             }
 
             // Management screens
@@ -389,6 +388,9 @@ fun AppNavigation(
                     onStudentClick = { pid: String ->
                         // TODO: Navigate to student profile
                     },
+                    onSearchClick = {
+                        backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
                     snackbarHostState = snackbarHostState
                 )
             }
@@ -401,7 +403,80 @@ fun AppNavigation(
                     onVolunteerClick = { pid: String ->
                         // TODO: Navigate to volunteer profile
                     },
+                    onSearchClick = {
+                        backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
                     snackbarHostState = snackbarHostState
+                )
+            }
+
+            entry<Screens.NavUnifiedSearchRoute> {
+                UnifiedSearchScreen(
+                    onBackPress = {
+                        backstack.popBackStack()
+                    },
+                    onSelect = { pid: String, isStudent: Boolean ->
+                        // Navigate to student or volunteer profile based on isStudent flag
+                    },
+                    snackbarHostState = snackbarHostState
+                )
+            }
+
+            entry<Screens.NavUnifiedSearchAttendanceRoute> {
+                val vm = koinViewModel<UnifiedSearchViewModel>()
+                vm.selectedDateMillis = it.dateMillis
+                UnifiedSearchScreen(
+                    viewModel = vm,
+                    onBackPress = {
+                        backstack.popBackStack()
+                    },
+                    onSelect = { pid: String, isStudent: Boolean ->
+                        vm.markAttendance(pid, isStudent){
+                            Toast.makeText(context, "Attendance marked!!", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    snackbarHostState = snackbarHostState
+                )
+            }
+
+            // Attendance marking screen
+            entry<Screens.NavCameraAttendanceMarkingRoute> {
+                val vm = koinViewModel<AttendanceMarkingViewModel>()
+
+                AttendanceMarkingScreen(
+                    viewModel = vm,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    onPersonSelect = {
+                        pid: String, isStudent: Boolean ->
+                        vm.markAttendance(pid, isStudent){
+                            Toast.makeText(context, "Attendance marked!!", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onTextSearchClick = {
+                        backstack.popBackStack()
+                        backstack.add(Screens.NavUnifiedSearchAttendanceRoute(it))
+                    },
+                    isSearching = false
+                )
+            }
+
+            entry<Screens.NavCameraSearchRoute>{
+                val vm = koinViewModel<AttendanceMarkingViewModel>()
+                AttendanceMarkingScreen(
+                    viewModel = vm,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    onPersonSelect = {
+                            pid: String, isStudent: Boolean ->
+                        //Navigate to the respective screen
+                    },
+                    onTextSearchClick = {
+                        backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
+                    isSearching = true
                 )
             }
 

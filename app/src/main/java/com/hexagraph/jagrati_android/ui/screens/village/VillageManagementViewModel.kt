@@ -2,6 +2,8 @@ package com.hexagraph.jagrati_android.ui.screens.village
 
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ResponseError
+import com.hexagraph.jagrati_android.model.Village
+import com.hexagraph.jagrati_android.model.dao.VillageDao
 import com.hexagraph.jagrati_android.model.village.LongRequest
 import com.hexagraph.jagrati_android.model.village.LongStringResponse
 import com.hexagraph.jagrati_android.model.village.StringRequest
@@ -30,7 +32,7 @@ data class VillageManagementUiState(
 
 class VillageManagementViewModel(
     private val villageRepository: VillageRepository,
-    private val appPreferences: AppPreferences
+    private val villagesDao: VillageDao
 ) : BaseViewModel<VillageManagementUiState>() {
 
     private val _uiState = MutableStateFlow(VillageManagementUiState())
@@ -157,8 +159,12 @@ class VillageManagementViewModel(
 
     private suspend fun saveVillagesToPreferences(villages: List<LongStringResponse>) {
         try {
-            val villageMap = villages.associate { it.id to it.data }
-            appPreferences.saveVillages(villageMap)
+            villages.forEach {
+                villagesDao.upsertVillage(Village(
+                    id = it.id,
+                    name = it.data
+                ))
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
