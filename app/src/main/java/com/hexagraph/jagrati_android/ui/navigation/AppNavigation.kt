@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.ui.navigation
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entry
@@ -47,6 +49,7 @@ import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListScree
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchScreen
+import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -224,7 +227,7 @@ fun AppNavigation(
                         backstack.add(Screens.NavFaceDataRegisterRoute(it))
                     },
                     navigateToAttendanceMarking = {
-                        backstack.add(Screens.NavAttendanceMarkingRoute)
+                        backstack.add(Screens.NavCameraAttendanceMarkingRoute)
                     }
                 )
             }
@@ -419,13 +422,61 @@ fun AppNavigation(
                 )
             }
 
+            entry<Screens.NavUnifiedSearchAttendanceRoute> {
+                val vm = koinViewModel<UnifiedSearchViewModel>()
+                vm.selectedDateMillis = it.dateMillis
+                UnifiedSearchScreen(
+                    viewModel = vm,
+                    onBackPress = {
+                        backstack.popBackStack()
+                    },
+                    onSelect = { pid: String, isStudent: Boolean ->
+                        vm.markAttendance(pid, isStudent){
+                            Toast.makeText(context, "Attendance marked!!", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    snackbarHostState = snackbarHostState
+                )
+            }
+
             // Attendance marking screen
-            entry<Screens.NavAttendanceMarkingRoute> {
+            entry<Screens.NavCameraAttendanceMarkingRoute> {
+                val vm = koinViewModel<AttendanceMarkingViewModel>()
+
                 AttendanceMarkingScreen(
-                    viewModel = koinViewModel<AttendanceMarkingViewModel>(),
+                    viewModel = vm,
                     onNavigateBack = {
                         backstack.popBackStack()
-                    }
+                    },
+                    onPersonSelect = {
+                        pid: String, isStudent: Boolean ->
+                        vm.markAttendance(pid, isStudent){
+                            Toast.makeText(context, "Attendance marked!!", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onTextSearchClick = {
+                        backstack.popBackStack()
+                        backstack.add(Screens.NavUnifiedSearchAttendanceRoute(it))
+                    },
+                    isSearching = false
+                )
+            }
+
+            entry<Screens.NavCameraSearchRoute>{
+                val vm = koinViewModel<AttendanceMarkingViewModel>()
+                AttendanceMarkingScreen(
+                    viewModel = vm,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    onPersonSelect = {
+                            pid: String, isStudent: Boolean ->
+                        //Navigate to the respective screen
+                    },
+                    onTextSearchClick = {
+                        backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
+                    isSearching = true
                 )
             }
 

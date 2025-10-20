@@ -11,6 +11,7 @@ data class AttendanceMarkingUiState(
     val liveRecognizedFaces: List<RecognizedPerson> = emptyList(),
     val showBottomSheet: Boolean = false,
     val isMarkingAttendance: Boolean = false,
+    val selectedDateMillis: Long = System.currentTimeMillis(),
     val error: ResponseError? = null,
     val successMessage: String? = null
 )
@@ -23,4 +24,3 @@ data class RecognizedPerson(
     val subtitle: String = "",
     val profileImageUrl: String? = null
 )
-

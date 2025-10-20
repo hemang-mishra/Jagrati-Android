@@ -20,6 +20,7 @@ import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionSer
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.Utils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -50,47 +51,33 @@ class AttendanceMarkingViewModel(
     private val _liveRecognizedFaces = MutableStateFlow<List<RecognizedPerson>>(emptyList())
     private val _showBottomSheet = MutableStateFlow(false)
     private val _isMarkingAttendance = MutableStateFlow(false)
+    private val _selectedDateMillis = MutableStateFlow(System.currentTimeMillis())
     private var acceptingCaptureFromCamera = true
 
     private val semaphore = Semaphore(1)
+    private var currentDetectionJob: Job? = null
 
     override val uiState: StateFlow<AttendanceMarkingUiState> = createUiStateFlow()
 
     override fun createUiStateFlow(): StateFlow<AttendanceMarkingUiState> {
         return combine(
-            combine(
-                _isLoading,
-                _capturedImage,
-                _isCameraActive,
-                _recognizedFaces,
-                _liveRecognizedFaces
-            ) { isLoading, capturedImage, isCameraActive, recognizedFaces, liveRecognizedFaces ->
-                AttendanceMarkingUiState(
-                    isLoading = isLoading,
-                    capturedImage = capturedImage,
-                    isCameraActive = isCameraActive,
-                    recognizedFaces = recognizedFaces,
-                    liveRecognizedFaces = liveRecognizedFaces,
-                    showBottomSheet = false,
-                    isMarkingAttendance = false,
-                    error = null,
-                    successMessage = null
-                )
-            },
-            combine(
-                _showBottomSheet,
-                _isMarkingAttendance,
-                errorFlow,
-                successMsgFlow
-            ) { showBottomSheet, isMarkingAttendance, error, successMessage ->
-                listOf(showBottomSheet, isMarkingAttendance, error, successMessage)
-            }
-        ) { state, extras ->
-            state.copy(
-                showBottomSheet = extras[0] as Boolean,
-                isMarkingAttendance = extras[1] as Boolean,
-                error = extras[2] as? ResponseError,
-                successMessage = extras[3] as? String
+            _isLoading,
+            _capturedImage,
+            _isCameraActive,
+            _recognizedFaces,
+            _liveRecognizedFaces
+        ) { isLoading, capturedImage, isCameraActive, recognizedFaces, liveRecognizedFaces ->
+            AttendanceMarkingUiState(
+                isLoading = isLoading,
+                capturedImage = capturedImage,
+                isCameraActive = isCameraActive,
+                recognizedFaces = recognizedFaces,
+                liveRecognizedFaces = liveRecognizedFaces,
+                selectedDateMillis = _selectedDateMillis.value,
+                showBottomSheet = _showBottomSheet.value,
+                isMarkingAttendance = _isMarkingAttendance.value,
+                error = errorFlow.value,
+                successMessage = successMsgFlow.value
             )
         }.stateIn(
             scope = viewModelScope,
@@ -108,7 +95,8 @@ class AttendanceMarkingViewModel(
                 result.onSuccess {
                     processedImage ->
                     updateCapturedImage(processedImage)
-                    viewModelScope.launch(Dispatchers.IO) {
+                    currentDetectionJob?.cancel()
+                    currentDetectionJob = viewModelScope.launch(Dispatchers.IO) {
                         val acquired = semaphore.tryAcquire()
                         if (!acquired) return@launch
 
@@ -357,9 +345,12 @@ class AttendanceMarkingViewModel(
             try {
                 _isMarkingAttendance.update { true }
 
-                val currentDate = Utils.timestamp().split(" ")[0]
+                // Format the selected date from UI state
+                val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                val formattedDate = dateFormatter.format(java.util.Date(_selectedDateMillis.value))
+
                 val request = BulkAttendanceRequest(
-                    date = currentDate,
+                    date = formattedDate,
                     pids = listOf(pid)
                 )
 
@@ -381,7 +372,7 @@ class AttendanceMarkingViewModel(
                             retakePhoto()
                         } else if (response?.skippedExisting == 1) {
                             emitError(ResponseError.BAD_REQUEST.apply {
-                                actualResponse = "Attendance already marked for today"
+                                actualResponse = "Attendance already marked for this date"
                             })
                         } else {
                             emitError(ResponseError.BAD_REQUEST.apply {
@@ -404,6 +395,7 @@ class AttendanceMarkingViewModel(
     }
 
     fun retakePhoto() {
+        currentDetectionJob?.cancel()
         acceptingCaptureFromCamera = true
         _isCameraActive.update { true }
         _capturedImage.update { null }
@@ -412,11 +404,26 @@ class AttendanceMarkingViewModel(
         _showBottomSheet.update { false }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        stopFaceDetection()
+    }
+
+    fun stopFaceDetection() {
+        currentDetectionJob?.cancel()
+        acceptingCaptureFromCamera = false
+        _isCameraActive.update { false }
+        semaphore.tryAcquire() // Clear any pending operations
+    }
     fun dismissBottomSheet() {
         _showBottomSheet.update { false }
     }
 
     fun updateCapturedImage(image: ProcessedImage) {
         _capturedImage.update { image }
+    }
+
+    fun updateSelectedDateMillis(millis: Long) {
+        _selectedDateMillis.update { millis }
     }
 }

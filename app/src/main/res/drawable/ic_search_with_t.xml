@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Search Icon Circle -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M10,4 A6,6 0 1,1 10,16 A6,6 0 1,1 10,4 Z" />
+
+    <!-- Search Icon Handle -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#000000"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M14.5,14.5 L19,19" />
+
+    <!-- Letter "T" at bottom right corner -->
+    <group
+        android:translateX="16"
+        android:translateY="16">
+        <!-- T horizontal line -->
+        <path
+            android:fillColor="#000000"
+            android:pathData="M0,0 L4,0 L4,0.8 L2.6,0.8 L2.6,6 L1.4,6 L1.4,0.8 L0,0.8 Z" />
+    </group>
+
+</vector>
+

@@ -93,10 +93,6 @@ fun MainHomeScreen(
                         scope.launch { drawerState.close() }
                         // TODO: Navigate to settings
                     },
-                    onTakeVolunteerAttendanceClick = {
-                        scope.launch { drawerState.close() }
-                        navigateToAttendanceMarking()
-                    },
                     onTakeStudentAttendanceClick = {
                         scope.launch { drawerState.close() }
                         navigateToAttendanceMarking()
@@ -166,7 +162,6 @@ fun DrawerContent(
     profileImageUrl: String?,
     onManagementClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onTakeVolunteerAttendanceClick: () -> Unit,
     onTakeStudentAttendanceClick: () -> Unit,
     onRegisterNewStudentClick: () -> Unit,
     onLogoutClick: () -> Unit,
@@ -222,14 +217,7 @@ fun DrawerContent(
         DrawerSectionHeader(title = "ATTENDANCE & REGISTRATION")
 
         DrawerItem(
-            label = "Take Volunteer Attendance",
-            icon = R.drawable.ic_attendance,
-            onClick = onTakeVolunteerAttendanceClick,
-            colorIndex = 2
-        )
-
-        DrawerItem(
-            label = "Take Student Attendance",
+            label = "Take Attendance",
             icon = R.drawable.ic_attendance,
             onClick = onTakeStudentAttendanceClick,
             colorIndex = 3
@@ -482,7 +470,6 @@ fun DrawerContentPreview() {
             profileImageUrl = null,
             onManagementClick = {},
             onSettingsClick = {},
-            onTakeVolunteerAttendanceClick = {},
             onTakeStudentAttendanceClick = {},
             onRegisterNewStudentClick = {},
             onLogoutClick = {}

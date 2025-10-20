@@ -47,10 +47,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,8 +64,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -78,7 +83,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
@@ -94,22 +98,29 @@ import com.hexagraph.jagrati_android.model.ProcessedImage
 import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
 import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.Executors
 
 @Composable
 fun AttendanceMarkingScreen(
     viewModel: AttendanceMarkingViewModel,
-    onNavigateBack: () -> Unit
+    onPersonSelect: (String, Boolean) -> Unit,
+    onNavigateBack: () -> Unit,
+    onTextSearchClick: (Long) -> Unit,
+    isSearching: Boolean
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
-            snackbarHostState.showSnackbar(
-                message = error.actualResponse ?: "An error occurred"
-            )
+            Toast.makeText(context, error.actualResponse, Toast.LENGTH_LONG).show()
+            viewModel.clearErrorFlow()
         }
     }
 
@@ -125,13 +136,8 @@ fun AttendanceMarkingScreen(
         onNavigateBack = onNavigateBack,
         onCapture = { viewModel.captureFace() },
         onRetake = { viewModel.retakePhoto() },
-        onPersonSelect = { pid, isStudent ->
-            viewModel.markAttendance(pid, isStudent) {
-                scope.launch {
-                    snackbarHostState.showSnackbar("Attendance marked successfully!")
-                }
-            }
-        },
+        onPersonSelect = onPersonSelect,
+        onUpdateDate = { millis -> viewModel.updateSelectedDateMillis(millis) },
         onDismissBottomSheet = { viewModel.dismissBottomSheet() },
         getImageAnalyzer = { lensFacing, paint, executor ->
             viewModel.getImageAnalyzer(lensFacing, paint, executor)
@@ -148,6 +154,12 @@ fun AttendanceMarkingScreen(
         },
         onUpdateCapturedImage = { image ->
             viewModel.updateCapturedImage(image)
+        },
+        onTextSearchClick = {
+            onTextSearchClick(uiState.selectedDateMillis)
+        },
+        stopFaceDetection = {
+            viewModel.stopFaceDetection()
         }
     )
 }
@@ -161,10 +173,13 @@ fun AttendanceMarkingScreenLayout(
     onCapture: () -> Unit,
     onRetake: () -> Unit,
     onPersonSelect: (String, Boolean) -> Unit,
+    onUpdateDate: (Long) -> Unit,
     onDismissBottomSheet: () -> Unit,
     getImageAnalyzer: (Int, Paint, java.util.concurrent.Executor) -> ImageAnalysis.Analyzer,
     onImageFromGallery: (Bitmap, Paint) -> Unit,
-    onUpdateCapturedImage: (ProcessedImage) -> Unit
+    onUpdateCapturedImage: (ProcessedImage) -> Unit,
+    onTextSearchClick: ()->Unit,
+    stopFaceDetection: ()->Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -180,6 +195,13 @@ fun AttendanceMarkingScreenLayout(
     val paint = remember { Paint() }
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Use date from UI state
+    var showDatePicker by remember { mutableStateOf(false) }
+    val dateFormatter = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
+    val selectedDateText = remember(uiState.selectedDateMillis) {
+        dateFormatter.format(Date(uiState.selectedDateMillis))
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -227,44 +249,72 @@ fun AttendanceMarkingScreenLayout(
     DisposableEffect(Unit) {
         onDispose {
             cameraExecutor.shutdown()
+            stopFaceDetection()
         }
     }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Mark Attendance",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+            Column {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Mark Attendance",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = onTextSearchClick
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_search_with_t),
+                                contentDescription = "Action button",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = { /* TODO: Add action for this button */ }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_camera),
-                            contentDescription = "Action button",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
-            )
+
+                // Date Picker Row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .clickable { showDatePicker = true }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = "Calendar",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = selectedDateText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
@@ -457,6 +507,36 @@ fun AttendanceMarkingScreenLayout(
                     isMarkingAttendance = uiState.isMarkingAttendance,
                     onPersonSelect = onPersonSelect
                 )
+            }
+        }
+
+        // Date Picker Dialog - updated to use and update UI state
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState(
+                initialSelectedDateMillis = uiState.selectedDateMillis
+            )
+
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            datePickerState.selectedDateMillis?.let {
+                                onUpdateDate(it)
+                            }
+                            showDatePicker = false
+                        }
+                    ) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) {
+                        Text("Cancel")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState)
             }
         }
     }
@@ -675,13 +755,6 @@ fun RecognizedPersonCard(
                     modifier = Modifier.size(24.dp),
                     strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.primary
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "Select",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
                 )
             }
         }
