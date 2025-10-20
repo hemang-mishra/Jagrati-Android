@@ -21,6 +21,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingScreen
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingViewModel
+import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.EmailVerificationScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.ForgotPasswordScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.LoginScreen

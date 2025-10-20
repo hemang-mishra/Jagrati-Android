@@ -41,6 +41,7 @@ import com.hexagraph.jagrati_android.ui.components.DrawerDivider
 import com.hexagraph.jagrati_android.ui.components.DrawerHeader
 import com.hexagraph.jagrati_android.ui.components.DrawerItem
 import com.hexagraph.jagrati_android.ui.components.DrawerSectionHeader
+import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportScreen
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
@@ -137,7 +138,7 @@ fun MainHomeScreen(
                         onSearchClick = onSearchClick,
                         onOpenDrawer = { scope.launch { drawerState.open() } }
                     )
-                    1 -> AttendanceSummaryScreen()
+                    1 -> AttendanceReportScreen(onBackPress = {})
                     2 -> SyllabusScreen()
                     3 -> NotificationsScreen()
                     4 -> ProfileScreen(

@@ -114,5 +114,8 @@ sealed interface Screens: NavKey {
     data object NavCameraAttendanceMarkingRoute: Screens
 
     @Serializable
+    data object NavAttendanceReportRoute: Screens
+
+    @Serializable
     data object NavCameraSearchRoute: Screens
 }

@@ -47,6 +47,7 @@ data class VolunteerBatchCount(
 @Serializable
 data class PresentStudent(
     val pid: String,
+    val aid: String,
     val firstName: String,
     val lastName: String,
     val gender: Gender,
@@ -59,6 +60,7 @@ data class PresentStudent(
 @Serializable
 data class PresentVolunteer(
     val pid: String,
+    val aid: String,
     val firstName: String,
     val lastName: String,
     val batch: String?
