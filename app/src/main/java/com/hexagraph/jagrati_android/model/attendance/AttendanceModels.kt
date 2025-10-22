@@ -27,7 +27,7 @@ data class AttendanceRecordResponse(
 
 @Serializable
 data class AttendanceRecordListResponse(
-    val records: List<AttendanceRecordResponse>
+    val attendees: List<AttendanceRecordResponse>
 )
 
 @Serializable
@@ -74,4 +74,3 @@ data class AttendanceReportResponse(
     val presentStudents: List<PresentStudent>,
     val presentVolunteers: List<PresentVolunteer>
 )
-

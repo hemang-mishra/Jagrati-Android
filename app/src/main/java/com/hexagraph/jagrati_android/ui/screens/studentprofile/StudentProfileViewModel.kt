@@ -29,7 +29,7 @@ data class StudentProfileUiState(
     val lastPresentDate: String? = null,
     val presentCountLastWeek: Int = 0,
     val presentCountLastMonth: Int = 0,
-    val groupHistory: List<StudentGroupHistoryResponse> = emptyList(),
+    val groupHistory: List<StudentGroupHistoryResponse>? = null,
     val showGroupHistorySheet: Boolean = false,
     val showEditOptionsSheet: Boolean = false,
     val canEditProfile: Boolean = false,
@@ -61,6 +61,7 @@ class StudentProfileViewModel(
     init {
         checkEditPermission()
         loadStudentProfile()
+        loadGroupHistory()
     }
 
     override fun createUiStateFlow(): StateFlow<StudentProfileUiState> {
@@ -135,8 +136,8 @@ class StudentProfileViewModel(
                 when {
                     resource.isSuccess -> {
                         resource.data?.let { attendanceResponse ->
-                            _attendanceRecords.update { attendanceResponse.records }
-                            calculateAttendanceStats(attendanceResponse.records)
+                            _attendanceRecords.update { attendanceResponse.attendees }
+                            calculateAttendanceStats(attendanceResponse.attendees)
                         }
                     }
                     resource.isFailed -> {
@@ -144,6 +145,7 @@ class StudentProfileViewModel(
                     }
                 }
             }
+            loadGroupHistory()
 
             _isLoading.update { false }
             _isRefreshing.update { false }
@@ -174,9 +176,6 @@ class StudentProfileViewModel(
     }
 
     fun showGroupHistorySheet() {
-        if (_groupHistory.value.isEmpty()) {
-            loadGroupHistory()
-        }
         _showGroupHistorySheet.update { true }
     }
 

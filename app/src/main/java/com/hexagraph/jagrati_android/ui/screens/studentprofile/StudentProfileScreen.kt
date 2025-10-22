@@ -124,10 +124,10 @@ fun StudentProfileLayout(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
@@ -460,9 +460,6 @@ fun SecondaryDetailsSection(student: StudentResponse) {
                 SecondaryDetailRow(label = "Secondary Contact", value = it)
             }
 
-            // PID
-            SecondaryDetailRow(label = "PID", value = student.pid)
-
             // Status
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -697,7 +694,7 @@ fun EditOptionsBottomSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupHistoryBottomSheet(
-    groupHistory: List<StudentGroupHistoryResponse>,
+    groupHistory: List<StudentGroupHistoryResponse>?,
     onDismiss: () -> Unit,
     onVolunteerClick: (String) -> Unit
 ) {
@@ -719,7 +716,7 @@ fun GroupHistoryBottomSheet(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            if (groupHistory.isEmpty()) {
+            if (groupHistory == null) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -735,6 +732,16 @@ fun GroupHistoryBottomSheet(
                     }
                 }
             } else {
+                if(groupHistory.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No group transitions found.")
+                    }
+                }
                 LazyColumn(
                     modifier = Modifier.heightIn(max = 400.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
