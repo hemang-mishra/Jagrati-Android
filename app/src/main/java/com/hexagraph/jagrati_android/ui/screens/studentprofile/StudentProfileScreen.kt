@@ -2,6 +2,8 @@ package com.hexagraph.jagrati_android.ui.screens.studentprofile
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,12 +11,17 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -104,7 +111,13 @@ fun StudentProfileLayout(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Student Profile") },
+                title = {
+                    Text(
+                        "Student Profile",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -127,7 +140,7 @@ fun StudentProfileLayout(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                    actionIconContentColor = MaterialTheme.colorScheme.primary
                 )
             )
         },
@@ -145,47 +158,77 @@ fun StudentProfileLayout(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else if (uiState.student != null) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
-                    // Profile Photo Section
+                    // Profile Photo Section with animation
                     item {
-                        ProfilePhotoSection(
-                            student = uiState.student,
-                            onPhotoClick = onPhotoClick
-                        )
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(animationSpec = tween(600)) +
+                                    slideInVertically(animationSpec = tween(600))
+                        ) {
+                            ProfilePhotoSection(
+                                student = uiState.student,
+                                onPhotoClick = onPhotoClick
+                            )
+                        }
                     }
 
                     // Primary Details Section
                     item {
-                        PrimaryDetailsSection(
-                            student = uiState.student,
-                            onCallContact = onCallContact
-                        )
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(animationSpec = tween(600, delayMillis = 100)) +
+                                    slideInVertically(animationSpec = tween(600, delayMillis = 100))
+                        ) {
+                            PrimaryDetailsSection(
+                                student = uiState.student,
+                                onCallContact = onCallContact
+                            )
+                        }
+                    }
+
+                    // Attendance Summary Section (moved up for better UX)
+                    item {
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(animationSpec = tween(600, delayMillis = 200)) +
+                                    slideInVertically(animationSpec = tween(600, delayMillis = 200))
+                        ) {
+                            AttendanceSummarySection(
+                                lastPresentDate = uiState.lastPresentDate,
+                                presentCountLastWeek = uiState.presentCountLastWeek,
+                                presentCountLastMonth = uiState.presentCountLastMonth
+                            )
+                        }
                     }
 
                     // Secondary Details Section
                     item {
-                        SecondaryDetailsSection(student = uiState.student)
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(animationSpec = tween(600, delayMillis = 300)) +
+                                    slideInVertically(animationSpec = tween(600, delayMillis = 300))
+                        ) {
+                            SecondaryDetailsSection(student = uiState.student)
+                        }
                     }
 
                     // Group History Section
                     item {
-                        GroupHistorySection(onViewGroupHistory = onViewGroupHistory)
-                    }
-
-                    // Attendance Summary Section
-                    item {
-                        AttendanceSummarySection(
-                            lastPresentDate = uiState.lastPresentDate,
-                            presentCountLastWeek = uiState.presentCountLastWeek,
-                            presentCountLastMonth = uiState.presentCountLastMonth
-                        )
+                        AnimatedVisibility(
+                            visible = true,
+                            enter = fadeIn(animationSpec = tween(600, delayMillis = 400)) +
+                                    slideInVertically(animationSpec = tween(600, delayMillis = 400))
+                        ) {
+                            GroupHistorySection(onViewGroupHistory = onViewGroupHistory)
+                        }
                     }
                 }
             } else {
@@ -233,27 +276,52 @@ fun ProfilePhotoSection(
     student: StudentResponse,
     onPhotoClick: () -> Unit
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ), label = "profile_photo_scale"
+    )
+
     Column(
         modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Box(
             modifier = Modifier
-                .size(120.dp)
-                .clickable(onClick = onPhotoClick),
+                .size(140.dp)
+                .scale(scale)
+                .clickable(
+                    onClick = {
+                        isPressed = true
+                        onPhotoClick()
+                    },
+                    onClickLabel = "Edit photo"
+                ),
             contentAlignment = Alignment.Center
         ) {
             if (student.profilePic != null) {
-                ProfileAvatar(
-                    userName = "${student.firstName} ${student.lastName}",
-                    profileImageUrl = student.profilePic.url,
-                    size = 120.dp
-                )
-                // Edit icon overlay
+                Box(
+                    modifier = Modifier
+                        .size(140.dp)
+                        .shadow(12.dp, CircleShape)
+                ) {
+                    ProfileAvatar(
+                        userName = "${student.firstName} ${student.lastName}",
+                        profileImageUrl = student.profilePic.url,
+                        size = 140.dp
+                    )
+                }
+                // Edit icon badge
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .size(32.dp)
+                        .offset(x = 4.dp, y = 4.dp)
+                        .size(44.dp)
+                        .shadow(8.dp, CircleShape)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
@@ -262,34 +330,101 @@ fun ProfilePhotoSection(
                         painter = painterResource(id = R.drawable.ic_edit),
                         contentDescription = "Edit Photo",
                         tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             } else {
                 // No photo - show add face data prompt
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                Box(
+                    modifier = Modifier
+                        .size(140.dp)
+                        .shadow(12.dp, CircleShape)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_face),
+                        contentDescription = "No Photo",
+                        modifier = Modifier.size(70.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        // Name below profile pic
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "${student.firstName} ${student.lastName}",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            // Status badge below name
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = if (student.isActive)
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                else
+                    MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(120.dp)
+                            .size(8.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_face),
-                            contentDescription = "No Photo",
-                            modifier = Modifier.size(60.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextButton(onClick = onPhotoClick) {
-                        Text("Add Facial Data")
-                    }
+                            .background(
+                                if (student.isActive)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    MaterialTheme.colorScheme.error
+                            )
+                    )
+                    Text(
+                        text = if (student.isActive) "Active" else "Inactive",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = if (student.isActive)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.error
+                    )
                 }
+            }
+        }
+
+        // Add face data button if no profile pic
+        if (student.profilePic == null) {
+            Button(
+                onClick = onPhotoClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_face),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Add Facial Data", fontWeight = FontWeight.SemiBold)
+            }
+        }
+
+        LaunchedEffect(isPressed) {
+            if (isPressed) {
+                kotlinx.coroutines.delay(100)
+                isPressed = false
             }
         }
     }
@@ -300,78 +435,112 @@ fun PrimaryDetailsSection(
     student: StudentResponse,
     onCallContact: (String) -> Unit
 ) {
-    Card(
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        // Group and Village chips
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Name
-            Text(
-                text = "${student.firstName} ${student.lastName}",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+            InfoChip(
+                icon = painterResource(id = R.drawable.ic_group),
+                label = "Group",
+                value = student.groupName,
+                containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f)
+            )
+            InfoChip(
+                icon = painterResource(id = R.drawable.ic_location_on),
+                label = "Village",
+                value = student.villageName,
+                containerColor = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // Gender chip
+        InfoChip(
+            icon = when (student.gender.lowercase()) {
+                "male" -> painterResource(id = R.drawable.ic_male)
+                "female" -> painterResource(id = R.drawable.ic_female)
+                else -> painterResource(id = R.drawable.ic_gender_neutral)
+            },
+            label = "Gender",
+            value = student.gender,
+            containerColor = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Contact Number
+        student.primaryContactNo?.let { phone ->
+            var isPressed by remember { mutableStateOf(false) }
+            val scale by animateFloatAsState(
+                targetValue = if (isPressed) 0.97f else 1f,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                label = "call_button_scale"
             )
 
-            // Group and Village
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .scale(scale),
+                onClick = {
+                    isPressed = true
+                    onCallContact(phone)
+                },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             ) {
-                DetailChip(
-                    icon = painterResource(id = R.drawable.ic_group),
-                    label = "Group",
-                    value = student.groupName
-                )
-                DetailChip(
-                    icon = painterResource(id = R.drawable.ic_location_on),
-                    label = "Village",
-                    value = student.villageName
-                )
-            }
-
-            // Gender
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Icon(
-                    when (student.gender.lowercase()) {
-                        "male" -> painterResource(id = R.drawable.ic_male)
-                        "female" -> painterResource(id = R.drawable.ic_female)
-                        else -> painterResource(id = R.drawable.ic_gender_neutral)
-                    },
-                    contentDescription = "Gender",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-                Text(
-                    text = student.gender,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
-
-            // Contact Number
-            student.primaryContactNo?.let { phone ->
-                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-                OutlinedButton(
-                    onClick = { onCallContact(phone) },
-                    modifier = Modifier.fillMaxWidth(),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_phone),
+                            contentDescription = "Call",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Primary Contact",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = phone,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_phone),
-                        contentDescription = "Call"
+                        painter = painterResource(id = R.drawable.ic_chevron_right),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(phone)
+                }
+            }
+
+            LaunchedEffect(isPressed) {
+                if (isPressed) {
+                    kotlinx.coroutines.delay(100)
+                    isPressed = false
                 }
             }
         }
@@ -379,37 +548,53 @@ fun PrimaryDetailsSection(
 }
 
 @Composable
-fun DetailChip(
+fun InfoChip(
     icon: Painter,
     label: String,
-    value: String
+    value: String,
+    containerColor: Color,
+    modifier: Modifier = Modifier
 ) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor.copy(alpha = 0.15f)
+        ),
+        modifier = modifier
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(
-                icon,
-                contentDescription = label,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(containerColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = label,
+                    modifier = Modifier.size(18.dp),
+                    tint = Color.White
+                )
+            }
             Column {
                 Text(
                     text = label,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
@@ -419,131 +604,105 @@ fun DetailChip(
 @Composable
 fun SecondaryDetailsSection(student: StudentResponse) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Additional Details",
+                text = "Additional Information",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
             )
-
-            HorizontalDivider()
 
             // School Class
             student.schoolClass?.let {
-                SecondaryDetailRow(label = "Class", value = it)
+                DetailRow(
+                    icon = painterResource(id = R.drawable.ic_group),
+                    label = "Class",
+                    value = it
+                )
             }
 
             // Year of Birth
             student.yearOfBirth?.let {
-                SecondaryDetailRow(label = "Year of Birth", value = it.toString())
+                DetailRow(
+                    icon = painterResource(id = R.drawable.ic_calendar_today),
+                    label = "Year of Birth",
+                    value = it.toString()
+                )
             }
 
             // Father's Name
             student.fathersName?.let {
-                SecondaryDetailRow(label = "Father's Name", value = it)
+                DetailRow(
+                    icon = painterResource(id = R.drawable.ic_male),
+                    label = "Father's Name",
+                    value = it
+                )
             }
 
             // Mother's Name
             student.mothersName?.let {
-                SecondaryDetailRow(label = "Mother's Name", value = it)
+                DetailRow(
+                    icon = painterResource(id = R.drawable.ic_female),
+                    label = "Mother's Name",
+                    value = it
+                )
             }
 
             // Secondary Contact
             student.secondaryContactNo?.let {
-                SecondaryDetailRow(label = "Secondary Contact", value = it)
-            }
-
-            // Status
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Status",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                DetailRow(
+                    icon = painterResource(id = R.drawable.ic_phone),
+                    label = "Secondary Contact",
+                    value = it
                 )
-                Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = if (student.isActive)
-                        MaterialTheme.colorScheme.primaryContainer
-                    else
-                        MaterialTheme.colorScheme.errorContainer
-                ) {
-                    Text(
-                        text = if (student.isActive) "Active" else "Inactive",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (student.isActive)
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        else
-                            MaterialTheme.colorScheme.onErrorContainer
-                    )
-                }
             }
         }
     }
 }
 
 @Composable
-fun SecondaryDetailRow(label: String, value: String) {
+fun DetailRow(
+    icon: Painter,
+    label: String,
+    value: String
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(20.dp)
         )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
-        )
-    }
-}
-
-@Composable
-fun GroupHistorySection(onViewGroupHistory: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onViewGroupHistory
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_history),
-                    contentDescription = "Group History",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "View Group Transition History",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            Icon(
-                painter = painterResource(id = R.drawable.ic_chevron_right),
-                contentDescription = "View",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -556,80 +715,96 @@ fun AttendanceSummarySection(
     presentCountLastMonth: Int
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 0.dp
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "Attendance Summary",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Divider()
-
-            // Last Present Date
-            if (lastPresentDate != null) {
-                AttendanceStatRow(
-                    icon = painterResource(id = R.drawable.ic_calendar_today),
-                    label = "Last Present",
-                    value = AttendanceUtils.formatDate(lastPresentDate)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_event),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
                 )
-            } else {
-                AttendanceStatRow(
-                    icon = painterResource(id = R.drawable.ic_calendar_today),
-                    label = "Last Present",
-                    value = "Never"
+                Text(
+                    text = "Attendance Summary",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            // Last Week Count
-            AttendanceStatRow(
-                icon = painterResource(id = R.drawable.ic_date_range),
-                label = "Present in Last Week",
-                value = "$presentCountLastWeek days"
-            )
+            // Stats Grid
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                AttendanceStat(
+                    icon = painterResource(id = R.drawable.ic_calendar_today),
+                    label = "Last Present",
+                    value = if (lastPresentDate != null)
+                        AttendanceUtils.formatDate(lastPresentDate)
+                    else
+                        "Never",
+                    isHighlighted = lastPresentDate != null
+                )
 
-            // Last Month Count
-            AttendanceStatRow(
-                icon = painterResource(id = R.drawable.ic_event),
-                label = "Present in Last Month",
-                value = "$presentCountLastMonth days"
-            )
+                AttendanceStat(
+                    icon = painterResource(id = R.drawable.ic_date_range),
+                    label = "Last Week",
+                    value = "$presentCountLastWeek days",
+                    isHighlighted = presentCountLastWeek > 0
+                )
 
-            // View Detailed History Button
-            OutlinedButton(
-                onClick = { /* TODO: Navigate to detailed attendance history */ },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("View Detailed Attendance History")
+                AttendanceStat(
+                    icon = painterResource(id = R.drawable.ic_event),
+                    label = "Last Month",
+                    value = "$presentCountLastMonth days",
+                    isHighlighted = presentCountLastMonth > 0
+                )
             }
         }
     }
 }
 
 @Composable
-fun AttendanceStatRow(
+fun AttendanceStat(
     icon: Painter,
     label: String,
-    value: String
+    value: String,
+    isHighlighted: Boolean = true
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            icon,
-            contentDescription = label,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Column(modifier = Modifier.weight(1f)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            Icon(
+                icon,
+                contentDescription = label,
+                tint = if (isHighlighted)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
@@ -638,10 +813,85 @@ fun AttendanceStatRow(
         }
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (isHighlighted)
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+fun GroupHistorySection(onViewGroupHistory: () -> Unit) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.97f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "group_history_scale"
+    )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scale),
+        onClick = {
+            isPressed = true
+            onViewGroupHistory()
+        },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.secondary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_history),
+                        contentDescription = "Group History",
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Text(
+                    text = "Group Transition History",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+            Icon(
+                painter = painterResource(id = R.drawable.ic_chevron_right),
+                contentDescription = "View",
+                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            kotlinx.coroutines.delay(100)
+            isPressed = false
+        }
     }
 }
 
@@ -765,88 +1015,125 @@ fun GroupHistoryItem(
     history: StudentGroupHistoryResponse,
     onVolunteerClick: (String) -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+    var isVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(50)
+        isVisible = true
+    }
+
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(400)) +
+                slideInHorizontally(animationSpec = tween(400))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
         ) {
-            // Timeline indicator
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(40.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(12.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                )
-                Box(
-                    modifier = Modifier
-                        .width(2.dp)
-                        .height(60.dp)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-                )
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Content
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = AttendanceUtils.formatDateTime(history.assignedAt),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                // Timeline indicator
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(32.dp)
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                    )
                     if (history.oldGroupName != null) {
-                        Text(
-                            text = history.oldGroupName,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_arrow_forward),
-                            contentDescription = "changed to",
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        Box(
+                            modifier = Modifier
+                                .width(2.dp)
+                                .height(50.dp)
+                                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         )
                     }
-                    Text(
-                        text = history.newGroupName,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
                 }
 
-                Text(
-                    text = "by volunteer",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Spacer(modifier = Modifier.width(12.dp))
 
-                TextButton(
-                    onClick = { onVolunteerClick(history.assignedByPid) },
-                    contentPadding = PaddingValues(0.dp)
+                // Content
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = history.assignedByPid,
-                        style = MaterialTheme.typography.bodySmall
+                        text = AttendanceUtils.formatDateTime(history.assignedAt),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (history.oldGroupName != null) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = MaterialTheme.colorScheme.errorContainer
+                            ) {
+                                Text(
+                                    text = history.oldGroupName,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_arrow_forward),
+                                contentDescription = "changed to",
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Text(
+                                text = history.newGroupName,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "by",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        TextButton(
+                            onClick = { onVolunteerClick(history.assignedByPid) },
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text(
+                                text = history.assignedByPid,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
         }
