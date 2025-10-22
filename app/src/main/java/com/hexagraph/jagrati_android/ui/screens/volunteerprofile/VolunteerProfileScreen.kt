@@ -192,7 +192,8 @@ fun VolunteerProfileLayout(
                         ) {
                             AttendanceSummarySection(
                                 lastPresentDate = uiState.lastPresentDate,
-                                presentCountLastMonth = uiState.presentCountLastMonth
+                                presentCountLastMonth = uiState.presentCountLastMonth,
+                                onViewDetails = onViewAttendanceDetails
                             )
                         }
                     }
@@ -697,7 +698,8 @@ fun DetailRow(
 @Composable
 fun AttendanceSummarySection(
     lastPresentDate: String?,
-    presentCountLastMonth: Int
+    presentCountLastMonth: Int,
+    onViewDetails: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -750,6 +752,27 @@ fun AttendanceSummarySection(
                     label = "Present in Last Month",
                     value = "$presentCountLastMonth days",
                     isHighlighted = presentCountLastMonth > 0
+                )
+            }
+
+            Button(
+                onClick = onViewDetails,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_history),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "View Detailed Attendance",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }

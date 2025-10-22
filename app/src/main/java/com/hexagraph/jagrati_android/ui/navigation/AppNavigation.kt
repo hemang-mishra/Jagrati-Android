@@ -23,6 +23,7 @@ import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingScreen
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportScreen
+import com.hexagraph.jagrati_android.ui.screens.attendanceview.AttendanceViewScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.EmailVerificationScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.ForgotPasswordScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.LoginScreen
@@ -248,6 +249,11 @@ fun AppNavigation(
                                 fileId = it.fileId
                             )
                         )
+                    },
+                    navigateToCameraSearch = {
+                        backstack.add(
+                            Screens.NavCameraSearchRoute
+                        )
                     }
                 )
             }
@@ -434,7 +440,12 @@ fun AppNavigation(
                         backstack.add(Screens.NavVolunteerProfileRoute(volunteerPid))
                     },
                     onNavigateToAttendanceDetails = { studentPid ->
-                        // TODO: Navigate to attendance details when implemented
+                        backstack.add(
+                            Screens.NavDetailedAttendanceViewRoute(
+                                pid = studentPid,
+                                isStudent = true
+                            )
+                        )
                     },
                     onNavigateToFullScreenImage = { imageData ->
                         backstack.add(
@@ -483,7 +494,12 @@ fun AppNavigation(
                     },
                     snackbarHostState = snackbarHostState,
                     onViewAttendanceDetails = {
-                        //TODO: Navigate to attendance details when implemented
+                        backstack.add(
+                            Screens.NavDetailedAttendanceViewRoute(
+                                pid = pid,
+                                isStudent = false
+                            )
+                        )
                     },
 
                 )
@@ -619,6 +635,16 @@ fun AppNavigation(
                         authViewModel = authViewModel,
                     )
                    }
+            }
+
+            entry<Screens.NavDetailedAttendanceViewRoute>{
+                AttendanceViewScreen(
+                    pid = it.pid,
+                    isStudent = it.isStudent,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    }
+                )
             }
         }
     )

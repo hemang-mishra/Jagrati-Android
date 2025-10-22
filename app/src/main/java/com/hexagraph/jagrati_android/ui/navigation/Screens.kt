@@ -135,4 +135,10 @@ sealed interface Screens: NavKey {
         val imageName: String = "",
         val fileId: String = ""
     ): Screens
+
+    @Serializable
+    data class NavDetailedAttendanceViewRoute(
+        val pid: String,
+        val isStudent: Boolean
+    ): Screens
 }

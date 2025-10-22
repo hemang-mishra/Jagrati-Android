@@ -69,6 +69,7 @@ fun MainHomeScreen(
     onSearchClick: () -> Unit,
     navigateToAttendanceMarking: () -> Unit = {},
     navigateToFullScreenImage: (ImageKitResponse) -> Unit,
+    navigateToCameraSearch: () -> Unit,
     appPreferences: AppPreferences = koinInject(),
 ) {
     var userData by remember { mutableStateOf<User?>(null) }
@@ -138,7 +139,7 @@ fun MainHomeScreen(
                         onOpenDrawer = { scope.launch { drawerState.open() } },
                         onTakeAttendanceClick = navigateToAttendanceMarking,
                         onRegisterStudentClick = navigateToStudentRegistrationScreen,
-                        onSearchByCameraClick = { /* TODO: Navigate to camera search */ })
+                        onSearchByCameraClick = { navigateToCameraSearch() })
 
                     1 -> AttendanceReportScreen(
                         onNavigateToStudentProfile = navigateToStudentProfile,
@@ -358,19 +359,6 @@ fun MockScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HomeContentScreenPreview() {
-    JagratiAndroidTheme {
-        HomeContentScreen(
-            onOpenDrawer = {},
-            onSearchClick = {},
-            userName = "Hemang",
-            onTakeAttendanceClick = {},
-            onRegisterStudentClick = {},
-            onSearchByCameraClick = {})
-    }
-}
 
 @Preview(showBackground = true)
 @Composable

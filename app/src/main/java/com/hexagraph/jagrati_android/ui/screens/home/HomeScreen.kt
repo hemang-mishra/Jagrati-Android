@@ -36,8 +36,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hexagraph.jagrati_android.R
+import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import java.util.Calendar
 
 // Home Dashboard Screen
@@ -200,7 +202,7 @@ fun TakeAttendanceCard(
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "Scan QR codes to mark attendance",
+                    text = "Using your camera!!",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
@@ -503,5 +505,20 @@ fun getGreeting(): String {
         in 0..11 -> "Good Morning"
         in 12..16 -> "Good Afternoon"
         else -> "Good Evening"
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun HomeContentScreenPreview() {
+    JagratiAndroidTheme {
+        HomeContentScreen(
+            onOpenDrawer = {},
+            onSearchClick = {},
+            userName = "Hemang",
+            onTakeAttendanceClick = {},
+            onRegisterStudentClick = {},
+            onSearchByCameraClick = {})
     }
 }
