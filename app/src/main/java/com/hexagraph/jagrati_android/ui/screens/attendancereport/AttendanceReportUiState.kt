@@ -19,6 +19,9 @@ data class AttendanceReportUiState(
     val filteredStudents: List<PresentStudent> = emptyList(),
     val filteredVolunteers: List<PresentVolunteer> = emptyList(),
     val groupCounts: Map<String, Int> = emptyMap(),
-    val isDeletingAttendance: Boolean = false
+    val isDeletingAttendance: Boolean = false,
+    val canDeleteStudentAttendance: Boolean = false,
+    val canDeleteVolunteerAttendance: Boolean = false,
+    val studentProfilePics: Map<String, String?> = emptyMap(),
+    val volunteerProfilePics: Map<String, String?> = emptyMap()
 )
-

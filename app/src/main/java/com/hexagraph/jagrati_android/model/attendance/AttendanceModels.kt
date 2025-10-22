@@ -63,7 +63,8 @@ data class PresentVolunteer(
     val aid: String,
     val firstName: String,
     val lastName: String,
-    val batch: String?
+    val batch: String?,
+    val rollNo: String
 )
 
 @Serializable

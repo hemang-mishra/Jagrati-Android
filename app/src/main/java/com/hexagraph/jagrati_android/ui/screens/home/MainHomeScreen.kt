@@ -63,6 +63,8 @@ fun MainHomeScreen(
     navigateToStudentRegistrationScreen: ()-> Unit,
     navigateToStudentList: () -> Unit = {},
     navigateToVolunteerList: () -> Unit = {},
+    navigateToStudentProfile: (String) -> Unit = {},
+    navigateToVolunteerProfile: (String) -> Unit = {},
     updateFacialData: (String) -> Unit,
     onSearchClick: () -> Unit,
     navigateToAttendanceMarking: () -> Unit = {},
@@ -141,7 +143,11 @@ fun MainHomeScreen(
                         onSearchClick = onSearchClick,
                         onOpenDrawer = { scope.launch { drawerState.open() } }
                     )
-                    1 -> AttendanceReportScreen(onBackPress = {})
+                    1 -> AttendanceReportScreen(
+                        onNavigateToStudentProfile = navigateToStudentProfile,
+                        onNavigateToVolunteerProfile = navigateToVolunteerProfile,
+                        snackbarHostState = snackbarHostState
+                    )
                     2 -> SyllabusScreen()
                     3 -> MyProfileScreen(
                         onNavigateToEditProfile = {

@@ -2,6 +2,7 @@ package com.hexagraph.jagrati_android.ui.screens.attendancereport
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,12 +16,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,13 +37,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
@@ -54,9 +53,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hexagraph.jagrati_android.R
@@ -66,8 +67,7 @@ import com.hexagraph.jagrati_android.model.attendance.PresentStudent
 import com.hexagraph.jagrati_android.model.attendance.PresentVolunteer
 import com.hexagraph.jagrati_android.model.attendance.StudentVillageGenderCount
 import com.hexagraph.jagrati_android.model.attendance.VolunteerBatchCount
-import com.hexagraph.jagrati_android.ui.components.PersonCard
-import com.hexagraph.jagrati_android.ui.components.PersonCardData
+import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import org.koin.androidx.compose.koinViewModel
@@ -77,7 +77,8 @@ import java.util.Locale
 
 @Composable
 fun AttendanceReportScreen(
-    onBackPress: () -> Unit,
+    onNavigateToStudentProfile: (String) -> Unit,
+    onNavigateToVolunteerProfile: (String) -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     viewModel: AttendanceReportViewModel = koinViewModel()
 ) {
@@ -103,7 +104,6 @@ fun AttendanceReportScreen(
 
     AttendanceReportScreenLayout(
         uiState = uiState,
-        onBackPress = onBackPress,
         onDateSelected = viewModel::setSelectedDate,
         onRefresh = { viewModel.loadAttendanceReport(isRefreshing = true) },
         onStudentVillageFilter = viewModel::setStudentVillageFilter,
@@ -112,6 +112,8 @@ fun AttendanceReportScreen(
         onVolunteerBatchFilter = viewModel::setVolunteerBatchFilter,
         onDeleteStudentAttendance = viewModel::deleteStudentAttendance,
         onDeleteVolunteerAttendance = viewModel::deleteVolunteerAttendance,
+        onNavigateToStudentProfile = onNavigateToStudentProfile,
+        onNavigateToVolunteerProfile = onNavigateToVolunteerProfile,
         snackbarHostState = snackbarHostState
     )
 }
@@ -120,7 +122,6 @@ fun AttendanceReportScreen(
 @Composable
 fun AttendanceReportScreenLayout(
     uiState: AttendanceReportUiState,
-    onBackPress: () -> Unit,
     onDateSelected: (Long) -> Unit,
     onRefresh: () -> Unit,
     onStudentVillageFilter: (Long?) -> Unit,
@@ -129,6 +130,8 @@ fun AttendanceReportScreenLayout(
     onVolunteerBatchFilter: (String?) -> Unit,
     onDeleteStudentAttendance: (String) -> Unit,
     onDeleteVolunteerAttendance: (String) -> Unit,
+    onNavigateToStudentProfile: (String) -> Unit,
+    onNavigateToVolunteerProfile: (String) -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
@@ -136,52 +139,42 @@ fun AttendanceReportScreenLayout(
         initialSelectedDateMillis = uiState.selectedDateMillis
     )
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = "Attendance Report",
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = formatDate(uiState.selectedDateMillis),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackPress) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_calendar_month),
-                            contentDescription = "Select Date"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Header with date and calendar button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Attendance Report",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
-            )
+                Text(
+                    text = formatDate(uiState.selectedDateMillis),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            IconButton(onClick = { showDatePicker = true }) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_calendar_month),
+                    contentDescription = "Select Date",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
-    ) { paddingValues ->
+
         PullToRefreshBox(
             isRefreshing = uiState.isRefreshing,
             onRefresh = onRefresh,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier = Modifier.fillMaxSize()
         ) {
             if (uiState.isLoading) {
                 Box(
@@ -243,13 +236,13 @@ fun AttendanceReportScreenLayout(
                         items = uiState.filteredVolunteers,
                         key = { it.pid }
                     ) { volunteer ->
-                        PersonCardWithDropdown(
-                            data = PersonCardData(
-                                title = "${volunteer.firstName} ${volunteer.lastName}",
-                                subtitle = volunteer.batch ?: "N/A",
-                                extra = "",
-                                profileImageUrl = null
-                            ),
+                        AttendancePersonCard(
+                            name = "${volunteer.firstName} ${volunteer.lastName}",
+                            subtitle = volunteer.rollNo,
+                            extra = "",
+                            profileImageUrl = uiState.volunteerProfilePics[volunteer.pid],
+                            canDelete = uiState.canDeleteVolunteerAttendance,
+                            onCardClick = { onNavigateToVolunteerProfile(volunteer.pid) },
                             onDelete = { onDeleteVolunteerAttendance(volunteer.aid) },
                             isDeletingAttendance = uiState.isDeletingAttendance
                         )
@@ -286,13 +279,13 @@ fun AttendanceReportScreenLayout(
                         items = uiState.filteredStudents,
                         key = { it.pid }
                     ) { student ->
-                        PersonCardWithDropdown(
-                            data = PersonCardData(
-                                title = "${student.firstName} ${student.lastName}",
-                                subtitle = student.villageName,
-                                extra = student.groupName,
-                                profileImageUrl = null
-                            ),
+                        AttendancePersonCard(
+                            name = "${student.firstName} ${student.lastName}",
+                            subtitle = student.villageName,
+                            extra = student.groupName,
+                            profileImageUrl = uiState.studentProfilePics[student.pid],
+                            canDelete = uiState.canDeleteStudentAttendance,
+                            onCardClick = { onNavigateToStudentProfile(student.pid) },
                             onDelete = { onDeleteStudentAttendance(student.aid) },
                             isDeletingAttendance = uiState.isDeletingAttendance
                         )
@@ -326,6 +319,115 @@ fun AttendanceReportScreenLayout(
     }
 }
 
+@Composable
+fun AttendancePersonCard(
+    name: String,
+    subtitle: String,
+    extra: String,
+    profileImageUrl: String?,
+    canDelete: Boolean,
+    onCardClick: () -> Unit,
+    onDelete: () -> Unit,
+    isDeletingAttendance: Boolean
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onCardClick),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Profile Image
+            ProfileAvatar(userName = name, profileImageUrl = profileImageUrl)
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Details
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (extra.isNotBlank()) {
+                    Text(
+                        text = extra,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            // Three-dot menu (only if can delete)
+            if (canDelete) {
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "More options",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                    Text(
+                                        text = "Delete Attendance",
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            },
+                            onClick = {
+                                if (!isDeletingAttendance) {
+                                    onDelete()
+                                    showMenu = false
+                                }
+                            },
+                            enabled = !isDeletingAttendance
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AttendanceReportScreenPreview() {
@@ -350,19 +452,18 @@ fun AttendanceReportScreenPreview() {
                         PresentStudent("S2", "2", "Priya", "Sharma", Gender.FEMALE, 1, "Bargi", 1, "Group A")
                     ),
                     presentVolunteers = listOf(
-                        PresentVolunteer("V1", "3", "Amit", "Singh", "2021"),
-                        PresentVolunteer("V2", "4", "Sneha", "Patel", "2022")
+                        PresentVolunteer("V1", "3", "Amit", "Singh", "2021", "23bcs103"),
+                        PresentVolunteer("V2", "4", "Sneha", "Patel", "2022", "23bcs103")
                     )
                 ),
                 filteredStudents = listOf(
                     PresentStudent("S1", "1", "Rahul", "Kumar", Gender.MALE, 1, "Bargi", 1, "Group A")
                 ),
                 filteredVolunteers = listOf(
-                    PresentVolunteer("V1", "3", "Amit", "Singh", "2021")
+                    PresentVolunteer("V1", "3", "Amit", "Singh", "2021", "23bcs103")
                 ),
                 groupCounts = mapOf("Group A" to 15, "Group B" to 12)
             ),
-            onBackPress = {},
             onDateSelected = {},
             onRefresh = {},
             onStudentVillageFilter = {},
@@ -371,6 +472,8 @@ fun AttendanceReportScreenPreview() {
             onVolunteerBatchFilter = {},
             onDeleteStudentAttendance = {},
             onDeleteVolunteerAttendance = {},
+            onNavigateToStudentProfile = {},
+            onNavigateToVolunteerProfile = {},
             snackbarHostState = SnackbarHostState()
         )
     }
@@ -401,19 +504,18 @@ fun AttendanceReportScreenDarkPreview() {
                         PresentStudent("S2", "2", "Priya", "Sharma", Gender.FEMALE, 1, "Bargi", 1, "Group A")
                     ),
                     presentVolunteers = listOf(
-                        PresentVolunteer("V1", "3", "Amit", "Singh", "2021"),
-                        PresentVolunteer("V2", "4", "Sneha", "Patel", "2022")
+                        PresentVolunteer("V1", "3", "Amit", "Singh", "2021", "23bcs103"),
+                        PresentVolunteer("V2", "4", "Sneha", "Patel", "2022", "23bcs103")
                     )
                 ),
                 filteredStudents = listOf(
-                    PresentStudent("S1", "1", "Rahul", "Kumar", Gender.MALE, 1, "Bargi", 1, "Group A")
+                    PresentStudent("S1", "1", "Rahul", "Kumar", Gender.MALE, 1, "Bargi", 1, "Group A", )
                 ),
                 filteredVolunteers = listOf(
-                    PresentVolunteer("V1", "3", "Amit", "Singh", "2021")
+                    PresentVolunteer("V1", "3", "Amit", "Singh", "2021", "23bcs103")
                 ),
                 groupCounts = mapOf("Group A" to 15, "Group B" to 12)
             ),
-            onBackPress = {},
             onDateSelected = {},
             onRefresh = {},
             onStudentVillageFilter = {},
@@ -422,6 +524,8 @@ fun AttendanceReportScreenDarkPreview() {
             onVolunteerBatchFilter = {},
             onDeleteStudentAttendance = {},
             onDeleteVolunteerAttendance = {},
+            onNavigateToStudentProfile = {},
+            onNavigateToVolunteerProfile = {},
             snackbarHostState = SnackbarHostState()
         )
     }
@@ -555,13 +659,13 @@ fun SummaryCard(
     ) {
         Text(
             text = count.toString(),
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = color
         )
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
@@ -850,53 +954,6 @@ fun StudentFilters(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun PersonCardWithDropdown(
-    data: PersonCardData,
-    onDelete: () -> Unit,
-    isDeletingAttendance: Boolean
-) {
-    var showMenu by remember { mutableStateOf(false) }
-
-    Box {
-        PersonCard(
-            data = data,
-            onClick = { showMenu = !showMenu }
-        )
-
-        DropdownMenu(
-            expanded = showMenu,
-            onDismissRequest = { showMenu = false }
-        ) {
-            DropdownMenuItem(
-                text = {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                        Text(
-                            text = "Delete Attendance",
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                },
-                onClick = {
-                    if (!isDeletingAttendance) {
-                        onDelete()
-                        showMenu = false
-                    }
-                },
-                enabled = !isDeletingAttendance
-            )
         }
     }
 }

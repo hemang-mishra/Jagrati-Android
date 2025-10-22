@@ -225,6 +225,12 @@ fun AppNavigation(
                     navigateToVolunteerList = {
                         backstack.add(Screens.NavVolunteerListRoute)
                     },
+                    navigateToStudentProfile = { pid ->
+                        backstack.add(Screens.NavStudentProfileRoute(pid))
+                    },
+                    navigateToVolunteerProfile = { pid ->
+                        backstack.add(Screens.NavVolunteerProfileRoute(pid))
+                    },
                     onSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
                     },
