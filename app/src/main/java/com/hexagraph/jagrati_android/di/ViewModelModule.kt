@@ -23,6 +23,7 @@ import com.hexagraph.jagrati_android.ui.viewmodels.auth.SignUpViewModel
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportViewModel
+import com.hexagraph.jagrati_android.ui.screens.myprofile.MyProfileViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileViewModel
 import org.koin.dsl.module
 
@@ -71,6 +72,8 @@ val viewModelModule = module {
             get()
         )
     }
+
+    factory { MyProfileViewModel(get(), get(), get()) }
 
     // Face data ViewModels
 

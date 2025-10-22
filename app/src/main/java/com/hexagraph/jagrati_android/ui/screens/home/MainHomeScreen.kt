@@ -36,12 +36,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hexagraph.jagrati_android.R
+import com.hexagraph.jagrati_android.model.ImageKitResponse
 import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.ui.components.DrawerDivider
 import com.hexagraph.jagrati_android.ui.components.DrawerHeader
 import com.hexagraph.jagrati_android.ui.components.DrawerItem
 import com.hexagraph.jagrati_android.ui.components.DrawerSectionHeader
 import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportScreen
+import com.hexagraph.jagrati_android.ui.screens.myprofile.MyProfileScreen
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
@@ -64,6 +66,7 @@ fun MainHomeScreen(
     updateFacialData: (String) -> Unit,
     onSearchClick: () -> Unit,
     navigateToAttendanceMarking: () -> Unit = {},
+    navigateToFullScreenImage : (ImageKitResponse) -> Unit = {},
     appPreferences: AppPreferences = koinInject(),
 ) {
     var userData by remember { mutableStateOf<User?>(null) }
@@ -141,11 +144,17 @@ fun MainHomeScreen(
                     1 -> AttendanceReportScreen(onBackPress = {})
                     2 -> SyllabusScreen()
                     3 -> NotificationsScreen()
-                    4 -> ProfileScreen(
-                        userData = userData,
-                        updateFacialData = {
-                            userData?.pid?.let { pid -> updateFacialData(pid) }
-                        }
+                    4 -> MyProfileScreen(
+                        onNavigateToEditProfile = {
+                            // TODO: Navigate to edit profile when implemented
+                        },
+                        onNavigateToFaceDataRegister = { pid ->
+                            updateFacialData(pid)
+                        },
+                        onNavigateToFullScreenImage = { imageData ->
+                            navigateToFullScreenImage(imageData)
+                        },
+                        snackbarHostState = snackbarHostState
                     )
                 }
             }

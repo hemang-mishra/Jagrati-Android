@@ -1,7 +1,6 @@
-package com.hexagraph.jagrati_android.ui.screens.volunteerprofile
+package com.hexagraph.jagrati_android.ui.screens.myprofile
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -19,31 +18,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.Gender
 import com.hexagraph.jagrati_android.model.ImageKitResponse
+import com.hexagraph.jagrati_android.model.User
+import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
 import com.hexagraph.jagrati_android.model.user.VolunteerDTO
 import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.util.AttendanceUtils
 import org.koin.androidx.compose.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 @Composable
-fun VolunteerProfileScreen(
-    pid: String,
-    onNavigateBack: () -> Unit,
+fun MyProfileScreen(
+    onNavigateToEditProfile: () -> Unit = {},
+    onNavigateToFaceDataRegister: (String) -> Unit = {},
     onNavigateToFullScreenImage: (ImageKitResponse) -> Unit = {},
-    viewModel: VolunteerProfileViewModel = koinViewModel { parametersOf(pid) },
-    onViewAttendanceDetails: () -> Unit,
+    viewModel: MyProfileViewModel = koinViewModel(),
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -69,11 +70,14 @@ fun VolunteerProfileScreen(
         }
     }
 
-    VolunteerProfileLayout(
+    MyProfileLayout(
         uiState = uiState,
-        onNavigateBack = onNavigateBack,
         onRefresh = { viewModel.refresh() },
         onPhotoClick = { viewModel.showEditOptionsSheet() },
+        onEditProfile = onNavigateToEditProfile,
+        onAddFaceData = {
+            uiState.currentUser?.pid?.let { onNavigateToFaceDataRegister(it) }
+        },
         onChatWhatsApp = { phoneNumber ->
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = "https://wa.me/${phoneNumber.replace("+", "").replace(" ", "")}".toUri()
@@ -91,138 +95,88 @@ fun VolunteerProfileScreen(
         onViewFullScreenImage = { imageData ->
             viewModel.hideEditOptionsSheet()
             onNavigateToFullScreenImage(imageData)
-        },
-        onViewAttendanceDetails = onViewAttendanceDetails,
-        snackbarHostState = snackbarHostState
+        }
     )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VolunteerProfileLayout(
-    uiState: VolunteerProfileUiState,
-    onNavigateBack: () -> Unit,
+fun MyProfileLayout(
+    uiState: MyProfileUiState,
     onRefresh: () -> Unit,
     onPhotoClick: () -> Unit,
+    onEditProfile: () -> Unit,
+    onAddFaceData: () -> Unit,
     onChatWhatsApp: (String) -> Unit,
-    onViewAttendanceDetails: () -> Unit = {},
     onDismissEditOptions: () -> Unit,
-    onViewFullScreenImage: (ImageKitResponse) -> Unit = {},
-    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
+    onViewFullScreenImage: (ImageKitResponse) -> Unit = {}
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Volunteer Profile",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+    PullToRefreshBox(
+        isRefreshing = uiState.isRefreshing,
+        onRefresh = onRefresh,
+        modifier = Modifier.fillMaxSize()
+    ) {
+        if (uiState.isLoading && uiState.volunteer == null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        } else if (uiState.volunteer != null || uiState.currentUser != null) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                item {
+                    MyProfileTopBar(
+                        currentUser = uiState.currentUser,
+                        volunteer = uiState.volunteer,
+                        onEditProfile = onEditProfile,
+                        onPhotoClick = onPhotoClick
                     )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_arrow_back),
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
-        PullToRefreshBox(
-            isRefreshing = uiState.isRefreshing,
-            onRefresh = onRefresh,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (uiState.isLoading && uiState.volunteer == null) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
-            } else if (uiState.volunteer != null) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    item {
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(animationSpec = tween(600)) +
-                                    slideInVertically(animationSpec = tween(600))
-                        ) {
-                            ProfilePhotoSection(
-                                volunteer = uiState.volunteer,
-                                onPhotoClick = onPhotoClick
-                            )
-                        }
-                    }
 
-                    item {
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(animationSpec = tween(600, delayMillis = 100)) +
-                                    slideInVertically(animationSpec = tween(600, delayMillis = 100))
-                        ) {
-                            PrimaryDetailsSection(
-                                volunteer = uiState.volunteer,
-                                userRoles = uiState.userRoles,
-                                onChatWhatsApp = onChatWhatsApp
-                            )
-                        }
-                    }
-
-                    item {
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(animationSpec = tween(600, delayMillis = 200)) +
-                                    slideInVertically(animationSpec = tween(600, delayMillis = 200))
-                        ) {
-                            AttendanceSummarySection(
-                                lastPresentDate = uiState.lastPresentDate,
-                                presentCountLastMonth = uiState.presentCountLastMonth
-                            )
-                        }
-                    }
-
-                    item {
-                        AnimatedVisibility(
-                            visible = true,
-                            enter = fadeIn(animationSpec = tween(600, delayMillis = 300)) +
-                                    slideInVertically(animationSpec = tween(600, delayMillis = 300))
-                        ) {
-                            SecondaryDetailsSection(volunteer = uiState.volunteer)
-                        }
-                    }
+                item {
+                    PrimaryDetailsSection(
+                        volunteer = uiState.volunteer,
+                        userRoles = uiState.userRoles,
+                        onChatWhatsApp = onChatWhatsApp
+                    )
                 }
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Failed to load volunteer profile")
+
+                item {
+                    AttendanceSummarySection(
+                        lastPresentDate = uiState.lastPresentDate,
+                        presentCountLastMonth = uiState.presentCountLastMonth
+                    )
                 }
+
+                item {
+                    SecondaryDetailsSection(volunteer = uiState.volunteer)
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Failed to load profile")
             }
         }
     }
 
     if (uiState.showEditOptionsSheet) {
         EditOptionsBottomSheet(
-            hasProfilePic = uiState.volunteer?.profilePic != null,
+            hasProfilePic = uiState.volunteer?.profilePic != null || uiState.currentUser?.photoUrl != null,
             profilePicData = uiState.volunteer?.profilePic,
+            currentUserPhotoUrl = uiState.currentUser?.photoUrl,
             onDismiss = onDismissEditOptions,
+            onEditFaceData = {
+                onDismissEditOptions()
+                onAddFaceData()
+            },
             onViewFullScreen = { imageData ->
                 onViewFullScreenImage(imageData)
             }
@@ -231,8 +185,10 @@ fun VolunteerProfileLayout(
 }
 
 @Composable
-fun ProfilePhotoSection(
-    volunteer: VolunteerDTO,
+fun MyProfileTopBar(
+    currentUser: User?,
+    volunteer: VolunteerDTO?,
+    onEditProfile: () -> Unit,
     onPhotoClick: () -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
@@ -244,109 +200,139 @@ fun ProfilePhotoSection(
         ), label = "profile_photo_scale"
     )
 
-    Column(
+    Card(
         modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .size(140.dp)
-                .scale(scale)
-                .clickable(
-                    onClick = {
-                        if (volunteer.profilePic != null) {
-                            isPressed = true
-                            onPhotoClick()
-                        }
-                    },
-                    onClickLabel = "View photo"
-                ),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            if (volunteer.profilePic != null) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
                 Box(
                     modifier = Modifier
-                        .size(140.dp)
-                        .shadow(12.dp, CircleShape)
-                ) {
-                    ProfileAvatar(
-                        userName = "${volunteer.firstName} ${volunteer.lastName}",
-                        profileImageUrl = volunteer.profilePic.url,
-                        size = 140.dp
-                    )
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(140.dp)
-                        .shadow(12.dp, CircleShape)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                        .size(72.dp)
+                        .scale(scale)
+                        .clickable(
+                            onClick = {
+                                isPressed = true
+                                onPhotoClick()
+                            },
+                            onClickLabel = "View photo"
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_person),
-                        contentDescription = "No Photo",
-                        modifier = Modifier.size(70.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
+                    val profileUrl = volunteer?.profilePic?.url ?: currentUser?.photoUrl
+                    val userName = "${volunteer?.firstName ?: currentUser?.firstName ?: "User"} ${volunteer?.lastName ?: currentUser?.lastName ?: ""}"
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = "${volunteer.firstName} ${volunteer.lastName}",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+                    if (profileUrl != null) {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .shadow(4.dp, CircleShape)
+                        ) {
+                            ProfileAvatar(
+                                userName = userName,
+                                profileImageUrl = profileUrl,
+                                size = 72.dp
+                            )
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(72.dp)
+                                .shadow(4.dp, CircleShape)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_person),
+                                contentDescription = "No Photo",
+                                modifier = Modifier.size(36.dp),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+                    }
 
-            volunteer.rollNumber?.let { rollNo ->
-                Text(
-                    text = rollNo,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = if (volunteer.isActive)
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                else
-                    MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
                     Box(
                         modifier = Modifier
-                            .size(8.dp)
+                            .align(Alignment.BottomEnd)
+                            .size(24.dp)
+                            .shadow(2.dp, CircleShape)
                             .clip(CircleShape)
-                            .background(
-                                if (volunteer.isActive)
-                                    MaterialTheme.colorScheme.primary
-                                else
-                                    MaterialTheme.colorScheme.error
-                            )
-                    )
-                    Text(
-                        text = if (volunteer.isActive) "Active" else "Inactive",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = if (volunteer.isActive)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.error
-                    )
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_camera),
+                            contentDescription = "Edit Photo",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 }
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "${volunteer?.firstName ?: currentUser?.firstName ?: "User"} ${volunteer?.lastName ?: currentUser?.lastName ?: ""}",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    volunteer?.rollNumber?.let { rollNo ->
+                        Text(
+                            text = rollNo,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    currentUser?.email?.let { email ->
+                        Text(
+                            text = email,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            IconButton(
+                onClick = onEditProfile,
+                modifier = Modifier
+                    .size(44.dp)
+                    .shadow(2.dp, CircleShape)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_edit),
+                    contentDescription = "Edit Profile",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(22.dp)
+                )
             }
         }
 
@@ -361,7 +347,7 @@ fun ProfilePhotoSection(
 
 @Composable
 fun PrimaryDetailsSection(
-    volunteer: VolunteerDTO,
+    volunteer: VolunteerDTO?,
     userRoles: List<String>,
     onChatWhatsApp: (String) -> Unit
 ) {
@@ -419,19 +405,21 @@ fun PrimaryDetailsSection(
             }
         }
 
-        InfoChip(
-            icon = when (volunteer.gender) {
-                Gender.MALE -> painterResource(id = R.drawable.ic_male)
-                Gender.FEMALE -> painterResource(id = R.drawable.ic_female)
-                else -> painterResource(id = R.drawable.ic_gender_neutral)
-            },
-            label = "Gender",
-            value = volunteer.gender.name,
-            containerColor = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier.fillMaxWidth()
-        )
+        volunteer?.gender?.let { gender ->
+            InfoChip(
+                icon = when (gender) {
+                    Gender.MALE -> painterResource(id = R.drawable.ic_male)
+                    Gender.FEMALE -> painterResource(id = R.drawable.ic_female)
+                    else -> painterResource(id = R.drawable.ic_gender_neutral)
+                },
+                label = "Gender",
+                value = gender.name,
+                containerColor = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
-        if (volunteer.programme != null && volunteer.branch != null) {
+        if (volunteer?.programme != null && volunteer.branch != null) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -452,7 +440,7 @@ fun PrimaryDetailsSection(
                 )
             }
         } else {
-            volunteer.programme?.let { programme ->
+            volunteer?.programme?.let { programme ->
                 InfoChip(
                     icon = painterResource(id = R.drawable.ic_category),
                     label = "Programme",
@@ -462,7 +450,7 @@ fun PrimaryDetailsSection(
                 )
             }
 
-            volunteer.branch?.let { branch ->
+            volunteer?.branch?.let { branch ->
                 InfoChip(
                     icon = painterResource(id = R.drawable.ic_category),
                     label = "Branch",
@@ -473,7 +461,7 @@ fun PrimaryDetailsSection(
             }
         }
 
-        volunteer.contactNumber?.let { phone ->
+        volunteer?.contactNumber?.let { phone ->
             var isPressed by remember { mutableStateOf(false) }
             val scale by animateFloatAsState(
                 targetValue = if (isPressed) 0.97f else 1f,
@@ -601,7 +589,9 @@ fun InfoChip(
 }
 
 @Composable
-fun SecondaryDetailsSection(volunteer: VolunteerDTO) {
+fun SecondaryDetailsSection(volunteer: VolunteerDTO?) {
+    if (volunteer == null) return
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -626,6 +616,7 @@ fun SecondaryDetailsSection(volunteer: VolunteerDTO) {
                 color = MaterialTheme.colorScheme.onSurface
             )
 
+            // Personal Information
             volunteer.yearOfStudy?.let {
                 DetailRow(
                     icon = painterResource(id = R.drawable.ic_calendar_today),
@@ -642,6 +633,74 @@ fun SecondaryDetailsSection(volunteer: VolunteerDTO) {
                 )
             }
 
+            volunteer.batch?.let {
+                DetailRow(
+                    icon = painterResource(id = R.drawable.ic_event),
+                    label = "Batch",
+                    value = it
+                )
+            }
+
+            volunteer.college?.let {
+                DetailRow(
+                    icon = painterResource(id = R.drawable.ic_school),
+                    label = "College",
+                    value = it
+                )
+            }
+
+            volunteer.alternateEmail?.let {
+                if (it.isNotBlank()) {
+                    DetailRow(
+                        icon = painterResource(id = R.drawable.ic_email),
+                        label = "Alternate Email",
+                        value = it
+                    )
+                }
+            }
+
+            // Address Information
+            val hasAddress = !volunteer.streetAddress1.isNullOrBlank() ||
+                    !volunteer.streetAddress2.isNullOrBlank() ||
+                    volunteer.city != null ||
+                    volunteer.state != null ||
+                    volunteer.pincode != null
+
+            if (hasAddress) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                )
+
+                Text(
+                    text = "Address",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+
+            volunteer.streetAddress1?.let {
+                if (it.isNotBlank()) {
+                    DetailRow(
+                        icon = painterResource(id = R.drawable.ic_location),
+                        label = "Street Address 1",
+                        value = it
+                    )
+                }
+            }
+
+            volunteer.streetAddress2?.let {
+                if (it.isNotBlank()) {
+                    DetailRow(
+                        icon = painterResource(id = R.drawable.ic_location),
+                        label = "Street Address 2",
+                        value = it
+                    )
+                }
+            }
+
             volunteer.city?.let {
                 DetailRow(
                     icon = painterResource(id = R.drawable.ic_location),
@@ -656,6 +715,16 @@ fun SecondaryDetailsSection(volunteer: VolunteerDTO) {
                     label = "State",
                     value = it
                 )
+            }
+
+            volunteer.pincode?.let {
+                if (it.isNotBlank()) {
+                    DetailRow(
+                        icon = painterResource(id = R.drawable.ic_location_on),
+                        label = "Pincode",
+                        value = it
+                    )
+                }
             }
         }
     }
@@ -727,7 +796,7 @@ fun AttendanceSummarySection(
                     modifier = Modifier.size(24.dp)
                 )
                 Text(
-                    text = "Attendance Summary",
+                    text = "My Attendance",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -805,7 +874,9 @@ fun AttendanceStat(
 fun EditOptionsBottomSheet(
     hasProfilePic: Boolean,
     profilePicData: ImageKitResponse?,
+    currentUserPhotoUrl: String?,
     onDismiss: () -> Unit,
+    onEditFaceData: () -> Unit,
     onViewFullScreen: (ImageKitResponse) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -828,47 +899,75 @@ fun EditOptionsBottomSheet(
             )
 
             if (hasProfilePic && profilePicData != null) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onViewFullScreen(profilePicData) },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_fullscreen),
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "View Full Screen",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
+                BottomSheetOption(
+                    icon = painterResource(id = R.drawable.ic_fullscreen),
+                    text = "View Full Screen",
+                    onClick = {
+                        onViewFullScreen(profilePicData)
                     }
-                }
+                )
             }
+
+            BottomSheetOption(
+                icon = painterResource(id = R.drawable.ic_face),
+                text = if (hasProfilePic) "Update Facial Data" else "Add Facial Data",
+                onClick = onEditFaceData
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
+@Composable
+fun BottomSheetOption(
+    icon: Painter,
+    text: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
-fun VolunteerProfilePreview() {
+fun MyProfilePreview() {
     JagratiAndroidTheme {
-        VolunteerProfileLayout(
-            uiState = VolunteerProfileUiState(
+        MyProfileLayout(
+            uiState = MyProfileUiState(
+                currentUser = User(
+                    pid = "V001",
+                    firstName = "Rajesh",
+                    lastName = "Kumar",
+                    email = "rajesh.kumar@iiitdmj.ac.in",
+                    photoUrl = null,
+                ),
                 volunteer = VolunteerDTO(
                     pid = "V001",
                     rollNumber = "2021BCS001",
@@ -878,7 +977,6 @@ fun VolunteerProfilePreview() {
                     alternateEmail = null,
                     batch = "2021",
                     programme = "B.Tech",
-                    streetAddress1 = null,
                     streetAddress2 = null,
                     pincode = null,
                     city = "Jabalpur",
@@ -889,17 +987,18 @@ fun VolunteerProfilePreview() {
                     branch = "Computer Science",
                     yearOfStudy = 3,
                     profilePic = null,
-                    isActive = true
+                    isActive = true,
+                    streetAddress1 = ""
                 ),
                 userRoles = listOf("Teacher", "Coordinator"),
                 lastPresentDate = "2024-10-20",
                 presentCountLastMonth = 15
             ),
-            onNavigateBack = {},
             onRefresh = {},
             onPhotoClick = {},
+            onEditProfile = {},
+            onAddFaceData = {},
             onChatWhatsApp = {},
-            onViewAttendanceDetails = {},
             onDismissEditOptions = {},
             onViewFullScreenImage = {}
         )

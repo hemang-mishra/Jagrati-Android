@@ -466,7 +466,11 @@ fun AppNavigation(
                             )
                         )
                     },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
+                    onViewAttendanceDetails = {
+                        //TODO: Navigate to attendance details when implemented
+                    },
+
                 )
             }
 
