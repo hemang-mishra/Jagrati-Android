@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,7 +76,7 @@ fun MainHomeScreen(
     var userData by remember { mutableStateOf<User?>(null) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    var selectedBottomNavItem by remember { mutableIntStateOf(0) }
+    var selectedBottomNavItem by rememberSaveable { mutableIntStateOf(0) }
 
     LaunchedEffect(key1 = Unit) {
         appPreferences.userDetails.getFlow().collect {
@@ -144,7 +145,8 @@ fun MainHomeScreen(
                     1 -> AttendanceReportScreen(
                         onNavigateToStudentProfile = navigateToStudentProfile,
                         onNavigateToVolunteerProfile = navigateToVolunteerProfile,
-                        snackbarHostState = snackbarHostState
+                        snackbarHostState = snackbarHostState,
+                        onNavigateToTakeAttendance = navigateToAttendanceMarking
                     )
 
                     2 -> SyllabusScreen()

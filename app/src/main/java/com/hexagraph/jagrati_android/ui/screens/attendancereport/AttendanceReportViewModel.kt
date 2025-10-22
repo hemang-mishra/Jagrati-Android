@@ -196,6 +196,25 @@ class AttendanceReportViewModel(
         loadAttendanceReport()
     }
 
+    fun goToPreviousDay() {
+        val currentMillis = _selectedDateMillis.value
+        val previousDay = currentMillis - (24 * 60 * 60 * 1000) // Subtract one day
+        _selectedDateMillis.value = previousDay
+        loadAttendanceReport()
+    }
+
+    fun goToNextDay() {
+        val currentMillis = _selectedDateMillis.value
+        val nextDay = currentMillis + (24 * 60 * 60 * 1000) // Add one day
+        _selectedDateMillis.value = nextDay
+        loadAttendanceReport()
+    }
+
+    fun goToToday() {
+        _selectedDateMillis.value = System.currentTimeMillis()
+        loadAttendanceReport()
+    }
+
     fun setStudentVillageFilter(villageId: Long?) {
         _selectedStudentVillage.value = villageId
     }
