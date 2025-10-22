@@ -18,9 +18,11 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.hexagraph.jagrati_android.model.ImageKitResponse
 import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingScreen
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingViewModel
+import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.EmailVerificationScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.ForgotPasswordScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.LoginScreen
@@ -45,11 +47,14 @@ import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationS
 import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen
 import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationScreen
 import com.hexagraph.jagrati_android.ui.screens.studentlist.StudentListScreen
+import com.hexagraph.jagrati_android.ui.screens.studentprofile.StudentProfileScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
+import com.hexagraph.jagrati_android.ui.screens.imageviewer.FullScreenImageViewer
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
+import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -220,6 +225,12 @@ fun AppNavigation(
                     navigateToVolunteerList = {
                         backstack.add(Screens.NavVolunteerListRoute)
                     },
+                    navigateToStudentProfile = { pid ->
+                        backstack.add(Screens.NavStudentProfileRoute(pid))
+                    },
+                    navigateToVolunteerProfile = { pid ->
+                        backstack.add(Screens.NavVolunteerProfileRoute(pid))
+                    },
                     onSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
                     },
@@ -228,6 +239,15 @@ fun AppNavigation(
                     },
                     navigateToAttendanceMarking = {
                         backstack.add(Screens.NavCameraAttendanceMarkingRoute)
+                    },
+                    navigateToFullScreenImage = {
+                        backstack.add(
+                            Screens.NavFullScreenImageRoute(
+                                imageUrl = it.url,
+                                imageName = it.name,
+                                fileId = it.fileId
+                            )
+                        )
                     }
                 )
             }
@@ -386,10 +406,44 @@ fun AppNavigation(
                         backstack.popBackStack()
                     },
                     onStudentClick = { pid: String ->
-                        // TODO: Navigate to student profile
+                        backstack.add(Screens.NavStudentProfileRoute(pid))
                     },
                     onSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
+                    snackbarHostState = snackbarHostState
+                )
+            }
+
+            // Student Profile Screen
+            entry<Screens.NavStudentProfileRoute> { it ->
+                val pid = it.pid
+
+                StudentProfileScreen(
+                    pid = pid,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    onNavigateToFaceDataRegister = { studentPid ->
+                        backstack.add(Screens.NavFaceDataRegisterRoute(studentPid))
+                    },
+                    onNavigateToEditProfile = { studentPid ->
+                        backstack.add(Screens.NavStudentRegistrationRoute(studentPid))
+                    },
+                    onNavigateToVolunteerProfile = { volunteerPid ->
+                        backstack.add(Screens.NavVolunteerProfileRoute(volunteerPid))
+                    },
+                    onNavigateToAttendanceDetails = { studentPid ->
+                        // TODO: Navigate to attendance details when implemented
+                    },
+                    onNavigateToFullScreenImage = { imageData ->
+                        backstack.add(
+                            Screens.NavFullScreenImageRoute(
+                                imageUrl = imageData.url,
+                                imageName = imageData.name,
+                                fileId = imageData.fileId
+                            )
+                        )
                     },
                     snackbarHostState = snackbarHostState
                 )
@@ -401,12 +455,37 @@ fun AppNavigation(
                         backstack.popBackStack()
                     },
                     onVolunteerClick = { pid: String ->
-                        // TODO: Navigate to volunteer profile
+                        backstack.add(Screens.NavVolunteerProfileRoute(pid))
                     },
                     onSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
                     },
                     snackbarHostState = snackbarHostState
+                )
+            }
+
+            entry<Screens.NavVolunteerProfileRoute> { it ->
+                val pid = it.pid
+
+                VolunteerProfileScreen(
+                    pid = pid,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    onNavigateToFullScreenImage = { imageData ->
+                        backstack.add(
+                            Screens.NavFullScreenImageRoute(
+                                imageUrl = imageData.url,
+                                imageName = imageData.name,
+                                fileId = imageData.fileId
+                            )
+                        )
+                    },
+                    snackbarHostState = snackbarHostState,
+                    onViewAttendanceDetails = {
+                        //TODO: Navigate to attendance details when implemented
+                    },
+
                 )
             }
 
@@ -416,7 +495,10 @@ fun AppNavigation(
                         backstack.popBackStack()
                     },
                     onSelect = { pid: String, isStudent: Boolean ->
-                        // Navigate to student or volunteer profile based on isStudent flag
+                        if(isStudent)
+                            backstack.add(Screens.NavStudentProfileRoute(pid))
+                        else
+                            backstack.add(Screens.NavVolunteerProfileRoute(pid))
                     },
                     snackbarHostState = snackbarHostState
                 )
@@ -472,6 +554,10 @@ fun AppNavigation(
                     onPersonSelect = {
                             pid: String, isStudent: Boolean ->
                         //Navigate to the respective screen
+                        if(isStudent)
+                            backstack.add(Screens.NavStudentProfileRoute(pid))
+                        else
+                            backstack.add(Screens.NavVolunteerProfileRoute(pid))
                     },
                     onTextSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
@@ -487,6 +573,22 @@ fun AppNavigation(
                 FaceDataRegisterScreen(
                     viewModel = koinViewModel<FaceDataRegisterViewModel> { parametersOf(pid) },
                     onNavigateBack = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            // Full screen image viewer
+            entry<Screens.NavFullScreenImageRoute> { it ->
+                val imageData = ImageKitResponse(
+                    fileId = it.fileId,
+                    name = it.imageName,
+                    url = it.imageUrl
+                )
+
+                FullScreenImageViewer(
+                    imageData = imageData,
+                    onBackClick = {
                         backstack.popBackStack()
                     }
                 )

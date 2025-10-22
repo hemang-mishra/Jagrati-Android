@@ -27,7 +27,7 @@ data class AttendanceRecordResponse(
 
 @Serializable
 data class AttendanceRecordListResponse(
-    val records: List<AttendanceRecordResponse>
+    val attendees: List<AttendanceRecordResponse>
 )
 
 @Serializable
@@ -47,6 +47,7 @@ data class VolunteerBatchCount(
 @Serializable
 data class PresentStudent(
     val pid: String,
+    val aid: String,
     val firstName: String,
     val lastName: String,
     val gender: Gender,
@@ -59,9 +60,11 @@ data class PresentStudent(
 @Serializable
 data class PresentVolunteer(
     val pid: String,
+    val aid: String,
     val firstName: String,
     val lastName: String,
-    val batch: String?
+    val batch: String?,
+    val rollNo: String
 )
 
 @Serializable
@@ -72,4 +75,3 @@ data class AttendanceReportResponse(
     val presentStudents: List<PresentStudent>,
     val presentVolunteers: List<PresentVolunteer>
 )
-
