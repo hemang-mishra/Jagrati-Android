@@ -26,6 +26,7 @@ import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceRepor
 import com.hexagraph.jagrati_android.ui.screens.myprofile.MyProfileViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendanceview.AttendanceViewModel
+import com.hexagraph.jagrati_android.ui.screens.editvolunteerprofile.EditVolunteerProfileViewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
@@ -70,7 +71,8 @@ val viewModelModule = module {
             volunteerPid,
             get(), // VolunteerRepository
             get(), // UserRepository
-            get()  // AttendanceRepository
+            get(),  // AttendanceRepository,
+            get()
         )
     }
 
@@ -83,4 +85,5 @@ val viewModelModule = module {
     factory { (pid: String) -> FaceDataRegisterViewModel(get(),  get(), get(), get(), get(),get(),get(),get(),pid) }
     factory { AttendanceReportViewModel(get(), get(), get(), get()) } // AttendanceRepository, AppPreferences, StudentDao, VolunteerDao
     factory { (pid: String, isStudent: Boolean) -> AttendanceViewModel(pid, isStudent, get(), get(), get()) }
+    factory { (pid: String) -> EditVolunteerProfileViewModel(pid, get()) }
 }

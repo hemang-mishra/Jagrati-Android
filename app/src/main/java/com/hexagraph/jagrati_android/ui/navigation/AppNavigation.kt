@@ -37,6 +37,7 @@ import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailScre
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesScreen
 import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncScreen
+import com.hexagraph.jagrati_android.ui.screens.editvolunteerprofile.EditVolunteerProfileScreen
 import com.hexagraph.jagrati_android.ui.screens.home.MainHomeScreen
 import com.hexagraph.jagrati_android.ui.screens.nonvolunteer.NonVolunteerScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailScreen
@@ -253,6 +254,11 @@ fun AppNavigation(
                     navigateToCameraSearch = {
                         backstack.add(
                             Screens.NavCameraSearchRoute
+                        )
+                    },
+                    navigateToEditProfile = {
+                        backstack.add(
+                            Screens.NavEditVolunteerProfileRoute(it)
                         )
                     }
                 )
@@ -502,6 +508,18 @@ fun AppNavigation(
                         )
                     },
 
+                )
+            }
+
+            entry<Screens.NavEditVolunteerProfileRoute> { it ->
+                val pid = it.pid
+
+                EditVolunteerProfileScreen(
+                    pid = pid,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    snackbarHostState = snackbarHostState
                 )
             }
 

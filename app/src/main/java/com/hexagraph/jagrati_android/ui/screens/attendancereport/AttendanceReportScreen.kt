@@ -150,11 +150,28 @@ fun AttendanceReportScreenLayout(
             modifier = Modifier.fillMaxSize()
         ) {
             if (uiState.isLoading) {
-                Box(
+                LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    CircularProgressIndicator()
+                    // Show actual date navigation header (no shimmer)
+                    item {
+                        DateNavigationSection(
+                            date = formatDate(uiState.selectedDateMillis),
+                            isToday = isToday(uiState.selectedDateMillis),
+                            onPreviousDay = onPreviousDay,
+                            onNextDay = onNextDay,
+                            onToday = onToday,
+                            onDateClick = { showDatePicker = true },
+                            onTakeAttendance = onTakeAttendance
+                        )
+                    }
+
+                    // Shimmer for content loading
+                    item {
+                        AttendanceReportContentShimmer()
+                    }
                 }
             } else if (uiState.reportData == null) {
                 Box(

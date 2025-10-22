@@ -42,6 +42,7 @@ fun VolunteerProfileScreen(
     pid: String,
     onNavigateBack: () -> Unit,
     onNavigateToFullScreenImage: (ImageKitResponse) -> Unit = {},
+    onNavigateToEditProfile: (String) -> Unit = {},
     viewModel: VolunteerProfileViewModel = koinViewModel { parametersOf(pid) },
     onViewAttendanceDetails: () -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
@@ -72,6 +73,7 @@ fun VolunteerProfileScreen(
     VolunteerProfileLayout(
         uiState = uiState,
         onNavigateBack = onNavigateBack,
+        onEditProfile = { onNavigateToEditProfile(pid) },
         onRefresh = { viewModel.refresh() },
         onPhotoClick = { viewModel.showEditOptionsSheet() },
         onChatWhatsApp = { phoneNumber ->
@@ -102,6 +104,7 @@ fun VolunteerProfileScreen(
 fun VolunteerProfileLayout(
     uiState: VolunteerProfileUiState,
     onNavigateBack: () -> Unit,
+    onEditProfile: () -> Unit = {},
     onRefresh: () -> Unit,
     onPhotoClick: () -> Unit,
     onChatWhatsApp: (String) -> Unit,
@@ -126,6 +129,16 @@ fun VolunteerProfileLayout(
                             painter = painterResource(id = R.drawable.ic_arrow_back),
                             contentDescription = "Back"
                         )
+                    }
+                },
+                actions = {
+                    if (uiState.canEditProfile) {
+                        IconButton(onClick = onEditProfile) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_edit),
+                                contentDescription = "Edit Profile"
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

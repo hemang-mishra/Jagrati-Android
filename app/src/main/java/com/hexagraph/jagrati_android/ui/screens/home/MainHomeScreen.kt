@@ -70,6 +70,7 @@ fun MainHomeScreen(
     onSearchClick: () -> Unit,
     navigateToAttendanceMarking: () -> Unit = {},
     navigateToFullScreenImage: (ImageKitResponse) -> Unit,
+    navigateToEditProfile: (String) -> Unit,
     navigateToCameraSearch: () -> Unit,
     appPreferences: AppPreferences = koinInject(),
 ) {
@@ -152,7 +153,7 @@ fun MainHomeScreen(
                     2 -> SyllabusScreen()
                     3 -> MyProfileScreen(
                         onNavigateToEditProfile = {
-                            // TODO: Navigate to edit profile when implemented
+                            navigateToEditProfile(it)
                         }, onNavigateToFaceDataRegister = { pid ->
                             updateFacialData(pid)
                         }, onNavigateToFullScreenImage = { imageData ->
