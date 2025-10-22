@@ -66,7 +66,7 @@ fun MainHomeScreen(
     updateFacialData: (String) -> Unit,
     onSearchClick: () -> Unit,
     navigateToAttendanceMarking: () -> Unit = {},
-    navigateToFullScreenImage : (ImageKitResponse) -> Unit = {},
+    navigateToFullScreenImage : (ImageKitResponse) -> Unit,
     appPreferences: AppPreferences = koinInject(),
 ) {
     var userData by remember { mutableStateOf<User?>(null) }
@@ -143,8 +143,7 @@ fun MainHomeScreen(
                     )
                     1 -> AttendanceReportScreen(onBackPress = {})
                     2 -> SyllabusScreen()
-                    3 -> NotificationsScreen()
-                    4 -> MyProfileScreen(
+                    3 -> MyProfileScreen(
                         onNavigateToEditProfile = {
                             // TODO: Navigate to edit profile when implemented
                         },
@@ -263,19 +262,20 @@ fun BottomNavigationBar(
 ) {
     NavigationBar(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        tonalElevation = 3.dp
     ) {
         NavigationBarItem(
             selected = selectedItem == 0,
             onClick = { onItemSelected(0) },
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_home),
+                    painter = painterResource(id = R.drawable.ic_home_filled),
                     contentDescription = "Home"
                 )
             },
-            label = null,
-            alwaysShowLabel = false
+            label = { Text("Home") },
+            alwaysShowLabel = true
         )
 
         NavigationBarItem(
@@ -283,12 +283,12 @@ fun BottomNavigationBar(
             onClick = { onItemSelected(1) },
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_attendance),
+                    painter = painterResource(id = R.drawable.ic_attendance_filled),
                     contentDescription = "Attendance"
                 )
             },
-            label = null,
-            alwaysShowLabel = false
+            label = { Text("Attendance") },
+            alwaysShowLabel = true
         )
 
         NavigationBarItem(
@@ -296,12 +296,12 @@ fun BottomNavigationBar(
             onClick = { onItemSelected(2) },
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_syllabus),
+                    painter = painterResource(id = R.drawable.ic_syllabus_filled),
                     contentDescription = "Syllabus"
                 )
             },
-            label = null,
-            alwaysShowLabel = false
+            label = { Text("Syllabus") },
+            alwaysShowLabel = true
         )
 
         NavigationBarItem(
@@ -309,25 +309,12 @@ fun BottomNavigationBar(
             onClick = { onItemSelected(3) },
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_notifications),
-                    contentDescription = "Notifications"
-                )
-            },
-            label = null,
-            alwaysShowLabel = false
-        )
-
-        NavigationBarItem(
-            selected = selectedItem == 4,
-            onClick = { onItemSelected(4) },
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_person),
+                    painter = painterResource(id = R.drawable.ic_profile_filled),
                     contentDescription = "Profile"
                 )
             },
-            label = null,
-            alwaysShowLabel = false
+            label = { Text("Profile") },
+            alwaysShowLabel = true
         )
     }
 }
@@ -392,14 +379,6 @@ fun SyllabusScreen() {
     MockScreen(
         title = "Syllabus",
         description = "Access course materials, lesson plans, and educational content."
-    )
-}
-
-@Composable
-fun NotificationsScreen() {
-    MockScreen(
-        title = "Notifications",
-        description = "Stay updated with important announcements and reminders."
     )
 }
 

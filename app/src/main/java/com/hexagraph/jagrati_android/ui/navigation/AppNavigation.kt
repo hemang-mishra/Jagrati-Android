@@ -233,6 +233,15 @@ fun AppNavigation(
                     },
                     navigateToAttendanceMarking = {
                         backstack.add(Screens.NavCameraAttendanceMarkingRoute)
+                    },
+                    navigateToFullScreenImage = {
+                        backstack.add(
+                            Screens.NavFullScreenImageRoute(
+                                imageUrl = it.url,
+                                imageName = it.name,
+                                fileId = it.fileId
+                            )
+                        )
                     }
                 )
             }
