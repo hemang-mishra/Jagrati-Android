@@ -46,6 +46,7 @@ import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRegistrationS
 import com.hexagraph.jagrati_android.ui.screens.volunteer.manage.ManageVolunteerRequestsScreen
 import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationScreen
 import com.hexagraph.jagrati_android.ui.screens.studentlist.StudentListScreen
+import com.hexagraph.jagrati_android.ui.screens.studentprofile.StudentProfileScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
@@ -387,10 +388,32 @@ fun AppNavigation(
                         backstack.popBackStack()
                     },
                     onStudentClick = { pid: String ->
-                        // TODO: Navigate to student profile
+                        backstack.add(Screens.NavStudentProfileRoute(pid))
                     },
                     onSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
+                    snackbarHostState = snackbarHostState
+                )
+            }
+
+            // Student Profile Screen
+            entry<Screens.NavStudentProfileRoute> { it ->
+                val pid = it.pid
+
+                StudentProfileScreen(
+                    pid = pid,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    onNavigateToFaceDataRegister = { studentPid ->
+                        backstack.add(Screens.NavFaceDataRegisterRoute(studentPid))
+                    },
+                    onNavigateToEditProfile = { studentPid ->
+                        backstack.add(Screens.NavStudentRegistrationRoute(studentPid))
+                    },
+                    onNavigateToVolunteerProfile = { volunteerPid ->
+                        // TODO: Navigate to volunteer profile when implemented
                     },
                     snackbarHostState = snackbarHostState
                 )
@@ -418,6 +441,11 @@ fun AppNavigation(
                     },
                     onSelect = { pid: String, isStudent: Boolean ->
                         // Navigate to student or volunteer profile based on isStudent flag
+                        if(isStudent)
+                            backstack.add(Screens.NavStudentProfileRoute(pid))
+                        else{
+
+                        }
                     },
                     snackbarHostState = snackbarHostState
                 )

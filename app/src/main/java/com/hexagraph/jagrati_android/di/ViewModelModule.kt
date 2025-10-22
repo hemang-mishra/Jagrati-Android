@@ -7,6 +7,7 @@ import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesViewModel
 import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncViewModel
 import com.hexagraph.jagrati_android.ui.screens.student.StudentRegistrationViewModel
 import com.hexagraph.jagrati_android.ui.screens.studentlist.StudentListViewModel
+import com.hexagraph.jagrati_android.ui.screens.studentprofile.StudentProfileViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListViewModel
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailViewModel
@@ -59,6 +60,7 @@ val viewModelModule = module {
     // Student management ViewModels
     factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), get(), get(), pid) }
     factory { StudentListViewModel(get(), get(), get()) }
+    factory { (studentPid: String) -> StudentProfileViewModel(studentPid, get(), get(), get()) }
 
     // Face data ViewModels
 
