@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.hexagraph.jagrati_android.R
+import com.hexagraph.jagrati_android.model.ImageKitResponse
 import com.hexagraph.jagrati_android.model.student.StudentGroupHistoryResponse
 import com.hexagraph.jagrati_android.model.student.StudentResponse
 import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
@@ -45,6 +46,8 @@ fun StudentProfileScreen(
     onNavigateToFaceDataRegister: (String) -> Unit,
     onNavigateToEditProfile: (String) -> Unit,
     onNavigateToVolunteerProfile: (String) -> Unit,
+    onNavigateToAttendanceDetails: (String) -> Unit = {},
+    onNavigateToFullScreenImage: (ImageKitResponse) -> Unit = {},
     viewModel: StudentProfileViewModel = koinViewModel { parametersOf(pid) },
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
@@ -88,6 +91,11 @@ fun StudentProfileScreen(
         onDismissGroupHistory = { viewModel.hideGroupHistorySheet() },
         onDismissEditOptions = { viewModel.hideEditOptionsSheet() },
         onVolunteerClick = onNavigateToVolunteerProfile,
+        onViewAttendanceDetails = { onNavigateToAttendanceDetails(pid) },
+        onViewFullScreenImage = { imageData ->
+            viewModel.hideEditOptionsSheet()
+            onNavigateToFullScreenImage(imageData)
+        },
         snackbarHostState = snackbarHostState
     )
 }
@@ -106,6 +114,8 @@ fun StudentProfileLayout(
     onDismissGroupHistory: () -> Unit,
     onDismissEditOptions: () -> Unit,
     onVolunteerClick: (String) -> Unit,
+    onViewAttendanceDetails: () -> Unit = {},
+    onViewFullScreenImage: (ImageKitResponse) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     Scaffold(
@@ -204,7 +214,8 @@ fun StudentProfileLayout(
                             AttendanceSummarySection(
                                 lastPresentDate = uiState.lastPresentDate,
                                 presentCountLastWeek = uiState.presentCountLastWeek,
-                                presentCountLastMonth = uiState.presentCountLastMonth
+                                presentCountLastMonth = uiState.presentCountLastMonth,
+                                onViewDetails = onViewAttendanceDetails
                             )
                         }
                     }
@@ -246,14 +257,14 @@ fun StudentProfileLayout(
     if (uiState.showEditOptionsSheet) {
         EditOptionsBottomSheet(
             hasProfilePic = uiState.student?.profilePic != null,
+            profilePicData = uiState.student?.profilePic,
             onDismiss = onDismissEditOptions,
             onEditFaceData = {
                 onDismissEditOptions()
                 onAddFaceData()
             },
-            onViewFullScreen = {
-                onDismissEditOptions()
-                // TODO: Implement full screen photo viewer
+            onViewFullScreen = { imageData ->
+                onViewFullScreenImage(imageData)
             }
         )
     }
@@ -712,7 +723,8 @@ fun DetailRow(
 fun AttendanceSummarySection(
     lastPresentDate: String?,
     presentCountLastWeek: Int,
-    presentCountLastMonth: Int
+    presentCountLastMonth: Int,
+    onViewDetails: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -773,6 +785,28 @@ fun AttendanceSummarySection(
                     label = "Last Month",
                     value = "$presentCountLastMonth days",
                     isHighlighted = presentCountLastMonth > 0
+                )
+            }
+
+            // View Details Button
+            Button(
+                onClick = onViewDetails,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_history),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "View Detailed Attendance",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -899,9 +933,10 @@ fun GroupHistorySection(onViewGroupHistory: () -> Unit) {
 @Composable
 fun EditOptionsBottomSheet(
     hasProfilePic: Boolean,
+    profilePicData: ImageKitResponse?,
     onDismiss: () -> Unit,
     onEditFaceData: () -> Unit,
-    onViewFullScreen: () -> Unit
+    onViewFullScreen: (ImageKitResponse) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
 
@@ -922,11 +957,13 @@ fun EditOptionsBottomSheet(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            if (hasProfilePic) {
+            if (hasProfilePic && profilePicData != null) {
                 BottomSheetOption(
                     icon = painterResource(id = R.drawable.ic_fullscreen),
                     text = "View Full Screen",
-                    onClick = onViewFullScreen
+                    onClick = {
+                        onViewFullScreen(profilePicData)
+                    }
                 )
             }
 

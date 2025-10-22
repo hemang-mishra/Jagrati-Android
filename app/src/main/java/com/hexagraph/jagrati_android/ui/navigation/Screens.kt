@@ -123,4 +123,11 @@ sealed interface Screens: NavKey {
 
     @Serializable
     data object NavCameraSearchRoute: Screens
+
+    @Serializable
+    data class NavFullScreenImageRoute(
+        val imageUrl: String,
+        val imageName: String = "",
+        val fileId: String = ""
+    ): Screens
 }
