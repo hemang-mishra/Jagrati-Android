@@ -2,7 +2,6 @@ package com.hexagraph.jagrati_android.ui.screens.attendancereport
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +32,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,7 +53,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -139,38 +138,7 @@ fun AttendanceReportScreenLayout(
         initialSelectedDateMillis = uiState.selectedDateMillis
     )
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Header with date and calendar button
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = "Attendance Report",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = formatDate(uiState.selectedDateMillis),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = { showDatePicker = true }) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_calendar_month),
-                    contentDescription = "Select Date",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-
+    Column(modifier = Modifier.fillMaxSize()) {
         PullToRefreshBox(
             isRefreshing = uiState.isRefreshing,
             onRefresh = onRefresh,
@@ -188,13 +156,24 @@ fun AttendanceReportScreenLayout(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "No attendance data available for this date",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(32.dp)
-                    )
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_calendar_month),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                            modifier = Modifier.size(64.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "No attendance data available",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             } else {
                 LazyColumn(
@@ -202,25 +181,37 @@ fun AttendanceReportScreenLayout(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // Date Header
                     item {
-                        SummarySection(
-                            studentsByVillageGender = uiState.reportData.studentsByVillageGender,
-                            volunteersByBatch = uiState.reportData.volunteersByBatch,
+                        DateHeaderSection(
+                            date = formatDate(uiState.selectedDateMillis),
+                            onDateClick = { showDatePicker = true }
+                        )
+                    }
+
+                    // Summary Cards
+                    item {
+                        SummaryCards(
                             totalStudents = uiState.reportData.presentStudents.size,
                             totalVolunteers = uiState.reportData.presentVolunteers.size
                         )
                     }
 
+                    // Stats Section
                     item {
-                        GroupCountSection(groupCounts = uiState.groupCounts)
+                        StatsSection(
+                            studentsByVillageGender = uiState.reportData.studentsByVillageGender,
+                            volunteersByBatch = uiState.reportData.volunteersByBatch,
+                            groupCounts = uiState.groupCounts
+                        )
                     }
 
+                    // Volunteers Section
                     item {
-                        Text(
-                            text = "Volunteers (${uiState.filteredVolunteers.size})",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                        Spacer(modifier = Modifier.height(8.dp))
+                        SectionHeader(
+                            title = "Volunteers",
+                            count = uiState.filteredVolunteers.size
                         )
                     }
 
@@ -236,7 +227,7 @@ fun AttendanceReportScreenLayout(
                         items = uiState.filteredVolunteers,
                         key = { it.pid }
                     ) { volunteer ->
-                        AttendancePersonCard(
+                        PersonCard(
                             name = "${volunteer.firstName} ${volunteer.lastName}",
                             subtitle = volunteer.rollNo,
                             extra = "",
@@ -248,13 +239,12 @@ fun AttendanceReportScreenLayout(
                         )
                     }
 
+                    // Students Section
                     item {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Students (${uiState.filteredStudents.size})",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SectionHeader(
+                            title = "Students",
+                            count = uiState.filteredStudents.size
                         )
                     }
 
@@ -279,7 +269,7 @@ fun AttendanceReportScreenLayout(
                         items = uiState.filteredStudents,
                         key = { it.pid }
                     ) { student ->
-                        AttendancePersonCard(
+                        PersonCard(
                             name = "${student.firstName} ${student.lastName}",
                             subtitle = student.villageName,
                             extra = student.groupName,
@@ -320,7 +310,262 @@ fun AttendanceReportScreenLayout(
 }
 
 @Composable
-fun AttendancePersonCard(
+fun DateHeaderSection(
+    date: String,
+    onDateClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = "Attendance Report",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = date,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        IconButton(onClick = onDateClick) {
+            Icon(
+                painter = painterResource(R.drawable.ic_calendar_month),
+                contentDescription = "Select Date",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun SummaryCards(
+    totalStudents: Int,
+    totalVolunteers: Int
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SummaryCard(
+            title = "Students",
+            count = totalStudents,
+            icon = painterResource(R.drawable.ic_group),
+            containerColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(1f)
+        )
+        SummaryCard(
+            title = "Volunteers",
+            count = totalVolunteers,
+            icon = painterResource(R.drawable.ic_person),
+            containerColor = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun SummaryCard(
+    title: String,
+    count: Int,
+    icon: androidx.compose.ui.graphics.painter.Painter,
+    containerColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor.copy(alpha = 0.12f)
+        ),
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(containerColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = Color.White
+                )
+            }
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = containerColor
+            )
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun StatsSection(
+    studentsByVillageGender: List<StudentVillageGenderCount>,
+    volunteersByBatch: List<VolunteerBatchCount>,
+    groupCounts: Map<String, Int>
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Students by Village & Gender
+        if (studentsByVillageGender.isNotEmpty()) {
+            StatsCard(
+                title = "By Village & Gender",
+                items = studentsByVillageGender.map {
+                    "${it.villageName} (${it.gender.name})" to it.count.toInt()
+                }
+            )
+        }
+
+        // Volunteers by Batch
+        if (volunteersByBatch.isNotEmpty()) {
+            StatsCard(
+                title = "By Batch",
+                items = volunteersByBatch.map {
+                    (it.batch ?: "N/A") to it.count.toInt()
+                }
+            )
+        }
+
+        // Students by Group
+        if (groupCounts.isNotEmpty()) {
+            StatsCard(
+                title = "By Group",
+                items = groupCounts.map { it.key to it.value }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun StatsCard(
+    title: String,
+    items: List<Pair<String, Int>>
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items.forEach { (label, count) ->
+                    StatChip(label = label, count = count)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun StatChip(
+    label: String,
+    count: Int
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = "•",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = count.toString(),
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+fun SectionHeader(
+    title: String,
+    count: Int
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .padding(horizontal = 12.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+    }
+}
+
+@Composable
+fun PersonCard(
     name: String,
     subtitle: String,
     extra: String,
@@ -333,36 +578,36 @@ fun AttendancePersonCard(
     var showMenu by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onCardClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        onClick = onCardClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = MaterialTheme.colorScheme.surface
         )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Profile Image
-            ProfileAvatar(userName = name, profileImageUrl = profileImageUrl)
+            ProfileAvatar(
+                userName = name,
+                profileImageUrl = profileImageUrl,
+                size = 48.dp
+            )
 
-            Spacer(modifier = Modifier.width(12.dp))
-
-            // Details
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = name,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodyMedium,
@@ -374,14 +619,13 @@ fun AttendancePersonCard(
                     Text(
                         text = extra,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
             }
 
-            // Three-dot menu (only if can delete)
             if (canDelete) {
                 Box {
                     IconButton(onClick = { showMenu = true }) {
@@ -408,7 +652,7 @@ fun AttendancePersonCard(
                                         tint = MaterialTheme.colorScheme.error
                                     )
                                     Text(
-                                        text = "Delete Attendance",
+                                        text = "Delete",
                                         color = MaterialTheme.colorScheme.error
                                     )
                                 }
@@ -430,344 +674,6 @@ fun AttendancePersonCard(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun AttendanceReportScreenPreview() {
-    JagratiAndroidTheme {
-        AttendanceReportScreenLayout(
-            uiState = AttendanceReportUiState(
-                isLoading = false,
-                selectedDateMillis = System.currentTimeMillis(),
-                reportData = AttendanceReportResponse(
-                    date = "2024-01-15",
-                    studentsByVillageGender = listOf(
-                        StudentVillageGenderCount(1, "Bargi", Gender.MALE, 15),
-                        StudentVillageGenderCount(1, "Bargi", Gender.FEMALE, 12),
-                        StudentVillageGenderCount(2, "Tilhari", Gender.MALE, 10)
-                    ),
-                    volunteersByBatch = listOf(
-                        VolunteerBatchCount("2021", 5),
-                        VolunteerBatchCount("2022", 8)
-                    ),
-                    presentStudents = listOf(
-                        PresentStudent("S1", "1", "Rahul", "Kumar", Gender.MALE, 1, "Bargi", 1, "Group A"),
-                        PresentStudent("S2", "2", "Priya", "Sharma", Gender.FEMALE, 1, "Bargi", 1, "Group A")
-                    ),
-                    presentVolunteers = listOf(
-                        PresentVolunteer("V1", "3", "Amit", "Singh", "2021", "23bcs103"),
-                        PresentVolunteer("V2", "4", "Sneha", "Patel", "2022", "23bcs103")
-                    )
-                ),
-                filteredStudents = listOf(
-                    PresentStudent("S1", "1", "Rahul", "Kumar", Gender.MALE, 1, "Bargi", 1, "Group A")
-                ),
-                filteredVolunteers = listOf(
-                    PresentVolunteer("V1", "3", "Amit", "Singh", "2021", "23bcs103")
-                ),
-                groupCounts = mapOf("Group A" to 15, "Group B" to 12)
-            ),
-            onDateSelected = {},
-            onRefresh = {},
-            onStudentVillageFilter = {},
-            onStudentGenderFilter = {},
-            onStudentGroupFilter = {},
-            onVolunteerBatchFilter = {},
-            onDeleteStudentAttendance = {},
-            onDeleteVolunteerAttendance = {},
-            onNavigateToStudentProfile = {},
-            onNavigateToVolunteerProfile = {},
-            snackbarHostState = SnackbarHostState()
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun AttendanceReportScreenDarkPreview() {
-    JagratiAndroidTheme {
-        AttendanceReportScreenLayout(
-            uiState = AttendanceReportUiState(
-                isLoading = false,
-                selectedDateMillis = System.currentTimeMillis(),
-                reportData = AttendanceReportResponse(
-                    date = "2024-01-15",
-                    studentsByVillageGender = listOf(
-                        StudentVillageGenderCount(1, "Bargi", Gender.MALE, 15),
-                        StudentVillageGenderCount(1, "Bargi", Gender.FEMALE, 12),
-                        StudentVillageGenderCount(2, "Tilhari", Gender.MALE, 10)
-                    ),
-                    volunteersByBatch = listOf(
-                        VolunteerBatchCount("2021", 5),
-                        VolunteerBatchCount("2022", 8)
-                    ),
-                    presentStudents = listOf(
-                        PresentStudent("S1", "1", "Rahul", "Kumar", Gender.MALE, 1, "Bargi", 1, "Group A"),
-                        PresentStudent("S2", "2", "Priya", "Sharma", Gender.FEMALE, 1, "Bargi", 1, "Group A")
-                    ),
-                    presentVolunteers = listOf(
-                        PresentVolunteer("V1", "3", "Amit", "Singh", "2021", "23bcs103"),
-                        PresentVolunteer("V2", "4", "Sneha", "Patel", "2022", "23bcs103")
-                    )
-                ),
-                filteredStudents = listOf(
-                    PresentStudent("S1", "1", "Rahul", "Kumar", Gender.MALE, 1, "Bargi", 1, "Group A", )
-                ),
-                filteredVolunteers = listOf(
-                    PresentVolunteer("V1", "3", "Amit", "Singh", "2021", "23bcs103")
-                ),
-                groupCounts = mapOf("Group A" to 15, "Group B" to 12)
-            ),
-            onDateSelected = {},
-            onRefresh = {},
-            onStudentVillageFilter = {},
-            onStudentGenderFilter = {},
-            onStudentGroupFilter = {},
-            onVolunteerBatchFilter = {},
-            onDeleteStudentAttendance = {},
-            onDeleteVolunteerAttendance = {},
-            onNavigateToStudentProfile = {},
-            onNavigateToVolunteerProfile = {},
-            snackbarHostState = SnackbarHostState()
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SummarySectionPreview() {
-    JagratiAndroidTheme {
-        SummarySection(
-            studentsByVillageGender = listOf(
-                StudentVillageGenderCount(1, "Bargi", Gender.MALE, 15),
-                StudentVillageGenderCount(1, "Bargi", Gender.FEMALE, 12)
-            ),
-            volunteersByBatch = listOf(
-                VolunteerBatchCount("2021", 5),
-                VolunteerBatchCount("2022", 8)
-            ),
-            totalStudents = 27,
-            totalVolunteers = 13
-        )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun SummarySection(
-    studentsByVillageGender: List<StudentVillageGenderCount>,
-    volunteersByBatch: List<VolunteerBatchCount>,
-    totalStudents: Int,
-    totalVolunteers: Int
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Summary",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                SummaryCard(
-                    title = "Students",
-                    count = totalStudents,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                SummaryCard(
-                    title = "Volunteers",
-                    count = totalVolunteers,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider()
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Students by Village & Gender",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                studentsByVillageGender.forEach { item ->
-                    StatChip(
-                        label = "${item.villageName} (${item.gender.name})",
-                        count = item.count.toInt()
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Volunteers by Batch",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                volunteersByBatch.forEach { item ->
-                    StatChip(
-                        label = item.batch ?: "N/A",
-                        count = item.count.toInt()
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun SummaryCard(
-    title: String,
-    count: Int,
-    color: Color
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = count.toString(),
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = color
-        )
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-    }
-}
-
-@Composable
-fun StatChip(
-    label: String,
-    count: Int
-) {
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            text = "•",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            text = count.toString(),
-            style = MaterialTheme.typography.bodySmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun GroupCountSection(groupCounts: Map<String, Int>) {
-    if (groupCounts.isEmpty()) return
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text(
-                text = "Students by Group",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                groupCounts.forEach { (groupName, count) ->
-                    GroupCountChip(groupName = groupName, count = count)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun GroupCountChip(groupName: String, count: Int) {
-    val batchColors = JagratiThemeColors.batchColors
-    val color = batchColors[groupName.hashCode() % batchColors.size]
-
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(color.copy(alpha = 0.2f))
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = groupName,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = color
-        )
-        Text(
-            text = count.toString(),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Bold,
-            color = color
-        )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
 fun VolunteerFilters(
     availableBatches: List<String>,
     selectedBatch: String?,
@@ -777,44 +683,42 @@ fun VolunteerFilters(
 
     var showBatchMenu by remember { mutableStateOf(false) }
 
-    FlowRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Box {
-            FilterChip(
-                selected = selectedBatch != null,
-                onClick = { showBatchMenu = !showBatchMenu },
-                label = { Text(selectedBatch ?: "All Batches") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.baseline_filter_list_24),
-                        contentDescription = "Filter by batch",
-                        modifier = Modifier.size(18.dp)
-                    )
+    Box {
+        FilterChip(
+            selected = selectedBatch != null,
+            onClick = { showBatchMenu = !showBatchMenu },
+            label = { Text(selectedBatch ?: "All Batches") },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.baseline_filter_list_24),
+                    contentDescription = "Filter",
+                    modifier = Modifier.size(18.dp)
+                )
+            },
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        )
+
+        DropdownMenu(
+            expanded = showBatchMenu,
+            onDismissRequest = { showBatchMenu = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("All Batches") },
+                onClick = {
+                    onBatchSelected(null)
+                    showBatchMenu = false
                 }
             )
-
-            DropdownMenu(
-                expanded = showBatchMenu,
-                onDismissRequest = { showBatchMenu = false }
-            ) {
+            availableBatches.forEach { batch ->
                 DropdownMenuItem(
-                    text = { Text("All Batches") },
+                    text = { Text(batch) },
                     onClick = {
-                        onBatchSelected(null)
+                        onBatchSelected(batch)
                         showBatchMenu = false
                     }
                 )
-                availableBatches.forEach { batch ->
-                    DropdownMenuItem(
-                        text = { Text(batch) },
-                        onClick = {
-                            onBatchSelected(batch)
-                            showBatchMenu = false
-                        }
-                    )
-                }
             }
         }
     }
@@ -851,10 +755,13 @@ fun StudentFilters(
                 leadingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.baseline_filter_list_24),
-                        contentDescription = "Filter by village",
+                        contentDescription = "Filter",
                         modifier = Modifier.size(18.dp)
                     )
-                }
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             )
 
             DropdownMenu(
@@ -888,10 +795,13 @@ fun StudentFilters(
                 leadingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.baseline_filter_list_24),
-                        contentDescription = "Filter by gender",
+                        contentDescription = "Filter",
                         modifier = Modifier.size(18.dp)
                     )
-                }
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             )
 
             DropdownMenu(
@@ -927,10 +837,13 @@ fun StudentFilters(
                 leadingIcon = {
                     Icon(
                         painter = painterResource(R.drawable.baseline_filter_list_24),
-                        contentDescription = "Filter by group",
+                        contentDescription = "Filter",
                         modifier = Modifier.size(18.dp)
                     )
-                }
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             )
 
             DropdownMenu(
@@ -959,6 +872,6 @@ fun StudentFilters(
 }
 
 fun formatDate(millis: Long): String {
-    val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+    val dateFormat = SimpleDateFormat("EEEE, MMM dd, yyyy", Locale.getDefault())
     return dateFormat.format(Date(millis))
 }
