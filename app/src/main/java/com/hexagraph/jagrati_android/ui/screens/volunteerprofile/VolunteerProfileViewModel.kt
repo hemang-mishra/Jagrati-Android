@@ -6,15 +6,14 @@ import com.hexagraph.jagrati_android.model.attendance.AttendanceRecordResponse
 import com.hexagraph.jagrati_android.model.user.VolunteerDTO
 import com.hexagraph.jagrati_android.repository.auth.AttendanceRepository
 import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRepository
+import com.hexagraph.jagrati_android.repository.user.UserRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
-import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.AttendanceUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -35,8 +34,8 @@ data class VolunteerProfileUiState(
 class VolunteerProfileViewModel(
     private val pid: String,
     private val volunteerRepository: VolunteerRepository,
-    private val attendanceRepository: AttendanceRepository,
-    private val appPreferences: AppPreferences
+    private val userRepository: UserRepository,
+    private val attendanceRepository: AttendanceRepository
 ) : BaseViewModel<VolunteerProfileUiState>() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -51,7 +50,6 @@ class VolunteerProfileViewModel(
     override val uiState: StateFlow<VolunteerProfileUiState> = createUiStateFlow()
 
     init {
-        loadUserRoles()
         loadVolunteerProfile()
     }
 
@@ -87,15 +85,6 @@ class VolunteerProfileViewModel(
         )
     }
 
-    private fun loadUserRoles() {
-        viewModelScope.launch(Dispatchers.IO) {
-            val userRoles = appPreferences.userRoles.getFlow().firstOrNull()
-            userRoles?.let { roles ->
-                _userRoles.update { roles.map { it.name } }
-            }
-        }
-    }
-
     fun loadVolunteerProfile(isRefresh: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             if (isRefresh) {
@@ -104,6 +93,7 @@ class VolunteerProfileViewModel(
                 _isLoading.update { true }
             }
 
+            // Fetch volunteer details
             volunteerRepository.getVolunteerByPid(pid).collect { resource ->
                 when {
                     resource.isSuccess -> {
@@ -117,6 +107,21 @@ class VolunteerProfileViewModel(
                 }
             }
 
+            // Fetch user roles from UserRepository
+            userRepository.getUserByPid(pid).collect { resource ->
+                when {
+                    resource.isSuccess -> {
+                        resource.data?.let { userWithRoles ->
+                            _userRoles.update { userWithRoles.roles.map { it.name } }
+                        }
+                    }
+                    resource.isFailed -> {
+                        emitError(resource.error ?: ResponseError.UNKNOWN)
+                    }
+                }
+            }
+
+            // Fetch attendance records
             attendanceRepository.getVolunteerAttendance(pid).collect { resource ->
                 when {
                     resource.isSuccess -> {
@@ -153,4 +158,3 @@ class VolunteerProfileViewModel(
         loadVolunteerProfile(isRefresh = true)
     }
 }
-

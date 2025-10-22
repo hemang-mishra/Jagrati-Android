@@ -67,9 +67,9 @@ val viewModelModule = module {
     factory { (volunteerPid: String) ->
         VolunteerProfileViewModel(
             volunteerPid,
-            get(),
-            get(),
-            get()
+            get(), // VolunteerRepository
+            get(), // UserRepository
+            get()  // AttendanceRepository
         )
     }
 
