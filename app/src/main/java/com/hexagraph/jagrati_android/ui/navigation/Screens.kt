@@ -116,6 +116,11 @@ sealed interface Screens: NavKey {
     ): Screens
 
     @Serializable
+    data class NavVolunteerProfileRoute(
+        val pid: String
+    ): Screens
+
+    @Serializable
     data object NavCameraAttendanceMarkingRoute: Screens
 
     @Serializable

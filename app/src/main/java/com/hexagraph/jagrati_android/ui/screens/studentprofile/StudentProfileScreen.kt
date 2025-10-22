@@ -1,7 +1,6 @@
 package com.hexagraph.jagrati_android.ui.screens.studentprofile
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -20,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
@@ -258,6 +256,7 @@ fun StudentProfileLayout(
         EditOptionsBottomSheet(
             hasProfilePic = uiState.student?.profilePic != null,
             profilePicData = uiState.student?.profilePic,
+            hasEditPermission = uiState.canEditProfile,
             onDismiss = onDismissEditOptions,
             onEditFaceData = {
                 onDismissEditOptions()
@@ -932,6 +931,7 @@ fun GroupHistorySection(onViewGroupHistory: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditOptionsBottomSheet(
+    hasEditPermission: Boolean = true,
     hasProfilePic: Boolean,
     profilePicData: ImageKitResponse?,
     onDismiss: () -> Unit,
@@ -957,7 +957,7 @@ fun EditOptionsBottomSheet(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            if (hasProfilePic && profilePicData != null) {
+            if (hasEditPermission && hasProfilePic && profilePicData != null) {
                 BottomSheetOption(
                     icon = painterResource(id = R.drawable.ic_fullscreen),
                     text = "View Full Screen",

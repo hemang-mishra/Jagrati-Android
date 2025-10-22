@@ -54,6 +54,7 @@ import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewMod
 import com.hexagraph.jagrati_android.ui.screens.imageviewer.FullScreenImageViewer
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
+import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -415,7 +416,7 @@ fun AppNavigation(
                         backstack.add(Screens.NavStudentRegistrationRoute(studentPid))
                     },
                     onNavigateToVolunteerProfile = { volunteerPid ->
-                        // TODO: Navigate to volunteer profile when implemented
+                        backstack.add(Screens.NavVolunteerProfileRoute(volunteerPid))
                     },
                     onNavigateToAttendanceDetails = { studentPid ->
                         // TODO: Navigate to attendance details when implemented
@@ -439,10 +440,31 @@ fun AppNavigation(
                         backstack.popBackStack()
                     },
                     onVolunteerClick = { pid: String ->
-                        // TODO: Navigate to volunteer profile
+                        backstack.add(Screens.NavVolunteerProfileRoute(pid))
                     },
                     onSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
+                    },
+                    snackbarHostState = snackbarHostState
+                )
+            }
+
+            entry<Screens.NavVolunteerProfileRoute> { it ->
+                val pid = it.pid
+
+                VolunteerProfileScreen(
+                    pid = pid,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    onNavigateToFullScreenImage = { imageData ->
+                        backstack.add(
+                            Screens.NavFullScreenImageRoute(
+                                imageUrl = imageData.url,
+                                imageName = imageData.name,
+                                fileId = imageData.fileId
+                            )
+                        )
                     },
                     snackbarHostState = snackbarHostState
                 )
@@ -454,12 +476,10 @@ fun AppNavigation(
                         backstack.popBackStack()
                     },
                     onSelect = { pid: String, isStudent: Boolean ->
-                        // Navigate to student or volunteer profile based on isStudent flag
                         if(isStudent)
                             backstack.add(Screens.NavStudentProfileRoute(pid))
-                        else{
-
-                        }
+                        else
+                            backstack.add(Screens.NavVolunteerProfileRoute(pid))
                     },
                     snackbarHostState = snackbarHostState
                 )
@@ -515,6 +535,10 @@ fun AppNavigation(
                     onPersonSelect = {
                             pid: String, isStudent: Boolean ->
                         //Navigate to the respective screen
+                        if(isStudent)
+                            backstack.add(Screens.NavStudentProfileRoute(pid))
+                        else
+                            backstack.add(Screens.NavVolunteerProfileRoute(pid))
                     },
                     onTextSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
