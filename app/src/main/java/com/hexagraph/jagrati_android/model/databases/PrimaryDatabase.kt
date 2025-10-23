@@ -26,4 +26,8 @@ abstract class PrimaryDatabase: RoomDatabase() {
     abstract fun villageDao(): VillageDao
     abstract fun groupsDao(): GroupsDao
     abstract fun volunteerDao(): VolunteerDao
+
+    fun clearAll() {
+        clearAllTables()
+    }
 }

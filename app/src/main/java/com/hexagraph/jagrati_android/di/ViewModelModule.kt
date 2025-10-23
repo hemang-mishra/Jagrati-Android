@@ -27,9 +27,13 @@ import com.hexagraph.jagrati_android.ui.screens.myprofile.MyProfileViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendanceview.AttendanceViewModel
 import com.hexagraph.jagrati_android.ui.screens.editvolunteerprofile.EditVolunteerProfileViewModel
+import com.hexagraph.jagrati_android.ui.viewmodels.AppViewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
+    // Application-level ViewModel (scoped to Activity lifecycle)
+    single { AppViewModel(get(), get()) }
+
     // Auth ViewModels
     factory<AuthViewModel> { AuthViewModel(get()) }
     factory<LoginViewModel> { LoginViewModel(get()) }

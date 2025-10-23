@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +21,7 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.hexagraph.jagrati_android.model.ImageKitResponse
 import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
+import com.hexagraph.jagrati_android.ui.viewmodels.AppViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingScreen
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportScreen
@@ -72,6 +74,8 @@ private fun NavBackStack.popBackStack() {
 fun AppNavigation(
     snackbarHostState: SnackbarHostState,
     authViewModel: AuthViewModel = koinViewModel(),
+    appViewModel: AppViewModel,
+    shouldLogout: Boolean
 ) {
     // Get context for preferences
     val context = LocalContext.current
@@ -90,6 +94,18 @@ fun AppNavigation(
             else -> Screens.NavLoginRoute
         }
     )
+
+    // Handle automatic logout when refresh token becomes null/empty
+    LaunchedEffect(shouldLogout) {
+        if (shouldLogout) {
+            backstack.clear()
+            backstack.add(Screens.NavLoginRoute)
+
+            appViewModel.onLogoutHandled()
+
+            snackbarHostState.showSnackbar("Session expired. Please login again.")
+        }
+    }
 
     NavDisplay(
         backStack = backstack,
@@ -139,6 +155,9 @@ fun AppNavigation(
                     redirectToVolunteerDashboard = {
                         backstack.clear()
                         backstack.add(Screens.NavHomeRoute)
+                    },
+                    onLogout = {
+                        appViewModel.logout()
                     }
                 )
             }

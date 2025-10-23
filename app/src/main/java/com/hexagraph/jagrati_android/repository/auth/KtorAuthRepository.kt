@@ -8,6 +8,7 @@ import com.hexagraph.jagrati_android.model.auth.GoogleLoginRequest
 import com.hexagraph.jagrati_android.model.auth.LoginRequest
 import com.hexagraph.jagrati_android.model.auth.RegisterRequest
 import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
+import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Utils.safeApiCall
 import io.ktor.client.HttpClient
@@ -24,7 +25,8 @@ import kotlinx.coroutines.runBlocking
 class KtorAuthRepository(
     private val authService: KtorAuthService,
     private val appPreferences: AppPreferences,
-    private val client: HttpClient
+    private val client: HttpClient,
+    private val database: PrimaryDatabase
 ) : AuthRepository {
 
     override fun getCurrentUser(): Flow<User?> = appPreferences.userDetails.getFlow()
@@ -192,8 +194,13 @@ class KtorAuthRepository(
     }
 
     override suspend fun signOut() {
+        // Clear all database tables at once
+        database.clearAll()
+
         // Clear tokens and user info from DataStore
         appPreferences.clearAll()
+
+        // Clear auth tokens from HTTP client
         refreshTokens()
     }
 

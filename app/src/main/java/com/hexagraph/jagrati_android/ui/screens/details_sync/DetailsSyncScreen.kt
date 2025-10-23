@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -55,7 +56,8 @@ fun DetailsSyncScreen(
     snackbarHostState: SnackbarHostState,
     viewModel: DetailsSyncViewModel = koinViewModel(),
     redirectToVolunteerDashboard: () -> Unit,
-    redirectToNonVolunteerDashboard: () -> Unit
+    redirectToNonVolunteerDashboard: () -> Unit,
+    onLogout: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -85,7 +87,8 @@ fun DetailsSyncScreen(
             modifier = Modifier.padding(paddingValues),
             isLoading = uiState.isLoading,
             errorMessage = uiState.error?.toast,
-            onRetry = { viewModel.fetchUserDetails() }
+            onRetry = { viewModel.fetchUserDetails() },
+            onLogout = onLogout
         )
     }
 }
@@ -99,7 +102,8 @@ fun DetailsSyncLayout(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
     errorMessage: String?,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onLogout: () -> Unit = {}
 ) {
     Box(
         modifier = modifier.fillMaxSize()
@@ -125,7 +129,7 @@ fun DetailsSyncLayout(
                 }
 
                 errorMessage != null -> {
-                    ErrorContent(errorMessage, onRetry)
+                    ErrorContent(errorMessage, onRetry, onLogout)
                 }
             }
         }
@@ -204,7 +208,7 @@ private fun LoadingContent() {
 
             // Secondary message
             Text(
-                text = "Fetching your details and preferences...",
+                text = "Synchronizing updates to make sure you are upto date...",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
@@ -215,7 +219,7 @@ private fun LoadingContent() {
 }
 
 @Composable
-private fun ErrorContent(errorMessage: String, onRetry: () -> Unit) {
+private fun ErrorContent(errorMessage: String, onRetry: () -> Unit, onLogout: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -278,16 +282,14 @@ private fun ErrorContent(errorMessage: String, onRetry: () -> Unit) {
             Spacer(modifier = Modifier.height(32.dp))
 
             // Action buttons
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
-
                 // Primary action - Retry
                 Button(
                     onClick = onRetry,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     ),
@@ -304,6 +306,21 @@ private fun ErrorContent(errorMessage: String, onRetry: () -> Unit) {
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.Medium
                         )
+                    )
+                }
+
+                // Secondary action - Logout
+                TextButton(
+                    onClick = onLogout,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Logout",
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.Medium
+                        ),
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
             }
