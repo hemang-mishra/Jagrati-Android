@@ -760,11 +760,7 @@ fun VillageGenderTableCard(studentsByVillageGender: List<StudentVillageGenderCou
                 val totalMale = villageData.sumOf { it.maleCount }
                 val totalFemale = villageData.sumOf { it.femaleCount }
                 val grandTotal = villageData.sumOf { it.total }
-
-                HorizontalDivider(
-                    thickness = 2.dp,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                )
+                
 
                 Row(
                     modifier = Modifier

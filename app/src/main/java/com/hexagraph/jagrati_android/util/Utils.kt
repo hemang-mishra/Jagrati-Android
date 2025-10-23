@@ -191,7 +191,7 @@ object Utils {
         Log.e("SafeApiCall-Handle", "Error body: $errorBody")
         val errorResponse = parseErrorResponse(errorBody)
         Log.e("SafeApiCall-Handle", "Error response: $errorResponse")
-        val errorMessage = errorResponse?.message ?: "Unknown error"
+//        val errorMessage = errorResponse?.message ?: "Unknown error"
 
         val error = when (e.response.status.value) {
             400 -> ResponseError.BAD_REQUEST
@@ -200,7 +200,20 @@ object Utils {
             404 -> ResponseError.DOES_NOT_EXIST
             429 -> ResponseError.RATE_LIMIT_EXCEEDED
             else -> ResponseError.UNKNOWN
-        }.apply { actualResponse = errorMessage }
+        }.apply {
+            if(errorResponse?.message != null)
+                actualResponse = errorResponse.message
+            else
+                actualResponse = when(e.response.status.value) {
+                    400 -> "Bad Request"
+                    401 -> "Authentication header not found"
+                    403 -> "Unauthorised"
+                    404 -> "Resource does not exist"
+                    429 -> "Rate limit exceeded"
+                    else -> "Unknown error"
+                }
+
+        }
 
         return Resource.failure(error = error)
     }
