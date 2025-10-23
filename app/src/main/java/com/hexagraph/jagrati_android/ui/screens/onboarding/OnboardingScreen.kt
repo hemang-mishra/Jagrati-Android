@@ -73,30 +73,6 @@ fun OnboardingScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            if (currentPage != OnboardingPage.Welcome) {
-                CenterAlignedTopAppBar(
-                    title = { },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            when (currentPage) {
-                                OnboardingPage.Management -> currentPage = OnboardingPage.Welcome
-                                OnboardingPage.Attendance -> currentPage = OnboardingPage.Management
-                                else -> {} // No back navigation for Welcome page
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background
-                    )
-                )
-            }
-        }
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -124,11 +100,11 @@ fun OnboardingScreen(
                             LandscapeOnboardingContent(
                                 title = "Welcome to",
                                 highlight = "Jagrati",
-                                description = "Empowering education and creating meaningful change in rural communities through the dedication of IIITDM Jabalpur students.",
+                                description = "More than an initiative,a promise. To learn, to share, and to keep the light of education alive in every home we reach.",
                                 buttonText = "Get Started",
                                 currentStep = 1,
                                 totalSteps = 3,
-                                showLearnMore = true,
+                                showLearnMore = false,
                                 onNextClick = { currentPage = OnboardingPage.Management },
                                 modifier = Modifier
                             )
@@ -136,11 +112,11 @@ fun OnboardingScreen(
                             PortraitOnboardingContent(
                                 title = "Welcome to",
                                 highlight = "Jagrati",
-                                description = "Empowering education and creating meaningful change in rural communities through the dedication of IIITDM Jabalpur students.",
+                                description = "More than an initiative, a promise. To learn, to share, and to keep the light of education alive in every home we reach.",
                                 buttonText = "Get Started",
                                 currentStep = 1,
                                 totalSteps = 3,
-                                showLearnMore = true,
+                                showLearnMore = false,
                                 onNextClick = { currentPage = OnboardingPage.Management },
                                 isTablet = isTablet
                             )
