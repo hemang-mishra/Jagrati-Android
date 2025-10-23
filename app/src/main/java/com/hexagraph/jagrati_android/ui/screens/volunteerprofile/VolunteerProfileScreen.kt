@@ -162,7 +162,7 @@ fun VolunteerProfileLayout(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    VolunteerProfileShimmerLoading()
                 }
             } else if (uiState.volunteer != null) {
                 LazyColumn(

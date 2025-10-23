@@ -342,7 +342,7 @@ fun VolunteerRegistrationScreenLayout(
 
                     // Contact Number
                     FormField(
-                        label = "Contact Number",
+                        label = "WhatsApp Number",
                         value = uiState.contactNumber,
                         onValueChange = onContactNumberChanged,
                         error = uiState.formErrors["contactNumber"],

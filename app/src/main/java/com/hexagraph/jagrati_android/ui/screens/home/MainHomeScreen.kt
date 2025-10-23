@@ -1,5 +1,6 @@
 package com.hexagraph.jagrati_android.ui.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.ImageKitResponse
 import com.hexagraph.jagrati_android.model.User
+import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.ui.components.DrawerDivider
 import com.hexagraph.jagrati_android.ui.components.DrawerHeader
 import com.hexagraph.jagrati_android.ui.components.DrawerItem
@@ -78,18 +80,44 @@ fun MainHomeScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var selectedBottomNavItem by rememberSaveable { mutableIntStateOf(0) }
+    var hasAttendancePermission: Boolean by rememberSaveable { mutableStateOf(false) }
+    var hasStudentRegistrationPermission: Boolean by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(key1 = Unit) {
-        appPreferences.userDetails.getFlow().collect {
-            userData = it
+        launch {
+            appPreferences.userDetails.getFlow().collect {
+                Log.d("MainHomeScreen", "User Data: $it")
+                userData = it
+            }
+        }
+        launch {
+            appPreferences.hasPermission(AllPermissions.ATTENDANCE_MARK_STUDENT).collect {
+                Log.d("MainHomeScreen", "Attendance Permission Student: $it")
+                if (it)
+                    hasAttendancePermission = true
+            }
+        }
+        launch {
+            appPreferences.hasPermission(AllPermissions.ATTENDANCE_MARK_VOLUNTEER).collect {
+                Log.d("MainHomeScreen", "Attendance Permission Volunteer: $it")
+                if (it) hasAttendancePermission = true
+            }
+        }
+        launch {
+            appPreferences.hasPermission(AllPermissions.STUDENT_CREATE)
+                .collect {
+                    Log.d("MainHomeScreen", "Student Registration Permission: $it")
+                    if (it) hasStudentRegistrationPermission = true
+                }
         }
     }
 
     ModalNavigationDrawer(
         drawerState = drawerState, drawerContent = {
-            ModalDrawerSheet(
-            ) {
+            ModalDrawerSheet {
                 DrawerContent(
+                    hasAttendancePermission = hasAttendancePermission,
+                    hasStudentRegistrationPermission = hasStudentRegistrationPermission,
                     userName = userData?.firstName ?: "User",
                     userEmail = userData?.email,
                     profileImageUrl = userData?.photoUrl,
@@ -173,6 +201,8 @@ fun MainHomeScreen(
 fun DrawerContent(
     userName: String,
     userEmail: String?,
+    hasStudentRegistrationPermission: Boolean,
+    hasAttendancePermission: Boolean,
     profileImageUrl: String?,
     onManagementClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -197,14 +227,14 @@ fun DrawerContent(
 
         DrawerItem(
             label = "Management",
-            icon = R.drawable.ic_management,
+            icon = R.drawable.ic_management_rounded,
             onClick = onManagementClick,
             colorIndex = 0
         )
 
         DrawerItem(
             label = "Settings",
-            icon = R.drawable.ic_settings,
+            icon = R.drawable.ic_settings_rounded,
             onClick = onSettingsClick,
             colorIndex = 1
         )
@@ -215,41 +245,48 @@ fun DrawerContent(
 
         DrawerItem(
             label = "Student List",
-            icon = R.drawable.ic_person,
+            icon = R.drawable.ic_person_rounded,
             onClick = onStudentListClick,
             colorIndex = 2
         )
 
         DrawerItem(
             label = "Volunteer List",
-            icon = R.drawable.ic_person,
+            icon = R.drawable.ic_person_rounded,
             onClick = onVolunteerListClick,
             colorIndex = 3
         )
 
-        DrawerDivider()
 
-        DrawerSectionHeader(title = "ATTENDANCE & REGISTRATION")
+        if (hasAttendancePermission || hasStudentRegistrationPermission) {
 
-        DrawerItem(
-            label = "Take Attendance",
-            icon = R.drawable.ic_attendance,
-            onClick = onTakeStudentAttendanceClick,
-            colorIndex = 3
-        )
+            DrawerDivider()
+            DrawerSectionHeader(title = "ATTENDANCE & REGISTRATION")
+        }
 
-        DrawerItem(
-            label = "Register New Student",
-            icon = R.drawable.ic_person_add,
-            onClick = onRegisterNewStudentClick,
-            colorIndex = 4
-        )
+        if (hasAttendancePermission) {
+            DrawerItem(
+                label = "Take Attendance",
+                icon = R.drawable.ic_camera,
+                onClick = onTakeStudentAttendanceClick,
+                colorIndex = 3
+            )
+        }
+
+        if (hasStudentRegistrationPermission) {
+            DrawerItem(
+                label = "Register New Student",
+                icon = R.drawable.ic_person_add_rounded,
+                onClick = onRegisterNewStudentClick,
+                colorIndex = 4
+            )
+        }
 
         DrawerDivider()
 
         DrawerItem(
             label = "Log out",
-            icon = R.drawable.ic_logout,
+            icon = R.drawable.ic_logout_rounded,
             onClick = onLogoutClick,
             iconTint = MaterialTheme.colorScheme.error,
             colorIndex = 0
@@ -370,6 +407,8 @@ fun DrawerContentPreview() {
         DrawerContent(
             userName = "John Doe",
             userEmail = "john.doe@example.com",
+            hasAttendancePermission = true,
+            hasStudentRegistrationPermission = true,
             profileImageUrl = null,
             onManagementClick = {},
             onSettingsClick = {},
