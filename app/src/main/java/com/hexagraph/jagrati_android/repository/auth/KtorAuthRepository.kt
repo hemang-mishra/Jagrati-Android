@@ -15,9 +15,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.plugin
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /**
  * Implementation of AuthRepository using Spring Boot backend with Ktor client.
@@ -194,13 +196,12 @@ class KtorAuthRepository(
     }
 
     override suspend fun signOut() {
-        // Clear all database tables at once
-        database.clearAll()
+        withContext(Dispatchers.Default) {
+            database.clearAll()
+        }
 
-        // Clear tokens and user info from DataStore
         appPreferences.clearAll()
 
-        // Clear auth tokens from HTTP client
         refreshTokens()
     }
 

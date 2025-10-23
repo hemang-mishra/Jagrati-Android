@@ -368,8 +368,7 @@ class AttendanceMarkingViewModel(
                             withContext(Dispatchers.Main) {
                                 onSuccess()
                             }
-                            dismissBottomSheet()
-                            retakePhoto()
+                            dismissBottomSheetAndRetakePhoto()
                         } else if (response?.skippedExisting == 1) {
                             emitError(ResponseError.BAD_REQUEST.apply {
                                 actualResponse = "Attendance already marked for this date"
@@ -415,8 +414,9 @@ class AttendanceMarkingViewModel(
         _isCameraActive.update { false }
         semaphore.tryAcquire() // Clear any pending operations
     }
-    fun dismissBottomSheet() {
+    fun dismissBottomSheetAndRetakePhoto() {
         _showBottomSheet.update { false }
+        retakePhoto()
     }
 
     fun updateCapturedImage(image: ProcessedImage) {

@@ -4,12 +4,16 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -24,13 +28,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -45,11 +50,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 enum class OnboardingPage {
     Welcome,
-    Management,
-    Attendance
+    Features
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,8 +71,7 @@ fun OnboardingScreen(
 
     BackHandler(enabled = currentPage != OnboardingPage.Welcome) {
         when (currentPage) {
-            OnboardingPage.Management -> currentPage = OnboardingPage.Welcome
-            OnboardingPage.Attendance -> currentPage = OnboardingPage.Management
+            OnboardingPage.Features -> currentPage = OnboardingPage.Welcome
             else -> {}
         }
     }
@@ -74,6 +79,9 @@ fun OnboardingScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
     ) { paddingValues ->
+        // Animated gradient background
+        AnimatedGradientBackground()
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -85,11 +93,17 @@ fun OnboardingScreen(
                     val direction = if (targetState.ordinal > initialState.ordinal) 1 else -1
                     slideInHorizontally(
                         initialOffsetX = { fullWidth -> direction * fullWidth },
-                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
-                    ) + fadeIn(animationSpec = tween(300)) togetherWith
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
+                    ) + fadeIn(animationSpec = tween(400)) togetherWith
                     slideOutHorizontally(
                         targetOffsetX = { fullWidth -> -direction * fullWidth },
-                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessLow
+                        )
                     ) + fadeOut(animationSpec = tween(300))
                 },
                 label = "Onboarding Pages",
@@ -100,12 +114,12 @@ fun OnboardingScreen(
                             LandscapeOnboardingContent(
                                 title = "Welcome to",
                                 highlight = "Jagrati",
-                                description = "More than an initiative,a promise. To learn, to share, and to keep the light of education alive in every home we reach.",
+                                description = "More than an initiative, a promise. To learn, to share, and to keep the light of education alive in every home we reach.",
                                 buttonText = "Get Started",
                                 currentStep = 1,
-                                totalSteps = 3,
-                                showLearnMore = false,
-                                onNextClick = { currentPage = OnboardingPage.Management },
+                                totalSteps = 2,
+                                showLearnMore = true,
+                                onNextClick = { currentPage = OnboardingPage.Features },
                                 modifier = Modifier
                             )
                         } else {
@@ -115,51 +129,22 @@ fun OnboardingScreen(
                                 description = "More than an initiative, a promise. To learn, to share, and to keep the light of education alive in every home we reach.",
                                 buttonText = "Get Started",
                                 currentStep = 1,
-                                totalSteps = 3,
-                                showLearnMore = false,
-                                onNextClick = { currentPage = OnboardingPage.Management },
+                                totalSteps = 2,
+                                showLearnMore = true,
+                                onNextClick = { currentPage = OnboardingPage.Features },
                                 isTablet = isTablet
                             )
                         }
                     }
-                    OnboardingPage.Management -> {
+                    OnboardingPage.Features -> {
                         if (isLandscape && !isTablet) {
                             LandscapeOnboardingContent(
-                                title = "Easy",
-                                highlight = "Management",
-                                description = "Seamless onboarding, event participation, and secure profile access for volunteers.",
-                                buttonText = "Continue",
+                                title = "Powerful Features",
+                                highlight = "All in One Place",
+                                description = "Smart facial recognition attendance, seamless volunteer management, secure profile access, event participation, and real-time progress tracking.",
+                                buttonText = "Let's Begin",
                                 currentStep = 2,
-                                totalSteps = 3,
-                                showLearnMore = false,
-                                onNextClick = { currentPage = OnboardingPage.Attendance },
-                                showNextIcon = true,
-                                modifier = Modifier
-                            )
-                        } else {
-                            PortraitOnboardingContent(
-                                title = "Easy",
-                                highlight = "Management",
-                                description = "Seamless onboarding, event participation, and secure profile access for volunteers.",
-                                buttonText = "Continue",
-                                currentStep = 2,
-                                totalSteps = 3,
-                                showLearnMore = false,
-                                onNextClick = { currentPage = OnboardingPage.Attendance },
-                                showNextIcon = true,
-                                isTablet = isTablet
-                            )
-                        }
-                    }
-                    OnboardingPage.Attendance -> {
-                        if (isLandscape && !isTablet) {
-                            LandscapeOnboardingContent(
-                                title = "Smart",
-                                highlight = "Attendance",
-                                description = "Facial recognition, progress tracking, and leaderboards boost volunteer motivation.",
-                                buttonText = "Get Started",
-                                currentStep = 3,
-                                totalSteps = 3,
+                                totalSteps = 2,
                                 showLearnMore = false,
                                 onNextClick = onCompleteOnboarding,
                                 showNextIcon = true,
@@ -167,12 +152,12 @@ fun OnboardingScreen(
                             )
                         } else {
                             PortraitOnboardingContent(
-                                title = "Smart",
-                                highlight = "Attendance",
-                                description = "Facial recognition, progress tracking, and leaderboards boost volunteer motivation.",
-                                buttonText = "Get Started",
-                                currentStep = 3,
-                                totalSteps = 3,
+                                title = "Powerful Features",
+                                highlight = "All in One Place",
+                                description = "Smart facial recognition attendance, seamless volunteer management, secure profile access, event participation, and real-time progress tracking.",
+                                buttonText = "Let's Begin",
+                                currentStep = 2,
+                                totalSteps = 2,
                                 showLearnMore = false,
                                 onNextClick = onCompleteOnboarding,
                                 showNextIcon = true,
@@ -184,6 +169,34 @@ fun OnboardingScreen(
             }
         }
     }
+}
+
+@Composable
+private fun AnimatedGradientBackground() {
+    val infiniteTransition = rememberInfiniteTransition(label = "gradient")
+    val offset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(8000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "gradient offset"
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.03f * offset),
+                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.05f * (1 - offset)),
+                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.02f * offset)
+                    )
+                )
+            )
+    )
 }
 
 @Composable
@@ -202,51 +215,98 @@ private fun PortraitOnboardingContent(
 ) {
     val scrollState = rememberScrollState()
 
-    // Animate content entry
-    val contentAlpha by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 500),
-        label = "Content Alpha"
-    )
+    // Staggered animations for each element
+    var animationsStarted by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        animationsStarted = true
+    }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(scrollState)
-            .padding(horizontal = if (isTablet) 48.dp else 24.dp)
-            .graphicsLayer(alpha = contentAlpha),
+            .padding(horizontal = if (isTablet) 48.dp else 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(if (isTablet) 48.dp else 24.dp))
+        Spacer(modifier = Modifier.height(if (isTablet) 48.dp else 32.dp))
 
-        // Progress indicator
-        ProgressIndicator(currentStep = currentStep, totalSteps = totalSteps)
+        // Progress indicator with delay
+        AnimatedElement(delay = 0, animationsStarted = animationsStarted) {
+            ProgressIndicator(currentStep = currentStep, totalSteps = totalSteps)
+        }
 
         Spacer(modifier = Modifier.height(if (isTablet) 48.dp else 32.dp))
 
-        // Hero content card
-        HeroContentCard(
-            title = title,
-            highlight = highlight,
-            description = description,
-            isTablet = isTablet,
-            modifier = Modifier.fillMaxWidth()
-        )
+        // Hero content card with delay
+        AnimatedElement(delay = 100, animationsStarted = animationsStarted) {
+            HeroContentCard(
+                title = title,
+                highlight = highlight,
+                description = description,
+                isTablet = isTablet,
+                currentStep = currentStep,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Action buttons
-        ActionButtons(
-            buttonText = buttonText,
-            onNextClick = onNextClick,
-            showLearnMore = showLearnMore,
-            showNextIcon = showNextIcon,
-            isTablet = isTablet,
-            modifier = Modifier.fillMaxWidth()
-        )
+        // Action buttons with delay
+        AnimatedElement(delay = 200, animationsStarted = animationsStarted) {
+            ActionButtons(
+                buttonText = buttonText,
+                onNextClick = onNextClick,
+                showLearnMore = showLearnMore,
+                showNextIcon = showNextIcon,
+                isTablet = isTablet,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         Spacer(modifier = Modifier.height(if (isTablet) 48.dp else 32.dp))
+    }
+}
+
+@Composable
+private fun AnimatedElement(
+    delay: Long,
+    animationsStarted: Boolean,
+    content: @Composable () -> Unit
+) {
+    val alpha = remember { Animatable(0f) }
+    val offsetY = remember { Animatable(30f) }
+
+    LaunchedEffect(animationsStarted) {
+        if (animationsStarted) {
+            delay(delay)
+            launch {
+                alpha.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(durationMillis = 600, easing = FastOutSlowInEasing)
+                )
+            }
+            launch {
+                offsetY.animateTo(
+                    targetValue = 0f,
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                )
+            }
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .graphicsLayer {
+                this.alpha = alpha.value
+                translationY = offsetY.value
+            }
+    ) {
+        content()
     }
 }
 
@@ -263,18 +323,16 @@ private fun LandscapeOnboardingContent(
     showNextIcon: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    // Animate content entry
-    val contentAlpha by animateFloatAsState(
-        targetValue = 1f,
-        animationSpec = tween(durationMillis = 500),
-        label = "Content Alpha"
-    )
+    var animationsStarted by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        animationsStarted = true
+    }
 
     Row(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp)
-            .graphicsLayer(alpha = contentAlpha),
+            .padding(24.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Left side - Content
@@ -284,53 +342,65 @@ private fun LandscapeOnboardingContent(
                 .padding(end = 24.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            ProgressIndicator(currentStep = currentStep, totalSteps = totalSteps)
+            AnimatedElement(delay = 0, animationsStarted = animationsStarted) {
+                ProgressIndicator(currentStep = currentStep, totalSteps = totalSteps)
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-            )
+            AnimatedElement(delay = 100, animationsStarted = animationsStarted) {
+                Column {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
 
-            Text(
-                text = highlight,
-                style = MaterialTheme.typography.displaySmall.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colorScheme.primary
-            )
+                    Text(
+                        text = highlight,
+                        style = MaterialTheme.typography.displaySmall.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
-                lineHeight = 24.sp
-            )
+            AnimatedElement(delay = 200, animationsStarted = animationsStarted) {
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
+                    lineHeight = 26.sp
+                )
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            ActionButtons(
-                buttonText = buttonText,
-                onNextClick = onNextClick,
-                showLearnMore = showLearnMore,
-                showNextIcon = showNextIcon,
-                isTablet = false,
-                modifier = Modifier.fillMaxWidth(0.8f)
-            )
+            AnimatedElement(delay = 300, animationsStarted = animationsStarted) {
+                ActionButtons(
+                    buttonText = buttonText,
+                    onNextClick = onNextClick,
+                    showLearnMore = showLearnMore,
+                    showNextIcon = showNextIcon,
+                    isTablet = false,
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                )
+            }
         }
 
         // Right side - Image
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .aspectRatio(1f),
-            contentAlignment = Alignment.Center
-        ) {
-            HeroImage(isTablet = false)
+        AnimatedElement(delay = 150, animationsStarted = animationsStarted) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .aspectRatio(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                HeroImage(isTablet = false)
+            }
         }
     }
 }
@@ -341,84 +411,171 @@ private fun HeroContentCard(
     highlight: String,
     description: String,
     isTablet: Boolean,
+    currentStep: Int,
     modifier: Modifier = Modifier
 ) {
+    // Subtle pulsing animation for the card
+    val scale = remember { Animatable(0.95f) }
+
+    LaunchedEffect(Unit) {
+        scale.animateTo(
+            targetValue = 1f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            )
+        )
+    }
+
     Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(24.dp),
+        modifier = modifier.scale(scale.value),
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 12.dp
+        )
     ) {
-        Column(
-            modifier = Modifier.padding(if (isTablet) 32.dp else 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Hero Image
-            HeroImage(isTablet = isTablet)
-
-            Spacer(modifier = Modifier.height(if (isTablet) 32.dp else 24.dp))
-
-            // Title with gradient effect
-            Text(
-                text = title,
-                style = if (isTablet) MaterialTheme.typography.headlineMedium
-                else MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                textAlign = TextAlign.Center
+        Box {
+            // Decorative gradient overlay
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                Color.Transparent
+                            )
+                        )
+                    )
             )
 
-            Text(
-                text = highlight,
-                style = if (isTablet) MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold)
-                else MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                modifier = Modifier.padding(if (isTablet) 40.dp else 28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Hero Image
+                HeroImage(isTablet = isTablet)
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(if (isTablet) 32.dp else 24.dp))
 
-            // Enhanced description
-            Text(
-                text = description,
-                style = if (isTablet) MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp)
-                else MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f),
-                lineHeight = if (isTablet) 26.sp else 24.sp,
-                modifier = Modifier.padding(horizontal = if (isTablet) 16.dp else 8.dp)
-            )
+                // Title
+                Text(
+                    text = title,
+                    style = if (isTablet) MaterialTheme.typography.headlineMedium
+                    else MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center
+                )
 
-            Spacer(modifier = Modifier.height(if (isTablet) 24.dp else 16.dp))
+                // Highlighted text with gradient-like effect
+                Text(
+                    text = highlight,
+                    style = if (isTablet) MaterialTheme.typography.displayMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.5).sp
+                    )
+                    else MaterialTheme.typography.displaySmall.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = (-0.5).sp
+                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Divider for visual separation
+                Divider(
+                    modifier = Modifier
+                        .width(60.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    thickness = 3.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Description
+                Text(
+                    text = description,
+                    style = if (isTablet) MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp)
+                    else MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f),
+                    lineHeight = if (isTablet) 28.sp else 26.sp,
+                    modifier = Modifier.padding(horizontal = if (isTablet) 24.dp else 8.dp)
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun HeroImage(isTablet: Boolean) {
+    // Floating animation for the image
+    val infiniteTransition = rememberInfiniteTransition(label = "float")
+    val floatOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "float"
+    )
+
     Box(
         modifier = Modifier
             .size(if (isTablet) 280.dp else 220.dp)
-            .clip(CircleShape)
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.05f)
-                    )
-                )
-            ),
+            .graphicsLayer {
+                translationY = floatOffset
+            },
         contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground), // Replace with actual onboarding image
-            contentDescription = "Onboarding Illustration",
+        // Outer glow effect
+        Box(
             modifier = Modifier
-                .size(if (isTablet) 240.dp else 180.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
+                .size(if (isTablet) 300.dp else 240.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.08f),
+                            Color.Transparent
+                        )
+                    )
+                )
         )
+
+        // Main image container
+        Box(
+            modifier = Modifier
+                .size(if (isTablet) 280.dp else 220.dp)
+                .clip(CircleShape)
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f)
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = "Jagrati Logo",
+                modifier = Modifier
+                    .size(if (isTablet) 240.dp else 180.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
     }
 }
 
@@ -429,25 +586,46 @@ private fun ProgressIndicator(
 ) {
     Row(
         horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         repeat(totalSteps) { index ->
             val isActive = index < currentStep
+            val isPast = index < currentStep - 1
 
-            // Animate the size of the indicators
-            val size by animateDpAsState(
-                targetValue = if (isActive) 12.dp else 8.dp,
-                animationSpec = tween(durationMillis = 300),
-                label = "Indicator Size"
+            // Animate the width of active indicator
+            val width by animateDpAsState(
+                targetValue = when {
+                    isActive && !isPast -> 32.dp
+                    isPast -> 12.dp
+                    else -> 10.dp
+                },
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                ),
+                label = "Indicator Width"
+            )
+
+            val height by animateDpAsState(
+                targetValue = if (isActive) 10.dp else 8.dp,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessMedium
+                ),
+                label = "Indicator Height"
             )
 
             Surface(
                 modifier = Modifier
-                    .size(size)
+                    .width(width)
+                    .height(height)
                     .padding(horizontal = 4.dp),
-                shape = CircleShape,
-                color = if (isActive) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                shape = RoundedCornerShape(8.dp),
+                color = when {
+                    isActive -> MaterialTheme.colorScheme.primary
+                    else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                }
             ) {}
         }
     }
@@ -463,8 +641,17 @@ private fun ActionButtons(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var isPressed by remember { mutableStateOf(false) }
 
-    // Function to open a URL in the browser
+    val buttonScale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessHigh
+        ),
+        label = "button scale"
+    )
+
     val openUrl = { url: String ->
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         context.startActivity(intent)
@@ -475,42 +662,54 @@ private fun ActionButtons(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(
-            onClick = onNextClick,
+            onClick = {
+                isPressed = true
+                onNextClick()
+            },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(if (isTablet) 56.dp else 48.dp),
-            shape = RoundedCornerShape(if (isTablet) 16.dp else 12.dp),
+                .height(if (isTablet) 64.dp else 56.dp)
+                .scale(buttonScale),
+            shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = 8.dp,
+                pressedElevation = 12.dp
             )
         ) {
             Text(
                 text = buttonText,
-                style = if (isTablet) MaterialTheme.typography.titleMedium
-                else MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
+                style = if (isTablet) MaterialTheme.typography.titleLarge
+                else MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.5.sp
             )
 
             if (showNextIcon) {
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
                 Icon(
                     imageVector = Icons.Default.ArrowForward,
-                    contentDescription = "Next"
+                    contentDescription = "Next",
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
 
         if (showLearnMore) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
-                onClick = { openUrl("https://jagrati.iiitdmj.ac.in/") }
+                onClick = { openUrl("https://jagrati.iiitdmj.ac.in/") },
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = "Learn More About Jagrati",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
                 )
             }
         }
