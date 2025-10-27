@@ -14,7 +14,7 @@ interface OmniScanRepository {
 
     fun cameraSelector(lensFacing: Int): CameraSelector
 
-    suspend fun saveFaceLocally(image: ProcessedImage): Result<Unit>
+    suspend fun saveFaceLocally(image: ProcessedImage, isStudent: Boolean): Result<Unit>
 
     fun imageAnalyzer(lensFacing: Int, paint: Paint, cameraExecutor: Executor, onFaceInfo: (Result<ProcessedImage>) -> Unit): ImageAnalysis.Analyzer
 

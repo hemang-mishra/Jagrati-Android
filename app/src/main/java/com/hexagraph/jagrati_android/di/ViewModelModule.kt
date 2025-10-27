@@ -64,7 +64,7 @@ val viewModelModule = module {
     factory { VolunteerListViewModel(get()) }
 
     // Search ViewModels
-    factory { UnifiedSearchViewModel(get(), get(), get(), get(), get()) }
+    factory {(hasVolunteerAttendancePerms: Boolean, isMarkingAttendance: Boolean)-> UnifiedSearchViewModel(get(), get(), get(), get(), get(), hasVolunteerAttendancePerms, isMarkingAttendance) }
 
     // Student management ViewModels
     factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), get(), get(), pid) }
@@ -83,7 +83,7 @@ val viewModelModule = module {
 
     factory { MyProfileViewModel(get(), get(), get()) }
 
-    factory { AttendanceMarkingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { (isSearching: Boolean)-> AttendanceMarkingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(),get(), isSearching) }
     factory { (pid: String) -> FaceDataRegisterViewModel(get(),  get(), get(), get(), get(),get(),get(),get(),pid) }
     factory { AttendanceReportViewModel(get(), get(), get(), get()) } // AttendanceRepository, AppPreferences, StudentDao, VolunteerDao
     factory { (pid: String, isStudent: Boolean) -> AttendanceViewModel(pid, isStudent, get(), get(), get()) }

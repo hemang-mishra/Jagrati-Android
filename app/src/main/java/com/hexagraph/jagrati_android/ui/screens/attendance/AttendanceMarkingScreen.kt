@@ -159,7 +159,8 @@ fun AttendanceMarkingScreen(
         },
         stopFaceDetection = {
             viewModel.stopFaceDetection()
-        }
+        },
+        isSearching = isSearching
     )
 }
 
@@ -167,6 +168,7 @@ fun AttendanceMarkingScreen(
 @Composable
 fun AttendanceMarkingScreenLayout(
     uiState: AttendanceMarkingUiState,
+    isSearching: Boolean,
     snackbarHostState: SnackbarHostState,
     onNavigateBack: () -> Unit,
     onCapture: () -> Unit,
@@ -259,7 +261,7 @@ fun AttendanceMarkingScreenLayout(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Mark Attendance",
+                            text = if(isSearching) "Search" else "Mark Attendance",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )

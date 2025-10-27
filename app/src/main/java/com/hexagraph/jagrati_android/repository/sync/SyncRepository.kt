@@ -55,7 +55,8 @@ class SyncRepository(
                 "Synching Face Data",
                 "Downloading and processing face data in background!",
                 channelId = NotificationChannels.SYNC,
-                showIndeterminateProgress = true
+                showIndeterminateProgress = true,
+                saveToDatabase = false
             )
             Log.d("SyncRepository", "Starting face data sync...")
             data.students.forEach { studentDto ->
@@ -73,8 +74,9 @@ class SyncRepository(
                         omniScanRepository.saveFaceLocally(
                             it.copy(
                                 pid = studentDto.pid,
-                                name = studentDto.firstName
-                            )
+                                name = studentDto.firstName,
+                            ),
+                            isStudent = true
                         )
                     }
                 }
@@ -96,7 +98,8 @@ class SyncRepository(
                             it.copy(
                                 pid = volunteerDto.pid,
                                 name = volunteerDto.firstName
-                            )
+                            ),
+                            isStudent = false
                         )
                     }
                 }

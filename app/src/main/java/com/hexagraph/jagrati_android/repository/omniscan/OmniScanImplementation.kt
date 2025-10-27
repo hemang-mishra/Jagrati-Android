@@ -24,6 +24,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.hexagraph.jagrati_android.model.Student
 import com.hexagraph.jagrati_android.model.dao.EmbeddingsDAO
 import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
@@ -54,7 +55,7 @@ class OmniScanImplementation @Inject constructor(
     private val semaphore = Semaphore(1)
 
 
-    override suspend fun saveFaceLocally(image: ProcessedImage) = runCatching {
+    override suspend fun saveFaceLocally(image: ProcessedImage, isStudent: Boolean) = runCatching {
         val info = image.faceInfo
         val imagePids = faceInfoDao.facePIDsList()
         if (image.faceBitmap == null) throw Throwable("Face is empty")
@@ -66,7 +67,7 @@ class OmniScanImplementation @Inject constructor(
         image.faceBitmap.let { application.writeBitmapIntoFile(info.faceFileName, it).getOrNull() }
         image.frame?.let { application.writeBitmapIntoFile(info.frameFileName, it).getOrNull() }
         image.image?.let { application.writeBitmapIntoFile(info.imageFileName, it).getOrNull() }
-        faceInfoDao.insert(info)
+        faceInfoDao.insert(info.copy(isStudent = isStudent))
     }.onFailure {
         Log.e("MediaUtils", it.message ?: "Error while saving face")
     }

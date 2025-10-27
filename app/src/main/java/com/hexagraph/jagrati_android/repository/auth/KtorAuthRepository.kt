@@ -2,7 +2,7 @@ package com.hexagraph.jagrati_android.repository.auth
 
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.FirebaseMessagingService
+import com.hexagraph.jagrati_android.BuildConfig
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.model.User
@@ -14,6 +14,8 @@ import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
 import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
 import com.hexagraph.jagrati_android.model.village.StringRequest
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.FirbaseAuthJwtUtils
+import com.hexagraph.jagrati_android.util.Utils
 import com.hexagraph.jagrati_android.util.Utils.safeApiCall
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.Auth
@@ -86,6 +88,15 @@ class KtorAuthRepository(
 
     override suspend fun signInWithGoogle(idToken: String): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
+
+        // Decode the ID token to extract user information
+        val tokenPayload = FirbaseAuthJwtUtils.decodeJwtToken(idToken)
+        Log.d("KtorAuthRepository", "Google ID Token payload: $tokenPayload")
+        if(tokenPayload?.email?.let { Utils.isCollegeEmailId(it) } == false){
+            emit(AuthResult.Error("Please use your college email ID to sign in."))
+            return@flow
+        }
+
         val deviceToken = FirebaseMessaging.getInstance().token.await()
         val googleLoginRequest = GoogleLoginRequest(idToken = idToken, deviceToken = deviceToken)
         val response = safeApiCall { authService.loginWithGoogle(googleLoginRequest) }

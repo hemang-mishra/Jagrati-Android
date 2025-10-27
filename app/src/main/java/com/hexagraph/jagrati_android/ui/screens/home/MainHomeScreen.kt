@@ -309,7 +309,10 @@ fun DrawerContent(
  */
 @Composable
 fun BottomNavigationBar(
-    selectedItem: Int, onItemSelected: (Int) -> Unit, modifier: Modifier = Modifier
+    selectedItem: Int,
+    onItemSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    showLabels: Boolean = true
 ) {
     NavigationBar(
         modifier = modifier,
@@ -326,7 +329,7 @@ fun BottomNavigationBar(
                     modifier = Modifier.size(20.dp),
                     contentDescription = "Home"
                 )
-            }, label = { Text("Home") }, alwaysShowLabel = true
+            }, label = { Text("Home") }, alwaysShowLabel = showLabels
         )
 
         NavigationBarItem(
@@ -339,7 +342,7 @@ fun BottomNavigationBar(
                     modifier = Modifier.size(20.dp),
                     contentDescription = "Attendance"
                 )
-            }, label = { Text("Attendance") }, alwaysShowLabel = true
+            }, label = { Text("Attendance") }, alwaysShowLabel = showLabels
         )
 
         NavigationBarItem(
@@ -352,7 +355,7 @@ fun BottomNavigationBar(
                     modifier = Modifier.size(20.dp),
                     contentDescription = "Syllabus"
                 )
-            }, label = { Text("Syllabus") }, alwaysShowLabel = true
+            }, label = { Text("Syllabus") }, alwaysShowLabel = showLabels
         )
 
         NavigationBarItem(
@@ -365,7 +368,7 @@ fun BottomNavigationBar(
                     modifier = Modifier.size(20.dp),
                     contentDescription = "Profile"
                 )
-            }, label = { Text("Profile") }, alwaysShowLabel = true
+            }, label = { Text("Profile") }, alwaysShowLabel = showLabels
         )
     }
 }

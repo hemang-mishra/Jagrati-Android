@@ -2,11 +2,7 @@ package com.hexagraph.jagrati_android.ui.navigation
 
 import android.widget.Toast
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
@@ -15,11 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entry
@@ -33,7 +30,6 @@ import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
 import com.hexagraph.jagrati_android.ui.viewmodels.AppViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingScreen
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingViewModel
-import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportScreen
 import com.hexagraph.jagrati_android.ui.screens.attendanceview.AttendanceViewScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.EmailVerificationScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.ForgotPasswordScreen
@@ -592,13 +588,22 @@ fun AppNavigation(
                         else
                             backstack.add(Screens.NavVolunteerProfileRoute(pid))
                     },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
+                    hasVolunteerAttendancePerms = true,
+                    isMarkingAttendance = false
                 )
             }
 
             entry<Screens.NavUnifiedSearchAttendanceRoute> {
-                val vm = koinViewModel<UnifiedSearchViewModel>()
+                val vm = koinViewModel<UnifiedSearchViewModel>{parametersOf(appViewModel.hasVolunteerAttendanceMarkingPermission)}
                 vm.selectedDateMillis = it.dateMillis
+                val uiState by vm.uiState.collectAsState()
+                LaunchedEffect(uiState.errorMessage) {
+                    if(uiState.errorMessage != null) {
+                        Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_SHORT).show()
+                        vm.clearError()
+                    }
+                }
                 UnifiedSearchScreen(
                     viewModel = vm,
                     onBackPress = {
@@ -609,13 +614,15 @@ fun AppNavigation(
                             Toast.makeText(context, "Attendance marked!!", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
+                    hasVolunteerAttendancePerms = appViewModel.hasVolunteerAttendanceMarkingPermission,
+                    isMarkingAttendance = true
                 )
             }
 
             // Attendance marking screen
             entry<Screens.NavCameraAttendanceMarkingRoute> {
-                val vm = koinViewModel<AttendanceMarkingViewModel>()
+                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(false)}
 
                 AttendanceMarkingScreen(
                     viewModel = vm,
@@ -637,7 +644,7 @@ fun AppNavigation(
             }
 
             entry<Screens.NavCameraSearchRoute>{
-                val vm = koinViewModel<AttendanceMarkingViewModel>()
+                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(true)}
                 AttendanceMarkingScreen(
                     viewModel = vm,
                     onNavigateBack = {

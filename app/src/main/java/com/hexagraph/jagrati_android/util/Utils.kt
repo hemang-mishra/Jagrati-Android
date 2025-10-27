@@ -2,10 +2,7 @@ package com.hexagraph.jagrati_android.util
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.icu.text.SimpleDateFormat
-import android.net.http.HttpException
 import android.os.Build
 import android.util.Log
 import coil3.ImageLoader
@@ -29,10 +26,7 @@ import java.util.Locale
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.serialization.SerializationException
-import com.google.gson.JsonSyntaxException
 import io.ktor.client.call.NoTransformationFoundException
-import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.JsonConvertException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -40,16 +34,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.time.LocalDateTime
 import kotlin.math.min
 import kotlin.math.roundToInt
 import androidx.core.graphics.scale
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.toBitmap
-import kotlin.compareTo
+import com.hexagraph.jagrati_android.BuildConfig
 import kotlin.math.max
 import kotlin.math.sqrt
-import kotlin.times
 
 /**
  * A set of fairly general Android utility methods.
@@ -378,6 +370,11 @@ object Utils {
             Log.e("BitmapCompress", "Final compression failed: ${e.message}")
             null
         }
+    }
+
+    //Allowing debug versions to be treated as college email id
+    fun isCollegeEmailId(email: String): Boolean{
+        return email.endsWith("@iiitdmj.ac.in") || BuildConfig.DEBUG
     }
 }
 

@@ -278,7 +278,8 @@ class FaceDataRegisterViewModel(
 
     private suspend fun saveFaceLocallyAfterServer(processedImage: ProcessedImage, onSuccess: () -> Unit) {
         try {
-            val result = omniScanRepository.saveFaceLocally(processedImage)
+            val isStudent = student != null
+            val result = omniScanRepository.saveFaceLocally(processedImage, isStudent)
             result.onSuccess {
                 emitMsg("Face data saved successfully")
                 _isLoading.update { false }

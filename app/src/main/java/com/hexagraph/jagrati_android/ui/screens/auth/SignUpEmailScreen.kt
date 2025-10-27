@@ -52,6 +52,7 @@ import com.hexagraph.jagrati_android.ui.components.PrimaryButton
 import com.hexagraph.jagrati_android.ui.components.TextLinkButton
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.SignUpViewModel
+import com.hexagraph.jagrati_android.util.Utils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -280,6 +281,12 @@ private fun validateAndNavigate(
             snackbarHostState.showSnackbar("Please enter a valid email address")
         }
         return
+    }
+
+    if (!Utils.isCollegeEmailId(email)) {
+        coroutineScope.launch {
+            snackbarHostState.showSnackbar("Please use your college email ID to sign up")
+        }
     }
 
     navigateToSignUpDetails(email)

@@ -3,6 +3,7 @@ package com.hexagraph.jagrati_android.ui.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
 import com.hexagraph.jagrati_android.util.AppPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,7 @@ class AppViewModel(
     private val _shouldLogout = MutableStateFlow(false)
     val shouldLogout: StateFlow<Boolean> = _shouldLogout.asStateFlow()
     var currentUserPid: String? = null
+    var hasVolunteerAttendanceMarkingPermission: Boolean = false
 
     private var hasInitialToken = false
 
@@ -30,6 +32,9 @@ class AppViewModel(
         viewModelScope.launch {
             appPreferences.userDetails.getFlow().collect {
                 currentUserPid = it?.pid
+            }
+            appPreferences.hasPermission(AllPermissions.ATTENDANCE_MARK_VOLUNTEER).collect {
+                hasVolunteerAttendanceMarkingPermission = it
             }
         }
         monitorRefreshToken()

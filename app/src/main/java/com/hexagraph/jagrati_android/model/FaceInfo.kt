@@ -14,6 +14,7 @@ import com.hexagraph.jagrati_android.util.Utils
 data class FaceInfo(
     @PrimaryKey
     val pid: String = "",
+    val isStudent: Boolean = true,
     val name: String,
     val width: Int = 0,
     val height: Int = 0,
