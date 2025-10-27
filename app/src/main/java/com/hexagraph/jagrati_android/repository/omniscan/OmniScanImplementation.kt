@@ -11,6 +11,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceLandmark
 import com.hexagraph.jagrati_android.model.ProcessedImage
@@ -28,6 +29,7 @@ import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.util.FileUtility.writeBitmapIntoFile
 import com.hexagraph.jagrati_android.util.MediaUtils.bitmap
+import kotlinx.coroutines.sync.Semaphore
 import java.util.concurrent.Executor
 import javax.inject.Inject
 
@@ -48,6 +50,8 @@ class OmniScanImplementation @Inject constructor(
             .build()
         FaceDetection.getClient(options)
     }
+
+    private val semaphore = Semaphore(1)
 
 
     override suspend fun saveFaceLocally(image: ProcessedImage) = runCatching {
@@ -95,12 +99,27 @@ class OmniScanImplementation @Inject constructor(
                 val mediaImage = imageProxy.image ?: throw Throwable("Unable to get Media Image")
                 val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                 val bitmap = imageProxy.bitmap.getOrNull() ?: throw Throwable("Unable to get Bitmap")
-                faceDetector.process(image)
-                    .addOnSuccessListener(cameraExecutor) { onFaceInfo(processImage(lensFacing, it, bitmap, paint)) }
-                    .addOnFailureListener(cameraExecutor) {
-                        Log.e("MediaUtils", it.message ?: "Error while processing image")
-                    }
-                    .addOnCompleteListener { imageProxy.close() }
+                if(semaphore.tryAcquire()) {
+                    val listenExector = ContextCompat.getMainExecutor(application)
+                    faceDetector.process(image)
+                        .addOnSuccessListener(listenExector) {
+                            onFaceInfo(
+                                processImage(
+                                    lensFacing,
+                                    it,
+                                    bitmap,
+                                    paint
+                                )
+                            )
+                        }
+                        .addOnFailureListener(cameraExecutor) {
+                            Log.e("MediaUtils", it.message ?: "Error while processing image")
+                        }
+                        .addOnCompleteListener {
+                            imageProxy.close()
+                            semaphore.release()
+                        }
+                }
             }.onFailure {
                 Log.e("MediaUtils", it.message ?: "Error while processing image")
             }

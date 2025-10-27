@@ -41,18 +41,18 @@ android {
     }
 
     buildTypes {
-//        debug {
-//            applicationIdSuffix = ".debug"
-//            versionNameSuffix = "-debug"
-//        }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            resValue("string", "app_name", "Jagrati Debug")
+        }
         release {
-
-
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            resValue("string", "app_name", "Jagrati")
         }
     }
     compileOptions {
@@ -81,6 +81,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

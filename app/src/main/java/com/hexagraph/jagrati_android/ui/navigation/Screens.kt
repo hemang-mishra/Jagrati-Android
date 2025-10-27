@@ -146,4 +146,7 @@ sealed interface Screens: NavKey {
         val pid: String,
         val isStudent: Boolean
     ): Screens
+
+    @Serializable
+    data object NavNotificationScreen: Screens
 }

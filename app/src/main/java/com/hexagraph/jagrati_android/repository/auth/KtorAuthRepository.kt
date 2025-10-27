@@ -1,5 +1,8 @@
 package com.hexagraph.jagrati_android.repository.auth
 
+import android.util.Log
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.model.User
@@ -9,16 +12,20 @@ import com.hexagraph.jagrati_android.model.auth.LoginRequest
 import com.hexagraph.jagrati_android.model.auth.RegisterRequest
 import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
 import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
+import com.hexagraph.jagrati_android.model.village.StringRequest
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Utils.safeApiCall
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.plugin
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 /**
@@ -44,8 +51,8 @@ class KtorAuthRepository(
         password: String
     ): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
-
-        val loginRequest = LoginRequest(email = email, password = password)
+        val deviceToken = FirebaseMessaging.getInstance().token.await()
+        val loginRequest = LoginRequest(email = email, password = password, deviceToken)
         val response = safeApiCall {
             authService.login(loginRequest)
         }
@@ -79,8 +86,8 @@ class KtorAuthRepository(
 
     override suspend fun signInWithGoogle(idToken: String): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
-
-        val googleLoginRequest = GoogleLoginRequest(idToken = idToken)
+        val deviceToken = FirebaseMessaging.getInstance().token.await()
+        val googleLoginRequest = GoogleLoginRequest(idToken = idToken, deviceToken = deviceToken)
         val response = safeApiCall { authService.loginWithGoogle(googleLoginRequest) }
 
         when {
@@ -199,7 +206,12 @@ class KtorAuthRepository(
         withContext(Dispatchers.Default) {
             database.clearAll()
         }
-
+        //Logout in background as we don't need to wait for response as it not compulsory currently
+        CoroutineScope(Dispatchers.Default).launch {
+            val deviceId = FirebaseMessaging.getInstance().token.await()
+            val response = safeApiCall { authService.logout(StringRequest(deviceId)) }
+            Log.d("KtorAuthRepository", "Logout response: $response")
+        }
         appPreferences.clearAll()
 
         refreshTokens()

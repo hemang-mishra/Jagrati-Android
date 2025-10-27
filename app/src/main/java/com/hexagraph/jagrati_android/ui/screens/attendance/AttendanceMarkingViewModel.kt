@@ -55,6 +55,7 @@ class AttendanceMarkingViewModel(
     private var acceptingCaptureFromCamera = true
 
     private val semaphore = Semaphore(1)
+    private val liveFaceSemaphore = Semaphore(1)
     private var currentDetectionJob: Job? = null
 
     override val uiState: StateFlow<AttendanceMarkingUiState> = createUiStateFlow()
@@ -120,6 +121,7 @@ class AttendanceMarkingViewModel(
     }
 
     private suspend fun recognizeFacesLive(processedImage: ProcessedImage) {
+        if(liveFaceSemaphore.tryAcquire()) {
             try {
                 val facePids = faceInfoDao.facePIDsList()
                 if (facePids.isEmpty() || processedImage.faceBitmap == null) {
@@ -147,6 +149,8 @@ class AttendanceMarkingViewModel(
             } catch (e: Exception) {
                 Log.e("AttendanceMarkingViewModel", "Face recognition failed: ${e.message}")
                 _liveRecognizedFaces.update { emptyList() }
+            }
+            liveFaceSemaphore.release()
         }
     }
 

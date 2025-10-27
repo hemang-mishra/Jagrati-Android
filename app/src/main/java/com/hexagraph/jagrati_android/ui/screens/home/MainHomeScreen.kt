@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DrawerValue
@@ -49,10 +50,12 @@ import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceRepor
 import com.hexagraph.jagrati_android.ui.screens.myprofile.MyProfileScreen
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
+import com.hexagraph.jagrati_android.ui.viewmodels.NotificationViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
+import androidx.compose.runtime.collectAsState
 
 /**
  * Main home screen with bottom navigation, side drawer, and nested navigation.
@@ -74,7 +77,9 @@ fun MainHomeScreen(
     navigateToFullScreenImage: (ImageKitResponse) -> Unit,
     navigateToEditProfile: (String) -> Unit,
     navigateToCameraSearch: () -> Unit,
+    navigateToNotifications: () -> Unit,
     appPreferences: AppPreferences = koinInject(),
+    notificationViewModel: NotificationViewModel = koinViewModel()
 ) {
     var userData by remember { mutableStateOf<User?>(null) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -82,6 +87,8 @@ fun MainHomeScreen(
     var selectedBottomNavItem by rememberSaveable { mutableIntStateOf(0) }
     var hasAttendancePermission: Boolean by rememberSaveable { mutableStateOf(false) }
     var hasStudentRegistrationPermission: Boolean by rememberSaveable { mutableStateOf(false) }
+
+    val notificationState by notificationViewModel.uiState.collectAsState()
 
     LaunchedEffect(key1 = Unit) {
         launch {
@@ -165,11 +172,14 @@ fun MainHomeScreen(
                 when (selectedBottomNavItem) {
                     0 -> HomeContentScreen(
                         userName = userData?.firstName ?: "User",
+                        notificationCount = notificationState.unreadCount,
                         onSearchClick = onSearchClick,
                         onOpenDrawer = { scope.launch { drawerState.open() } },
                         onTakeAttendanceClick = navigateToAttendanceMarking,
                         onRegisterStudentClick = navigateToStudentRegistrationScreen,
-                        onSearchByCameraClick = { navigateToCameraSearch() })
+                        onSearchByCameraClick = { navigateToCameraSearch() },
+                        onNotificationClick = navigateToNotifications
+                    )
 
                     1 -> AttendanceReportScreen(
                         onNavigateToStudentProfile = navigateToStudentProfile,
@@ -309,7 +319,11 @@ fun BottomNavigationBar(
         NavigationBarItem(
             selected = selectedItem == 0, onClick = { onItemSelected(0) }, icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_home_filled),
+                    painter = painterResource(
+                        id = if (selectedItem == 0) R.drawable.ic_home_filled
+                        else R.drawable.ic_home_outlined
+                    ),
+                    modifier = Modifier.size(20.dp),
                     contentDescription = "Home"
                 )
             }, label = { Text("Home") }, alwaysShowLabel = true
@@ -318,7 +332,11 @@ fun BottomNavigationBar(
         NavigationBarItem(
             selected = selectedItem == 1, onClick = { onItemSelected(1) }, icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_attendance_filled),
+                    painter = painterResource(
+                        id = if (selectedItem == 1) R.drawable.ic_attendance_filled
+                        else R.drawable.ic_attendance_outlined
+                    ),
+                    modifier = Modifier.size(20.dp),
                     contentDescription = "Attendance"
                 )
             }, label = { Text("Attendance") }, alwaysShowLabel = true
@@ -327,7 +345,11 @@ fun BottomNavigationBar(
         NavigationBarItem(
             selected = selectedItem == 2, onClick = { onItemSelected(2) }, icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_syllabus_filled),
+                    painter = painterResource(
+                        id = if (selectedItem == 2) R.drawable.ic_syllabus_filled
+                        else R.drawable.ic_syllabus_outlined
+                    ),
+                    modifier = Modifier.size(20.dp),
                     contentDescription = "Syllabus"
                 )
             }, label = { Text("Syllabus") }, alwaysShowLabel = true
@@ -336,7 +358,11 @@ fun BottomNavigationBar(
         NavigationBarItem(
             selected = selectedItem == 3, onClick = { onItemSelected(3) }, icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_profile_filled),
+                    painter = painterResource(
+                        id = if (selectedItem == 3) R.drawable.ic_profile_filled
+                        else R.drawable.ic_profile_outlined
+                    ),
+                    modifier = Modifier.size(20.dp),
                     contentDescription = "Profile"
                 )
             }, label = { Text("Profile") }, alwaysShowLabel = true
@@ -348,7 +374,7 @@ fun BottomNavigationBar(
 fun SyllabusScreen() {
     MockScreen(
         title = "Syllabus",
-        description = "Access course materials, lesson plans, and educational content."
+        description = "Coming soon...."
     )
 }
 

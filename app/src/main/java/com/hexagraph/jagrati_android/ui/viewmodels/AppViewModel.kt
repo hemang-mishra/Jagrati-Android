@@ -22,10 +22,16 @@ class AppViewModel(
 
     private val _shouldLogout = MutableStateFlow(false)
     val shouldLogout: StateFlow<Boolean> = _shouldLogout.asStateFlow()
+    var currentUserPid: String? = null
 
     private var hasInitialToken = false
 
     init {
+        viewModelScope.launch {
+            appPreferences.userDetails.getFlow().collect {
+                currentUserPid = it?.pid
+            }
+        }
         monitorRefreshToken()
     }
 

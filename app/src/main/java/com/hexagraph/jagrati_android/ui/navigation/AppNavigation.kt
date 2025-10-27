@@ -1,6 +1,14 @@
 package com.hexagraph.jagrati_android.ui.navigation
 
 import android.widget.Toast
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +28,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.hexagraph.jagrati_android.model.ImageKitResponse
+import com.hexagraph.jagrati_android.model.NotificationType
 import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
 import com.hexagraph.jagrati_android.ui.viewmodels.AppViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingScreen
@@ -56,6 +65,7 @@ import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListScree
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
 import com.hexagraph.jagrati_android.ui.screens.imageviewer.FullScreenImageViewer
+import com.hexagraph.jagrati_android.ui.screens.notifications.NotificationScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileScreen
@@ -114,6 +124,32 @@ fun AppNavigation(
             rememberSavedStateNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
+        transitionSpec = {
+            ContentTransform(
+                targetContentEnter = slideInHorizontally(
+                    animationSpec = tween(300),
+                    initialOffsetX = { fullWidth -> fullWidth }
+                ),
+                initialContentExit = slideOutHorizontally(
+                    animationSpec = tween(300),
+                    targetOffsetX = { fullWidth -> -fullWidth / 4 }
+                ),
+                targetContentZIndex = 1f
+            )
+        },
+        popTransitionSpec = {
+            ContentTransform(
+                targetContentEnter = slideInHorizontally(
+                    animationSpec = tween(300),
+                    initialOffsetX = { fullWidth -> -fullWidth / 4 }
+                ),
+                initialContentExit = slideOutHorizontally(
+                    animationSpec = tween(300),
+                    targetOffsetX = { fullWidth -> fullWidth }
+                ),
+                targetContentZIndex = 0f
+            )
+        },
         entryProvider = entryProvider {
             // Unified onboarding route
             entry<Screens.NavOnboardingRoute> {
@@ -279,6 +315,9 @@ fun AppNavigation(
                         backstack.add(
                             Screens.NavEditVolunteerProfileRoute(it)
                         )
+                    },
+                    navigateToNotifications = {
+                        backstack.add(Screens.NavNotificationScreen)
                     }
                 )
             }
@@ -680,6 +719,30 @@ fun AppNavigation(
                     isStudent = it.isStudent,
                     onNavigateBack = {
                         backstack.popBackStack()
+                    }
+                )
+            }
+
+            entry<Screens.NavNotificationScreen>{
+                NotificationScreen(
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    onNotificationClick = {
+                        id, notificationType ->
+                        when(notificationType){
+                            NotificationType.MY_VOLUNTEER_REQUEST_UPDATE ->{
+                                backstack.add(Screens.NavMyVolunteerRequestsRoute)
+                            }
+                            NotificationType.NEW_VOLUNTEER_REQUEST -> {
+                                backstack.add(Screens.NavManageVolunteerRequestsRoute)
+                            }
+                            NotificationType.TEXT -> {}
+                            NotificationType.APPRECIATION_FOR_VOLUNTEERING -> {
+                                val pid = appViewModel.currentUserPid
+                                if(pid != null) backstack.add(Screens.NavDetailedAttendanceViewRoute(pid, false))
+                            }
+                        }
                     }
                 )
             }

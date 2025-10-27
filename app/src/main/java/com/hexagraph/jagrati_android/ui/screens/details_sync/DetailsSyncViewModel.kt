@@ -56,6 +56,9 @@ class DetailsSyncViewModel(
      */
     fun fetchUserDetails() {
         viewModelScope.launch(Dispatchers.IO) {
+            //Clearing old error/message
+            clearErrorFlow()
+            clearMsgFlow()
             _uiState.update { it.copy(isLoading = true) }
             val lastSyncTime = appPreferences.lastSyncTime.get()
             userRepository.getCurrentUserPermissions(lastSyncTime).collect { result ->
@@ -64,7 +67,6 @@ class DetailsSyncViewModel(
                         val data = result.data
                         if (data != null) {
                             processUserData(data)
-                            appPreferences.lastSyncTime.set(System.currentTimeMillis())
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
@@ -136,6 +138,8 @@ class DetailsSyncViewModel(
         // Store permissions in AppPreferences
         appPreferences.saveUserPermissions(permissions)
 
-        syncRepository.syncToLocalDb(data)
+        syncRepository.syncToLocalDb(data){
+            appPreferences.lastSyncTime.set(System.currentTimeMillis())
+        }
     }
 }

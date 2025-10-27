@@ -12,7 +12,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LoginRequest(
     val email: String,
-    val password: String
+    val password: String,
+    val deviceToken: String
 )
 
 /**
@@ -20,7 +21,8 @@ data class LoginRequest(
  */
 @Serializable
 data class RefreshRequest(
-    val refreshToken: String
+    val refreshToken: String,
+    val deviceToken: String
 )
 
 /**
@@ -55,5 +57,6 @@ data class ForgotPasswordRequest(
  */
 @Serializable
 data class GoogleLoginRequest(
-    val idToken: String
+    val idToken: String,
+    val deviceToken: String
 )

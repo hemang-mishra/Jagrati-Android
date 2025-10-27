@@ -52,7 +52,8 @@ fun HomeContentScreen(
     notificationCount: Int = 3,
     onTakeAttendanceClick: () -> Unit,
     onRegisterStudentClick: () -> Unit,
-    onSearchByCameraClick: () -> Unit
+    onSearchByCameraClick: () -> Unit,
+    onNotificationClick: () -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -65,7 +66,7 @@ fun HomeContentScreen(
                 userName = userName,
                 notificationCount = notificationCount,
                 onOpenDrawer = onOpenDrawer,
-                onNotificationClick = { /* TODO: Navigate to notifications */ }
+                onNotificationClick = onNotificationClick
             )
         }
 

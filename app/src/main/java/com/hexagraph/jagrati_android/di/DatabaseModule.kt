@@ -38,4 +38,8 @@ val databaseModule = module {
     single {
         get<PrimaryDatabase>().volunteerDao()
     }
+
+    single {
+        get<PrimaryDatabase>().notificationDao()
+    }
 }
