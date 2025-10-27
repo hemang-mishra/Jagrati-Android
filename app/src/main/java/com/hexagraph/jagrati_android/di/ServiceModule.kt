@@ -3,6 +3,8 @@ package com.hexagraph.jagrati_android.di
 import android.content.Context
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.hexagraph.jagrati_android.BuildConfig
+import com.hexagraph.jagrati_android.notifications.NotificationHelper
+import com.hexagraph.jagrati_android.notifications.NotificationHelperImpl
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionServiceImpl
 import com.hexagraph.jagrati_android.service.image_service.ImageKitService
@@ -17,6 +19,10 @@ import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
 val serviceModule = module{
+    single<NotificationHelper> {
+        NotificationHelperImpl(androidApplication(), get())
+    }
+
     single<FaceRecognitionService> {
         FaceRecognitionServiceImpl(get(),  get())
     }

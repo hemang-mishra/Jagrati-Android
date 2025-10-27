@@ -1,6 +1,8 @@
 package com.hexagraph.jagrati_android.ui.screens.attendancereport
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -31,6 +34,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,20 +58,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.Gender
-import com.hexagraph.jagrati_android.model.attendance.AttendanceReportResponse
-import com.hexagraph.jagrati_android.model.attendance.PresentStudent
-import com.hexagraph.jagrati_android.model.attendance.PresentVolunteer
 import com.hexagraph.jagrati_android.model.attendance.StudentVillageGenderCount
 import com.hexagraph.jagrati_android.model.attendance.VolunteerBatchCount
 import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
-import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
-import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -75,6 +74,7 @@ import java.util.Locale
 fun AttendanceReportScreen(
     onNavigateToStudentProfile: (String) -> Unit,
     onNavigateToVolunteerProfile: (String) -> Unit,
+    onNavigateToTakeAttendance: () -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     viewModel: AttendanceReportViewModel = koinViewModel()
 ) {
@@ -102,6 +102,10 @@ fun AttendanceReportScreen(
         uiState = uiState,
         onDateSelected = viewModel::setSelectedDate,
         onRefresh = { viewModel.loadAttendanceReport(isRefreshing = true) },
+        onPreviousDay = viewModel::goToPreviousDay,
+        onNextDay = viewModel::goToNextDay,
+        onToday = viewModel::goToToday,
+        onTakeAttendance = onNavigateToTakeAttendance,
         onStudentVillageFilter = viewModel::setStudentVillageFilter,
         onStudentGenderFilter = viewModel::setStudentGenderFilter,
         onStudentGroupFilter = viewModel::setStudentGroupFilter,
@@ -120,6 +124,10 @@ fun AttendanceReportScreenLayout(
     uiState: AttendanceReportUiState,
     onDateSelected: (Long) -> Unit,
     onRefresh: () -> Unit,
+    onPreviousDay: () -> Unit,
+    onNextDay: () -> Unit,
+    onToday: () -> Unit,
+    onTakeAttendance: () -> Unit,
     onStudentVillageFilter: (Long?) -> Unit,
     onStudentGenderFilter: (Gender?) -> Unit,
     onStudentGroupFilter: (Long?) -> Unit,
@@ -132,7 +140,7 @@ fun AttendanceReportScreenLayout(
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = uiState.selectedDateMillis
+        initialSelectedDateMillis = uiState.selectedDateMillis,
     )
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -142,11 +150,28 @@ fun AttendanceReportScreenLayout(
             modifier = Modifier.fillMaxSize()
         ) {
             if (uiState.isLoading) {
-                Box(
+                LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    CircularProgressIndicator()
+                    // Show actual date navigation header (no shimmer)
+                    item {
+                        DateNavigationSection(
+                            date = formatDate(uiState.selectedDateMillis),
+                            isToday = isToday(uiState.selectedDateMillis),
+                            onPreviousDay = onPreviousDay,
+                            onNextDay = onNextDay,
+                            onToday = onToday,
+                            onDateClick = { showDatePicker = true },
+                            onTakeAttendance = onTakeAttendance
+                        )
+                    }
+
+                    // Shimmer for content loading
+                    item {
+                        AttendanceReportContentShimmer()
+                    }
                 }
             } else if (uiState.reportData == null) {
                 Box(
@@ -155,7 +180,8 @@ fun AttendanceReportScreenLayout(
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(32.dp)
+                        modifier = Modifier.padding(32.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_calendar_month),
@@ -163,13 +189,28 @@ fun AttendanceReportScreenLayout(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                             modifier = Modifier.size(64.dp)
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = "No attendance data available",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        androidx.compose.material3.Button(
+                            onClick = onTakeAttendance,
+                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_camera),
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Take Attendance")
+                        }
                     }
                 }
             } else {
@@ -178,11 +219,15 @@ fun AttendanceReportScreenLayout(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Date Header
                     item {
-                        DateHeaderSection(
+                        DateNavigationSection(
                             date = formatDate(uiState.selectedDateMillis),
-                            onDateClick = { showDatePicker = true }
+                            isToday = isToday(uiState.selectedDateMillis),
+                            onPreviousDay = onPreviousDay,
+                            onNextDay = onNextDay,
+                            onToday = onToday,
+                            onDateClick = { showDatePicker = true },
+                            onTakeAttendance = onTakeAttendance
                         )
                     }
 
@@ -302,6 +347,170 @@ fun AttendanceReportScreenLayout(
             }
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+}
+
+@Composable
+fun DateNavigationSection(
+    date: String,
+    isToday: Boolean,
+    onPreviousDay: () -> Unit,
+    onNextDay: () -> Unit,
+    onToday: () -> Unit,
+    onDateClick: () -> Unit,
+    onTakeAttendance: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Attendance Report",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = date,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onDateClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_calendar_month),
+                        contentDescription = "Select Date",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                androidx.compose.material3.FilledTonalButton(
+                    onClick = onTakeAttendance,
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_camera),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Take",
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            }
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onPreviousDay) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_chevron_left),
+                        contentDescription = "Previous Day",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                TextButton(
+                    onClick = onToday,
+                    enabled = !isToday
+                ) {
+                    Text(
+                        text = "Today",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = if (isToday) FontWeight.Bold else FontWeight.SemiBold,
+                        color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                IconButton(onClick = onNextDay) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_chevron_right),
+                        contentDescription = "Next Day",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TakeAttendanceButton(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_attendance_filled),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Take Attendance",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "Mark attendance for today",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                )
+            }
+            Icon(
+                painter = painterResource(R.drawable.ic_chevron_right),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -429,14 +638,9 @@ fun StatsSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Students by Village & Gender
+        // Students by Village & Gender - Tabular View
         if (studentsByVillageGender.isNotEmpty()) {
-            StatsCard(
-                title = "By Village & Gender",
-                items = studentsByVillageGender.map {
-                    "${it.villageName} (${it.gender.name})" to it.count.toInt()
-                }
-            )
+            VillageGenderTableCard(studentsByVillageGender = studentsByVillageGender)
         }
 
         // Volunteers by Batch
@@ -458,6 +662,243 @@ fun StatsSection(
         }
     }
 }
+
+@Composable
+fun VillageGenderTableCard(studentsByVillageGender: List<StudentVillageGenderCount>) {
+    val villageData = studentsByVillageGender.groupBy { it.villageId to it.villageName }
+        .map { (villageInfo, counts) ->
+            val maleCount = counts.find { it.gender == Gender.MALE }?.count?.toInt() ?: 0
+            val femaleCount = counts.find { it.gender == Gender.FEMALE }?.count?.toInt() ?: 0
+            val otherCount = counts.find { it.gender == Gender.OTHER }?.count?.toInt() ?: 0
+            VillageGenderData(
+                villageName = villageInfo.second,
+                maleCount = maleCount,
+                femaleCount = femaleCount,
+                otherCount = otherCount,
+                total = maleCount + femaleCount + otherCount
+            )
+        }
+        .sortedByDescending { it.total }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(
+            1.dp,
+            MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "By Village & Gender",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(1.dp)
+            ) {
+                // Table Header
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Village",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Male",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.width(50.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Female",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.width(60.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Total",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.width(50.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // Table Rows
+                villageData.forEach { data ->
+                    VillageGenderRow(data = data)
+                }
+
+                // Total Row
+                val totalMale = villageData.sumOf { it.maleCount }
+                val totalFemale = villageData.sumOf { it.femaleCount }
+                val grandTotal = villageData.sumOf { it.total }
+                
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Total",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = totalMale.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.width(50.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = totalFemale.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.width(60.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = grandTotal.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.width(50.dp),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun VillageGenderRow(data: VillageGenderData) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = data.villageName,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Box(
+            modifier = Modifier
+                .width(50.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(
+                    if (data.maleCount > 0)
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                    else
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                )
+                .padding(vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = data.maleCount.toString(),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (data.maleCount > 0) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (data.maleCount > 0)
+                    MaterialTheme.colorScheme.onSurface
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                textAlign = TextAlign.Center
+            )
+        }
+        Box(
+            modifier = Modifier
+                .width(60.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(
+                    if (data.femaleCount > 0)
+                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                    else
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                )
+                .padding(vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = data.femaleCount.toString(),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (data.femaleCount > 0) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (data.femaleCount > 0)
+                    MaterialTheme.colorScheme.onSurface
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                textAlign = TextAlign.Center
+            )
+        }
+        Box(
+            modifier = Modifier
+                .width(50.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f))
+                .padding(vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = data.total.toString(),
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+data class VillageGenderData(
+    val villageName: String,
+    val maleCount: Int,
+    val femaleCount: Int,
+    val otherCount: Int,
+    val total: Int
+)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -871,4 +1312,13 @@ fun StudentFilters(
 fun formatDate(millis: Long): String {
     val dateFormat = SimpleDateFormat("EEEE, MMM dd, yyyy", Locale.getDefault())
     return dateFormat.format(Date(millis))
+}
+
+fun isToday(millis: Long): Boolean {
+    val calendar = Calendar.getInstance().apply {
+        timeInMillis = millis
+    }
+    val today = Calendar.getInstance()
+    return calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+            calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
 }

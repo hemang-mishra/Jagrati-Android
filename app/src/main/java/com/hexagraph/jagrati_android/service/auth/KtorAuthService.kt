@@ -10,6 +10,7 @@ import com.hexagraph.jagrati_android.model.auth.RegisterRequest
 import com.hexagraph.jagrati_android.model.auth.RegisterResponse
 import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
 import com.hexagraph.jagrati_android.model.auth.TokenPair
+import com.hexagraph.jagrati_android.model.village.StringRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -108,6 +109,13 @@ class KtorAuthService(
      */
     suspend fun loginWithGoogle(request: GoogleLoginRequest): TokenPair {
         return client.post("$baseUrl/api/auth/google") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun logout(request: StringRequest): MessageResponse {
+        return client.post("$baseUrl/api/auth/logout") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()

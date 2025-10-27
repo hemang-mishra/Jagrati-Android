@@ -1,5 +1,8 @@
 package com.hexagraph.jagrati_android.repository.auth
 
+import android.util.Log
+import com.google.firebase.messaging.FirebaseMessaging
+import com.hexagraph.jagrati_android.BuildConfig
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.model.User
@@ -8,15 +11,24 @@ import com.hexagraph.jagrati_android.model.auth.GoogleLoginRequest
 import com.hexagraph.jagrati_android.model.auth.LoginRequest
 import com.hexagraph.jagrati_android.model.auth.RegisterRequest
 import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
+import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
+import com.hexagraph.jagrati_android.model.village.StringRequest
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.FirbaseAuthJwtUtils
+import com.hexagraph.jagrati_android.util.Utils
 import com.hexagraph.jagrati_android.util.Utils.safeApiCall
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerAuthProvider
 import io.ktor.client.plugins.plugin
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 /**
  * Implementation of AuthRepository using Spring Boot backend with Ktor client.
@@ -24,7 +36,8 @@ import kotlinx.coroutines.runBlocking
 class KtorAuthRepository(
     private val authService: KtorAuthService,
     private val appPreferences: AppPreferences,
-    private val client: HttpClient
+    private val client: HttpClient,
+    private val database: PrimaryDatabase
 ) : AuthRepository {
 
     override fun getCurrentUser(): Flow<User?> = appPreferences.userDetails.getFlow()
@@ -40,8 +53,8 @@ class KtorAuthRepository(
         password: String
     ): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
-
-        val loginRequest = LoginRequest(email = email, password = password)
+        val deviceToken = FirebaseMessaging.getInstance().token.await()
+        val loginRequest = LoginRequest(email = email, password = password, deviceToken)
         val response = safeApiCall {
             authService.login(loginRequest)
         }
@@ -76,7 +89,16 @@ class KtorAuthRepository(
     override suspend fun signInWithGoogle(idToken: String): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
 
-        val googleLoginRequest = GoogleLoginRequest(idToken = idToken)
+        // Decode the ID token to extract user information
+        val tokenPayload = FirbaseAuthJwtUtils.decodeJwtToken(idToken)
+        Log.d("KtorAuthRepository", "Google ID Token payload: $tokenPayload")
+        if(tokenPayload?.email?.let { Utils.isCollegeEmailId(it) } == false){
+            emit(AuthResult.Error("Please use your college email ID to sign in."))
+            return@flow
+        }
+
+        val deviceToken = FirebaseMessaging.getInstance().token.await()
+        val googleLoginRequest = GoogleLoginRequest(idToken = idToken, deviceToken = deviceToken)
         val response = safeApiCall { authService.loginWithGoogle(googleLoginRequest) }
 
         when {
@@ -192,8 +214,17 @@ class KtorAuthRepository(
     }
 
     override suspend fun signOut() {
-        // Clear tokens and user info from DataStore
+        withContext(Dispatchers.Default) {
+            database.clearAll()
+        }
+        //Logout in background as we don't need to wait for response as it not compulsory currently
+        CoroutineScope(Dispatchers.Default).launch {
+            val deviceId = FirebaseMessaging.getInstance().token.await()
+            val response = safeApiCall { authService.logout(StringRequest(deviceId)) }
+            Log.d("KtorAuthRepository", "Logout response: $response")
+        }
         appPreferences.clearAll()
+
         refreshTokens()
     }
 

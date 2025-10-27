@@ -41,7 +41,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun MyProfileScreen(
-    onNavigateToEditProfile: () -> Unit = {},
+    onNavigateToEditProfile: (String) -> Unit = {},
     onNavigateToFaceDataRegister: (String) -> Unit = {},
     onNavigateToFullScreenImage: (ImageKitResponse) -> Unit = {},
     viewModel: MyProfileViewModel = koinViewModel(),
@@ -74,7 +74,9 @@ fun MyProfileScreen(
         uiState = uiState,
         onRefresh = { viewModel.refresh() },
         onPhotoClick = { viewModel.showEditOptionsSheet() },
-        onEditProfile = onNavigateToEditProfile,
+        onEditProfile = {
+            uiState.currentUser?.pid?.let { onNavigateToEditProfile(it) }
+        },
         onAddFaceData = {
             uiState.currentUser?.pid?.let { onNavigateToFaceDataRegister(it) }
         },
@@ -117,12 +119,7 @@ fun MyProfileLayout(
         modifier = Modifier.fillMaxSize()
     ) {
         if (uiState.isLoading && uiState.volunteer == null) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-            }
+            MyProfileShimmerLoading()
         } else if (uiState.volunteer != null || uiState.currentUser != null) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),

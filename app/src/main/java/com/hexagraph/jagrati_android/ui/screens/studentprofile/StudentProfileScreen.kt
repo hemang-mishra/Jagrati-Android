@@ -162,12 +162,7 @@ fun StudentProfileLayout(
                 .padding(paddingValues)
         ) {
             if (uiState.isLoading && uiState.student == null) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                }
+                StudentProfileShimmerLoading()
             } else if (uiState.student != null) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),

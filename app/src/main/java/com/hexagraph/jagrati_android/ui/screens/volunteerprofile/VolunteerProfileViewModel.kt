@@ -7,6 +7,7 @@ import com.hexagraph.jagrati_android.model.user.VolunteerDTO
 import com.hexagraph.jagrati_android.repository.auth.AttendanceRepository
 import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRepository
 import com.hexagraph.jagrati_android.repository.user.UserRepository
+import com.hexagraph.jagrati_android.repository.auth.AuthRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AttendanceUtils
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,7 @@ data class VolunteerProfileUiState(
     val presentCountLastMonth: Int = 0,
     val userRoles: List<String> = emptyList(),
     val showEditOptionsSheet: Boolean = false,
+    val canEditProfile: Boolean = false,
     val error: ResponseError? = null,
     val successMessage: String? = null
 )
@@ -35,7 +37,8 @@ class VolunteerProfileViewModel(
     private val pid: String,
     private val volunteerRepository: VolunteerRepository,
     private val userRepository: UserRepository,
-    private val attendanceRepository: AttendanceRepository
+    private val attendanceRepository: AttendanceRepository,
+    private val authRepository: AuthRepository
 ) : BaseViewModel<VolunteerProfileUiState>() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -46,11 +49,13 @@ class VolunteerProfileViewModel(
     private val _presentCountLastMonth = MutableStateFlow(0)
     private val _userRoles = MutableStateFlow<List<String>>(emptyList())
     private val _showEditOptionsSheet = MutableStateFlow(false)
+    private val _canEditProfile = MutableStateFlow(false)
 
     override val uiState: StateFlow<VolunteerProfileUiState> = createUiStateFlow()
 
     init {
         loadVolunteerProfile()
+        checkEditPermission()
     }
 
     override fun createUiStateFlow(): StateFlow<VolunteerProfileUiState> {
@@ -63,6 +68,7 @@ class VolunteerProfileViewModel(
             _presentCountLastMonth,
             _userRoles,
             _showEditOptionsSheet,
+            _canEditProfile,
             errorFlow,
             successMsgFlow
         ) { flows ->
@@ -75,14 +81,23 @@ class VolunteerProfileViewModel(
                 presentCountLastMonth = flows[5] as Int,
                 userRoles = flows[6] as List<String>,
                 showEditOptionsSheet = flows[7] as Boolean,
-                error = flows[8] as ResponseError?,
-                successMessage = flows[9] as String?
+                canEditProfile = flows[8] as Boolean,
+                error = flows[9] as ResponseError?,
+                successMessage = flows[10] as String?
             )
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = VolunteerProfileUiState()
         )
+    }
+
+    private fun checkEditPermission() {
+        viewModelScope.launch {
+            authRepository.getCurrentUser().collect { user ->
+                _canEditProfile.update { user?.pid == pid }
+            }
+        }
     }
 
     fun loadVolunteerProfile(isRefresh: Boolean = false) {

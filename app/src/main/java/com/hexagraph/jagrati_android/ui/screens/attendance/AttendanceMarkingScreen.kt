@@ -45,7 +45,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.BottomSheetDefaults
@@ -126,7 +125,7 @@ fun AttendanceMarkingScreen(
 
     LaunchedEffect(uiState.successMessage) {
         uiState.successMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -138,7 +137,7 @@ fun AttendanceMarkingScreen(
         onRetake = { viewModel.retakePhoto() },
         onPersonSelect = onPersonSelect,
         onUpdateDate = { millis -> viewModel.updateSelectedDateMillis(millis) },
-        onDismissBottomSheet = { viewModel.dismissBottomSheet() },
+        onDismissBottomSheet = { viewModel.dismissBottomSheetAndRetakePhoto() },
         getImageAnalyzer = { lensFacing, paint, executor ->
             viewModel.getImageAnalyzer(lensFacing, paint, executor)
         },
@@ -160,7 +159,8 @@ fun AttendanceMarkingScreen(
         },
         stopFaceDetection = {
             viewModel.stopFaceDetection()
-        }
+        },
+        isSearching = isSearching
     )
 }
 
@@ -168,6 +168,7 @@ fun AttendanceMarkingScreen(
 @Composable
 fun AttendanceMarkingScreenLayout(
     uiState: AttendanceMarkingUiState,
+    isSearching: Boolean,
     snackbarHostState: SnackbarHostState,
     onNavigateBack: () -> Unit,
     onCapture: () -> Unit,
@@ -260,7 +261,7 @@ fun AttendanceMarkingScreenLayout(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Mark Attendance",
+                            text = if(isSearching) "Search" else "Mark Attendance",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )

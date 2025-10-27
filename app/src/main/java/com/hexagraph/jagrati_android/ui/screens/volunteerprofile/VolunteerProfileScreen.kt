@@ -42,6 +42,7 @@ fun VolunteerProfileScreen(
     pid: String,
     onNavigateBack: () -> Unit,
     onNavigateToFullScreenImage: (ImageKitResponse) -> Unit = {},
+    onNavigateToEditProfile: (String) -> Unit = {},
     viewModel: VolunteerProfileViewModel = koinViewModel { parametersOf(pid) },
     onViewAttendanceDetails: () -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
@@ -72,6 +73,7 @@ fun VolunteerProfileScreen(
     VolunteerProfileLayout(
         uiState = uiState,
         onNavigateBack = onNavigateBack,
+        onEditProfile = { onNavigateToEditProfile(pid) },
         onRefresh = { viewModel.refresh() },
         onPhotoClick = { viewModel.showEditOptionsSheet() },
         onChatWhatsApp = { phoneNumber ->
@@ -102,6 +104,7 @@ fun VolunteerProfileScreen(
 fun VolunteerProfileLayout(
     uiState: VolunteerProfileUiState,
     onNavigateBack: () -> Unit,
+    onEditProfile: () -> Unit = {},
     onRefresh: () -> Unit,
     onPhotoClick: () -> Unit,
     onChatWhatsApp: (String) -> Unit,
@@ -128,6 +131,16 @@ fun VolunteerProfileLayout(
                         )
                     }
                 },
+                actions = {
+                    if (uiState.canEditProfile) {
+                        IconButton(onClick = onEditProfile) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_edit),
+                                contentDescription = "Edit Profile"
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
@@ -149,7 +162,7 @@ fun VolunteerProfileLayout(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                    VolunteerProfileShimmerLoading()
                 }
             } else if (uiState.volunteer != null) {
                 LazyColumn(
@@ -192,7 +205,8 @@ fun VolunteerProfileLayout(
                         ) {
                             AttendanceSummarySection(
                                 lastPresentDate = uiState.lastPresentDate,
-                                presentCountLastMonth = uiState.presentCountLastMonth
+                                presentCountLastMonth = uiState.presentCountLastMonth,
+                                onViewDetails = onViewAttendanceDetails
                             )
                         }
                     }
@@ -697,7 +711,8 @@ fun DetailRow(
 @Composable
 fun AttendanceSummarySection(
     lastPresentDate: String?,
-    presentCountLastMonth: Int
+    presentCountLastMonth: Int,
+    onViewDetails: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -750,6 +765,27 @@ fun AttendanceSummarySection(
                     label = "Present in Last Month",
                     value = "$presentCountLastMonth days",
                     isHighlighted = presentCountLastMonth > 0
+                )
+            }
+
+            Button(
+                onClick = onViewDetails,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_history),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "View Detailed Attendance",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }

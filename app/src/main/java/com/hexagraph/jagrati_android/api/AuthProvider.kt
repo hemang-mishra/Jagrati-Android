@@ -1,7 +1,10 @@
 package com.hexagraph.jagrati_android.api
 
 import android.util.Log
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
 import com.hexagraph.jagrati_android.model.auth.RefreshRequest
+import com.hexagraph.jagrati_android.model.auth.TokenPair
 import com.hexagraph.jagrati_android.util.AppPreferences
 import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.Auth
@@ -14,6 +17,7 @@ import io.ktor.http.contentType
 import io.ktor.http.encodedPath
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 
 /**
  * Authentication provider for Ktor client.
@@ -59,10 +63,11 @@ class AuthProvider(
                 Log.d("AuthProvider", "Token refresh triggered")
 
                 try {
+                    val deviceToken = FirebaseMessaging.getInstance().token.await()
                     val tokenResponse = client.post("$baseUrl/api/auth/refresh") {
                         contentType(ContentType.Application.Json)
-                        setBody(RefreshRequest(refreshToken = oldRefreshToken))
-                    }.body<com.hexagraph.jagrati_android.model.auth.TokenPair>()
+                        setBody(RefreshRequest(refreshToken = oldRefreshToken, deviceToken = deviceToken))
+                    }.body<TokenPair>()
 
                     // Save the new tokens
                     runBlocking {

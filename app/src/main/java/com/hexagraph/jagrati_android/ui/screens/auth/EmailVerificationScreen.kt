@@ -32,8 +32,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,6 +69,10 @@ fun EmailVerificationScreen(
     val (showContent, setShowContent) = remember { mutableStateOf(false) }
     val (showButtons, setShowButtons) = remember { mutableStateOf(false) }
 
+    // Resend timer state
+    var remainingSeconds by remember { mutableIntStateOf(0) }
+    var canResend by remember { mutableStateOf(true) }
+
     // Sequential animations
     LaunchedEffect(Unit) {
         setShowIcon(true)
@@ -76,6 +82,16 @@ fun EmailVerificationScreen(
         setShowContent(true)
         delay(200)
         setShowButtons(true)
+    }
+
+    // Countdown timer for resend button
+    LaunchedEffect(remainingSeconds) {
+        if (remainingSeconds > 0) {
+            delay(1000)
+            remainingSeconds--
+        } else {
+            canResend = true
+        }
     }
 
     // Handle error and success messages
@@ -97,6 +113,9 @@ fun EmailVerificationScreen(
             is AuthResult.Success, is AuthResult.VerificationNeeded -> {
                 snackbarHostState.showSnackbar("Verification email sent. Please check your inbox.")
                 viewModel.resetEmailVerificationState()
+                // Start cooldown timer
+                remainingSeconds = 60
+                canResend = false
             }
             is AuthResult.Error -> {
                 snackbarHostState.showSnackbar((emailVerificationState as AuthResult.Error).message)
@@ -221,10 +240,29 @@ fun EmailVerificationScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         PrimaryButton(
-                            text = "Resend Verification Email",
-                            onClick = { viewModel.sendEmailVerification(email) },
-                            isLoading = emailVerificationState is AuthResult.Loading
+                            text = if (remainingSeconds > 0) {
+                                "Resend in ${remainingSeconds}s"
+                            } else {
+                                "Resend Verification Email"
+                            },
+                            onClick = {
+                                if (canResend) {
+                                    viewModel.sendEmailVerification(email)
+                                }
+                            },
+                            isLoading = emailVerificationState is AuthResult.Loading,
+                            enabled = canResend && emailVerificationState !is AuthResult.Loading
                         )
+
+                        if (remainingSeconds > 0) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Please wait before requesting another email",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }

@@ -21,6 +21,9 @@ interface FaceInfoDao {
     @Query("SELECT pid FROM FaceInfo ")
     suspend fun facePIDsList(): List<String>
 
+    @Query("SELECT pid FROM FaceInfo WHERE isStudent = 1")
+    suspend fun studentFacePIDsList(): List<String>
+
     @Query("SELECT * FROM FaceInfo WHERE pid = :id")
     suspend fun getFaceById(id: String): FaceInfo?
 

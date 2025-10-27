@@ -24,6 +24,7 @@ import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRequestReposi
 import com.hexagraph.jagrati_android.repository.volunteer.KtorVolunteerRepository
 import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRepository
 import com.hexagraph.jagrati_android.repository.sync.SyncRepository
+import com.hexagraph.jagrati_android.model.repository.NotificationRepository
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 
@@ -31,7 +32,7 @@ val repositoryModule = module {
     single<OmniScanRepository> { OmniScanImplementation(get(), androidApplication(), get(), get()) }
 
     single<AuthRepository>{
-        KtorAuthRepository(get(), get(), get())
+        KtorAuthRepository(get(), get(), get(), get())
     }
     single<StudentRepository> {
         KtorStudentRepository(get())
@@ -67,6 +68,8 @@ val repositoryModule = module {
         villageDao = get(),
         groupsDao = get(),
         omniScanRepository = get(),
-        appPreferences = get()
+        appPreferences = get(),
+        get()
     ) }
+    single { NotificationRepository(get()) }
 }

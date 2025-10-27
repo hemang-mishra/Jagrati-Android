@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.Groups
-import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.Student
 import com.hexagraph.jagrati_android.model.Village
 import com.hexagraph.jagrati_android.model.Volunteer
@@ -39,7 +38,9 @@ class UnifiedSearchViewModel(
     private val volunteerDao: VolunteerDao,
     private val villageDao: VillageDao,
     private val groupsDao: GroupsDao,
-    private val attendanceRepository: AttendanceRepository
+    private val attendanceRepository: AttendanceRepository,
+    private val hasVolunteerAttendancePerms: Boolean,
+    private val isMarkingAttendance: Boolean
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(UnifiedSearchUiState())
@@ -111,7 +112,7 @@ class UnifiedSearchViewModel(
     private suspend fun performSearch(query: String) {
         try {
             val students = studentDao.getStudentDetailsByQuery(query).take(100)
-            val volunteers = volunteerDao.getVolunteersByQuery(query).take(100)
+            val volunteers = if(hasVolunteerAttendancePerms || !isMarkingAttendance) volunteerDao.getVolunteersByQuery(query).take(100) else emptyList()
 
             _uiState.value = _uiState.value.copy(
                 students = students,

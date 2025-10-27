@@ -40,19 +40,45 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            // For local builds, read from local.properties
+            val keystorePropertiesFile = rootProject.file("local.properties")
+
+            if (keystorePropertiesFile.exists()) {
+                val keystoreProperties = Properties()
+                keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+
+                storeFile = file(keystoreProperties["RELEASE_STORE_FILE"] as String)
+                storePassword = keystoreProperties["RELEASE_STORE_PASSWORD"] as String
+                keyAlias = keystoreProperties["RELEASE_KEY_ALIAS"] as String
+                keyPassword = keystoreProperties["RELEASE_KEY_PASSWORD"] as String
+            } else {
+                // For CI/CD, read from environment variables
+                val keystorePath = System.getenv("KEYSTORE_PATH") ?: "release.jks"
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("RELEASE_STORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
+
     buildTypes {
-//        debug {
-//            applicationIdSuffix = ".debug"
-//            versionNameSuffix = "-debug"
-//        }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            resValue("string", "app_name", "Jagrati Debug")
+        }
         release {
-
-
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            resValue("string", "app_name", "Jagrati")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -81,6 +107,7 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

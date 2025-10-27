@@ -14,10 +14,12 @@ import com.hexagraph.jagrati_android.model.dao.GroupsDao
 import com.hexagraph.jagrati_android.model.dao.StudentDao
 import com.hexagraph.jagrati_android.model.dao.VillageDao
 import com.hexagraph.jagrati_android.model.dao.VolunteerDao
+import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.repository.auth.AttendanceRepository
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
+import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -25,9 +27,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executor
@@ -41,7 +45,9 @@ class AttendanceMarkingViewModel(
     private val volunteerDao: VolunteerDao,
     private val villageDao: VillageDao,
     private val groupsDao: GroupsDao,
-    private val attendanceRepository: AttendanceRepository
+    private val attendanceRepository: AttendanceRepository,
+    private val appPreferences: AppPreferences,
+    private val isSearching: Boolean
 ) : BaseViewModel<AttendanceMarkingUiState>() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -55,9 +61,17 @@ class AttendanceMarkingViewModel(
     private var acceptingCaptureFromCamera = true
 
     private val semaphore = Semaphore(1)
+    private val liveFaceSemaphore = Semaphore(1)
     private var currentDetectionJob: Job? = null
 
     override val uiState: StateFlow<AttendanceMarkingUiState> = createUiStateFlow()
+    private var hasVolunteerAttendancePermissions = false
+
+    init {
+        runBlocking {
+            hasVolunteerAttendancePermissions = appPreferences.hasPermission(AllPermissions.ATTENDANCE_MARK_VOLUNTEER).first()
+        }
+    }
 
     override fun createUiStateFlow(): StateFlow<AttendanceMarkingUiState> {
         return combine(
@@ -120,8 +134,9 @@ class AttendanceMarkingViewModel(
     }
 
     private suspend fun recognizeFacesLive(processedImage: ProcessedImage) {
+        if(liveFaceSemaphore.tryAcquire()) {
             try {
-                val facePids = faceInfoDao.facePIDsList()
+                val facePids = getFaceIds()
                 if (facePids.isEmpty() || processedImage.faceBitmap == null) {
                     _liveRecognizedFaces.update { emptyList() }
                     return
@@ -147,6 +162,8 @@ class AttendanceMarkingViewModel(
             } catch (e: Exception) {
                 Log.e("AttendanceMarkingViewModel", "Face recognition failed: ${e.message}")
                 _liveRecognizedFaces.update { emptyList() }
+            }
+            liveFaceSemaphore.release()
         }
     }
 
@@ -167,7 +184,7 @@ class AttendanceMarkingViewModel(
                     return@launch
                 }
 
-                val facePids = faceInfoDao.facePIDsList()
+                val facePids = getFaceIds()
                 if (facePids.isEmpty()) {
                     emitError(ResponseError.BAD_REQUEST.apply {
                         actualResponse = "No registered faces found in the database."
@@ -243,7 +260,7 @@ class AttendanceMarkingViewModel(
                     _capturedImage.update { processedImage }
                     _isCameraActive.update { false }
 
-                    val facePids = faceInfoDao.facePIDsList()
+                    val facePids = getFaceIds()
                     if (facePids.isEmpty()) {
                         emitError(ResponseError.BAD_REQUEST.apply {
                             actualResponse = "No registered faces found."
@@ -340,6 +357,13 @@ class AttendanceMarkingViewModel(
         }
     }
 
+    private suspend fun getFaceIds(): List<String> {
+        if(hasVolunteerAttendancePermissions || isSearching){
+            return faceInfoDao.facePIDsList()
+        }
+        return faceInfoDao.studentFacePIDsList()
+    }
+
     fun markAttendance(pid: String, isStudent: Boolean, onSuccess: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -368,8 +392,7 @@ class AttendanceMarkingViewModel(
                             withContext(Dispatchers.Main) {
                                 onSuccess()
                             }
-                            dismissBottomSheet()
-                            retakePhoto()
+                            dismissBottomSheetAndRetakePhoto()
                         } else if (response?.skippedExisting == 1) {
                             emitError(ResponseError.BAD_REQUEST.apply {
                                 actualResponse = "Attendance already marked for this date"
@@ -415,8 +438,9 @@ class AttendanceMarkingViewModel(
         _isCameraActive.update { false }
         semaphore.tryAcquire() // Clear any pending operations
     }
-    fun dismissBottomSheet() {
+    fun dismissBottomSheetAndRetakePhoto() {
         _showBottomSheet.update { false }
+        retakePhoto()
     }
 
     fun updateCapturedImage(image: ProcessedImage) {

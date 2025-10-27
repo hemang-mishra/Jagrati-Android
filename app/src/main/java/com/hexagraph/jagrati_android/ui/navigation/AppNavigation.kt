@@ -1,16 +1,22 @@
 package com.hexagraph.jagrati_android.ui.navigation
 
 import android.widget.Toast
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entry
@@ -19,10 +25,12 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.hexagraph.jagrati_android.model.ImageKitResponse
+import com.hexagraph.jagrati_android.model.NotificationType
 import com.hexagraph.jagrati_android.preferences.OnboardingPreferences
+import com.hexagraph.jagrati_android.ui.viewmodels.AppViewModel
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingScreen
 import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingViewModel
-import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportScreen
+import com.hexagraph.jagrati_android.ui.screens.attendanceview.AttendanceViewScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.EmailVerificationScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.ForgotPasswordScreen
 import com.hexagraph.jagrati_android.ui.screens.auth.LoginScreen
@@ -36,6 +44,7 @@ import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailScre
 import com.hexagraph.jagrati_android.ui.screens.permissions.PermissionDetailViewModel
 import com.hexagraph.jagrati_android.ui.screens.roles.ManageRolesScreen
 import com.hexagraph.jagrati_android.ui.screens.details_sync.DetailsSyncScreen
+import com.hexagraph.jagrati_android.ui.screens.editvolunteerprofile.EditVolunteerProfileScreen
 import com.hexagraph.jagrati_android.ui.screens.home.MainHomeScreen
 import com.hexagraph.jagrati_android.ui.screens.nonvolunteer.NonVolunteerScreen
 import com.hexagraph.jagrati_android.ui.screens.userroles.UserDetailScreen
@@ -52,6 +61,7 @@ import com.hexagraph.jagrati_android.ui.screens.volunteerlist.VolunteerListScree
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterScreen
 import com.hexagraph.jagrati_android.ui.screens.facedata.FaceDataRegisterViewModel
 import com.hexagraph.jagrati_android.ui.screens.imageviewer.FullScreenImageViewer
+import com.hexagraph.jagrati_android.ui.screens.notifications.NotificationScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileScreen
@@ -70,6 +80,8 @@ private fun NavBackStack.popBackStack() {
 fun AppNavigation(
     snackbarHostState: SnackbarHostState,
     authViewModel: AuthViewModel = koinViewModel(),
+    appViewModel: AppViewModel,
+    shouldLogout: Boolean
 ) {
     // Get context for preferences
     val context = LocalContext.current
@@ -89,6 +101,18 @@ fun AppNavigation(
         }
     )
 
+    // Handle automatic logout when refresh token becomes null/empty
+    LaunchedEffect(shouldLogout) {
+        if (shouldLogout) {
+            backstack.clear()
+            backstack.add(Screens.NavLoginRoute)
+
+            appViewModel.onLogoutHandled()
+
+            snackbarHostState.showSnackbar("Session expired. Please login again.")
+        }
+    }
+
     NavDisplay(
         backStack = backstack,
         modifier = Modifier.fillMaxSize(),
@@ -96,6 +120,32 @@ fun AppNavigation(
             rememberSavedStateNavEntryDecorator(),
             rememberViewModelStoreNavEntryDecorator(),
         ),
+        transitionSpec = {
+            ContentTransform(
+                targetContentEnter = slideInHorizontally(
+                    animationSpec = tween(300),
+                    initialOffsetX = { fullWidth -> fullWidth }
+                ),
+                initialContentExit = slideOutHorizontally(
+                    animationSpec = tween(300),
+                    targetOffsetX = { fullWidth -> -fullWidth / 4 }
+                ),
+                targetContentZIndex = 1f
+            )
+        },
+        popTransitionSpec = {
+            ContentTransform(
+                targetContentEnter = slideInHorizontally(
+                    animationSpec = tween(300),
+                    initialOffsetX = { fullWidth -> -fullWidth / 4 }
+                ),
+                initialContentExit = slideOutHorizontally(
+                    animationSpec = tween(300),
+                    targetOffsetX = { fullWidth -> fullWidth }
+                ),
+                targetContentZIndex = 0f
+            )
+        },
         entryProvider = entryProvider {
             // Unified onboarding route
             entry<Screens.NavOnboardingRoute> {
@@ -137,6 +187,9 @@ fun AppNavigation(
                     redirectToVolunteerDashboard = {
                         backstack.clear()
                         backstack.add(Screens.NavHomeRoute)
+                    },
+                    onLogout = {
+                        appViewModel.logout()
                     }
                 )
             }
@@ -248,6 +301,19 @@ fun AppNavigation(
                                 fileId = it.fileId
                             )
                         )
+                    },
+                    navigateToCameraSearch = {
+                        backstack.add(
+                            Screens.NavCameraSearchRoute
+                        )
+                    },
+                    navigateToEditProfile = {
+                        backstack.add(
+                            Screens.NavEditVolunteerProfileRoute(it)
+                        )
+                    },
+                    navigateToNotifications = {
+                        backstack.add(Screens.NavNotificationScreen)
                     }
                 )
             }
@@ -434,7 +500,12 @@ fun AppNavigation(
                         backstack.add(Screens.NavVolunteerProfileRoute(volunteerPid))
                     },
                     onNavigateToAttendanceDetails = { studentPid ->
-                        // TODO: Navigate to attendance details when implemented
+                        backstack.add(
+                            Screens.NavDetailedAttendanceViewRoute(
+                                pid = studentPid,
+                                isStudent = true
+                            )
+                        )
                     },
                     onNavigateToFullScreenImage = { imageData ->
                         backstack.add(
@@ -483,9 +554,26 @@ fun AppNavigation(
                     },
                     snackbarHostState = snackbarHostState,
                     onViewAttendanceDetails = {
-                        //TODO: Navigate to attendance details when implemented
+                        backstack.add(
+                            Screens.NavDetailedAttendanceViewRoute(
+                                pid = pid,
+                                isStudent = false
+                            )
+                        )
                     },
 
+                )
+            }
+
+            entry<Screens.NavEditVolunteerProfileRoute> { it ->
+                val pid = it.pid
+
+                EditVolunteerProfileScreen(
+                    pid = pid,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    snackbarHostState = snackbarHostState
                 )
             }
 
@@ -500,13 +588,22 @@ fun AppNavigation(
                         else
                             backstack.add(Screens.NavVolunteerProfileRoute(pid))
                     },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
+                    hasVolunteerAttendancePerms = true,
+                    isMarkingAttendance = false
                 )
             }
 
             entry<Screens.NavUnifiedSearchAttendanceRoute> {
-                val vm = koinViewModel<UnifiedSearchViewModel>()
+                val vm = koinViewModel<UnifiedSearchViewModel>{parametersOf(appViewModel.hasVolunteerAttendanceMarkingPermission)}
                 vm.selectedDateMillis = it.dateMillis
+                val uiState by vm.uiState.collectAsState()
+                LaunchedEffect(uiState.errorMessage) {
+                    if(uiState.errorMessage != null) {
+                        Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_SHORT).show()
+                        vm.clearError()
+                    }
+                }
                 UnifiedSearchScreen(
                     viewModel = vm,
                     onBackPress = {
@@ -517,13 +614,15 @@ fun AppNavigation(
                             Toast.makeText(context, "Attendance marked!!", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    snackbarHostState = snackbarHostState
+                    snackbarHostState = snackbarHostState,
+                    hasVolunteerAttendancePerms = appViewModel.hasVolunteerAttendanceMarkingPermission,
+                    isMarkingAttendance = true
                 )
             }
 
             // Attendance marking screen
             entry<Screens.NavCameraAttendanceMarkingRoute> {
-                val vm = koinViewModel<AttendanceMarkingViewModel>()
+                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(false)}
 
                 AttendanceMarkingScreen(
                     viewModel = vm,
@@ -545,7 +644,7 @@ fun AppNavigation(
             }
 
             entry<Screens.NavCameraSearchRoute>{
-                val vm = koinViewModel<AttendanceMarkingViewModel>()
+                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(true)}
                 AttendanceMarkingScreen(
                     viewModel = vm,
                     onNavigateBack = {
@@ -619,6 +718,40 @@ fun AppNavigation(
                         authViewModel = authViewModel,
                     )
                    }
+            }
+
+            entry<Screens.NavDetailedAttendanceViewRoute>{
+                AttendanceViewScreen(
+                    pid = it.pid,
+                    isStudent = it.isStudent,
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    }
+                )
+            }
+
+            entry<Screens.NavNotificationScreen>{
+                NotificationScreen(
+                    onNavigateBack = {
+                        backstack.popBackStack()
+                    },
+                    onNotificationClick = {
+                        id, notificationType ->
+                        when(notificationType){
+                            NotificationType.MY_VOLUNTEER_REQUEST_UPDATE ->{
+                                backstack.add(Screens.NavMyVolunteerRequestsRoute)
+                            }
+                            NotificationType.NEW_VOLUNTEER_REQUEST -> {
+                                backstack.add(Screens.NavManageVolunteerRequestsRoute)
+                            }
+                            NotificationType.TEXT -> {}
+                            NotificationType.APPRECIATION_FOR_VOLUNTEERING -> {
+                                val pid = appViewModel.currentUserPid
+                                if(pid != null) backstack.add(Screens.NavDetailedAttendanceViewRoute(pid, false))
+                            }
+                        }
+                    }
+                )
             }
         }
     )

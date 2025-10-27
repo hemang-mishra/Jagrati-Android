@@ -25,9 +25,16 @@ import com.hexagraph.jagrati_android.ui.screens.attendance.AttendanceMarkingView
 import com.hexagraph.jagrati_android.ui.screens.attendancereport.AttendanceReportViewModel
 import com.hexagraph.jagrati_android.ui.screens.myprofile.MyProfileViewModel
 import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileViewModel
+import com.hexagraph.jagrati_android.ui.screens.attendanceview.AttendanceViewModel
+import com.hexagraph.jagrati_android.ui.screens.editvolunteerprofile.EditVolunteerProfileViewModel
+import com.hexagraph.jagrati_android.ui.viewmodels.AppViewModel
+import com.hexagraph.jagrati_android.ui.viewmodels.NotificationViewModel
 import org.koin.dsl.module
 
 val viewModelModule = module {
+    // Application-level ViewModel (scoped to Activity lifecycle)
+    single { AppViewModel(get(), get()) }
+
     // Auth ViewModels
     factory<AuthViewModel> { AuthViewModel(get()) }
     factory<LoginViewModel> { LoginViewModel(get()) }
@@ -57,7 +64,7 @@ val viewModelModule = module {
     factory { VolunteerListViewModel(get()) }
 
     // Search ViewModels
-    factory { UnifiedSearchViewModel(get(), get(), get(), get(), get()) }
+    factory {(hasVolunteerAttendancePerms: Boolean, isMarkingAttendance: Boolean)-> UnifiedSearchViewModel(get(), get(), get(), get(), get(), hasVolunteerAttendancePerms, isMarkingAttendance) }
 
     // Student management ViewModels
     factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), get(), get(), pid) }
@@ -69,16 +76,18 @@ val viewModelModule = module {
             volunteerPid,
             get(), // VolunteerRepository
             get(), // UserRepository
-            get()  // AttendanceRepository
+            get(),  // AttendanceRepository,
+            get()
         )
     }
 
     factory { MyProfileViewModel(get(), get(), get()) }
 
-    // Face data ViewModels
-
-    // Attendance ViewModels
-    factory { AttendanceMarkingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { (isSearching: Boolean)-> AttendanceMarkingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(),get(), isSearching) }
     factory { (pid: String) -> FaceDataRegisterViewModel(get(),  get(), get(), get(), get(),get(),get(),get(),pid) }
     factory { AttendanceReportViewModel(get(), get(), get(), get()) } // AttendanceRepository, AppPreferences, StudentDao, VolunteerDao
+    factory { (pid: String, isStudent: Boolean) -> AttendanceViewModel(pid, isStudent, get(), get(), get()) }
+    factory { (pid: String) -> EditVolunteerProfileViewModel(pid, get()) }
+
+    factory { NotificationViewModel(get()) }
 }

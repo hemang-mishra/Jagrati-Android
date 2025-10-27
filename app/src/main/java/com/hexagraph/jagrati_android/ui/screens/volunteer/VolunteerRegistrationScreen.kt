@@ -342,7 +342,7 @@ fun VolunteerRegistrationScreenLayout(
 
                     // Contact Number
                     FormField(
-                        label = "Contact Number",
+                        label = "WhatsApp Number",
                         value = uiState.contactNumber,
                         onValueChange = onContactNumberChanged,
                         error = uiState.formErrors["contactNumber"],
@@ -397,7 +397,7 @@ fun VolunteerRegistrationScreenLayout(
                     )
 
                     // Programme Dropdown
-                    val programmes = listOf("B.Tech", "B.Des")
+                    val programmes = listOf("B.Tech", "B.Des", "M.Tech", "M.Des", "PhD", "Other")
 
                     DropdownField(
                         label = "Programme",

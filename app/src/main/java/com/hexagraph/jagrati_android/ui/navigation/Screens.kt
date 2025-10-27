@@ -121,6 +121,11 @@ sealed interface Screens: NavKey {
     ): Screens
 
     @Serializable
+    data class NavEditVolunteerProfileRoute(
+        val pid: String
+    ): Screens
+
+    @Serializable
     data object NavCameraAttendanceMarkingRoute: Screens
 
     @Serializable
@@ -135,4 +140,13 @@ sealed interface Screens: NavKey {
         val imageName: String = "",
         val fileId: String = ""
     ): Screens
+
+    @Serializable
+    data class NavDetailedAttendanceViewRoute(
+        val pid: String,
+        val isStudent: Boolean
+    ): Screens
+
+    @Serializable
+    data object NavNotificationScreen: Screens
 }

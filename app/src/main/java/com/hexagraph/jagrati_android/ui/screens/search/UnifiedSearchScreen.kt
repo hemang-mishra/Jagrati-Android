@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.ui.screens.search
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,21 +46,24 @@ import com.hexagraph.jagrati_android.model.Volunteer
 import com.hexagraph.jagrati_android.ui.components.PersonCard
 import com.hexagraph.jagrati_android.ui.components.toPersonCardData
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
-import com.hexagraph.jagrati_android.ui.theme.JagratiColors
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun UnifiedSearchScreen(
     onBackPress: () -> Unit,
     onSelect: (String, Boolean) -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
-    viewModel: UnifiedSearchViewModel = koinViewModel()
+    hasVolunteerAttendancePerms: Boolean,
+    isMarkingAttendance: Boolean,
+    viewModel: UnifiedSearchViewModel = koinViewModel{ parametersOf(hasVolunteerAttendancePerms, isMarkingAttendance) }
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { message ->
-            snackbarHostState.showSnackbar(message)
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
             viewModel.clearError()
         }
     }
