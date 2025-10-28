@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.ui.screens.roles
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,6 +9,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,7 +23,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +30,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.hexagraph.jagrati_android.model.role.RoleResponse
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
@@ -104,13 +104,13 @@ fun ManageRolesScreenLayout(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
                             "Manage Roles",
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
                             "${uiState.roles.size} active roles",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
@@ -232,11 +232,11 @@ private fun EmptyStateContent(onAddRole: () -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         Card(
-            modifier = Modifier.size(120.dp),
+            modifier = Modifier.size(100.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
             ),
-            shape = RoundedCornerShape(24.dp)
+            shape = RoundedCornerShape(20.dp)
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -245,17 +245,17 @@ private fun EmptyStateContent(onAddRole: () -> Unit) {
                 Icon(
                     painter=painterResource(R.drawable.ic_groups),
                     contentDescription = null,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(40.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             "No Roles Yet",
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
@@ -264,13 +264,12 @@ private fun EmptyStateContent(onAddRole: () -> Unit) {
 
         Text(
             "Create your first role to start organizing\nyour team and managing permissions",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-            textAlign = TextAlign.Center,
-            lineHeight = 24.sp
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = onAddRole,
@@ -278,7 +277,7 @@ private fun EmptyStateContent(onAddRole: () -> Unit) {
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Icon(
                 Icons.Filled.Add,
@@ -363,35 +362,32 @@ fun EnhancedRoleCard(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp,
-            hoveredElevation = 8.dp
+            defaultElevation = 2.dp,
+            hoveredElevation = 4.dp
         ),
-        border = BorderStroke(2.dp, roleColor),
+        border = BorderStroke(1.dp, roleColor.copy(alpha = 0.3f)),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(16.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .then(
-                            Modifier.padding(0.dp)
-                        ),
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(10.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = roleColor.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(10.dp)
                     ) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
@@ -401,7 +397,7 @@ fun EnhancedRoleCard(
                                 painter = painterResource(getRoleIcon(role.name)),
                                 contentDescription = null,
                                 tint = roleColor,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -412,7 +408,7 @@ fun EnhancedRoleCard(
                 ) {
                     FilledTonalIconButton(
                         onClick = onEditClick,
-                        modifier = Modifier.size(36.dp),
+                        modifier = Modifier.size(32.dp),
                         colors = IconButtonDefaults.filledTonalIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f),
                             contentColor = MaterialTheme.colorScheme.secondary
@@ -421,13 +417,13 @@ fun EnhancedRoleCard(
                         Icon(
                             Icons.Outlined.Edit,
                             contentDescription = "Edit",
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
 
                     FilledTonalIconButton(
                         onClick = onDeleteClick,
-                        modifier = Modifier.size(36.dp),
+                        modifier = Modifier.size(32.dp),
                         colors = IconButtonDefaults.filledTonalIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
                             contentColor = MaterialTheme.colorScheme.error
@@ -436,69 +432,69 @@ fun EnhancedRoleCard(
                         Icon(
                             Icons.Outlined.Delete,
                             contentDescription = "Delete",
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = role.name,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = roleColor,
-                maxLines = 2,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
             if (!role.description.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = role.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                    lineHeight = 20.sp,
-                    maxLines = 3,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                AssistChip(
-                    onClick = { },
-                    label = {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = roleColor.copy(alpha = 0.12f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(roleColor)
+                        )
                         Text(
                             "Active",
-                            style = MaterialTheme.typography.labelSmall
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Medium,
+                            color = roleColor
                         )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Filled.CheckCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = roleColor.copy(alpha = 0.1f),
-                        labelColor = roleColor,
-                        leadingIconContentColor = roleColor
-                    ),
-                    border = null
-                )
+                    }
+                }
 
                 Text(
                     text = "ID: ${role.id}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                 )
             }
         }
@@ -555,14 +551,14 @@ private fun RoleFormBottomSheet(
                 Column {
                     Text(
                         text = if (isEditMode) "Edit Role" else "Create New Role",
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = if (isEditMode) "Update role information" else "Add a new role to your team",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -577,12 +573,12 @@ private fun RoleFormBottomSheet(
                     Icon(
                         Icons.Filled.Close,
                         contentDescription = "Close",
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             OutlinedTextField(
                 value = roleName,
@@ -610,13 +606,13 @@ private fun RoleFormBottomSheet(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = roleDescription,
                 onValueChange = onRoleDescriptionChange,
                 label = { Text("Description (Optional)") },
-                placeholder = { Text("Describe the role's responsibilities and permissions") },
+                placeholder = { Text("Describe the role's responsibilities") },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 maxLines = 5,
@@ -635,7 +631,7 @@ private fun RoleFormBottomSheet(
                 shape = RoundedCornerShape(12.dp)
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -677,7 +673,7 @@ private fun RoleFormBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -695,13 +691,13 @@ private fun RoleDeleteDialog(
                 Icons.Outlined.Warning,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.error,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(24.dp)
             )
         },
         title = {
             Text(
                 "Deactivate Role?",
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
@@ -721,16 +717,16 @@ private fun RoleDeleteDialog(
                     Text(
                         text = "\"${role.name}\"",
                         modifier = Modifier.padding(12.dp),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "This will remove the role from the active roles list and may affect users assigned to this role.",
+                    "This will remove the role from active roles and may affect users assigned to it.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         },
