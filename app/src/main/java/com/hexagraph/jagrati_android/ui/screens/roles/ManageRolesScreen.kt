@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -359,143 +358,104 @@ fun EnhancedRoleCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         ),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 2.dp,
-            hoveredElevation = 4.dp
+            defaultElevation = 1.dp,
+            hoveredElevation = 3.dp
         ),
-        border = BorderStroke(1.dp, roleColor.copy(alpha = 0.3f)),
         shape = RoundedCornerShape(16.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // Left side: Icon and text content
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Icon with colored background
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp)),
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(roleColor.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = roleColor.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(getRoleIcon(role.name)),
-                                contentDescription = null,
-                                tint = roleColor,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
+                    Icon(
+                        painter = painterResource(getRoleIcon(role.name)),
+                        contentDescription = null,
+                        tint = roleColor,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                // Text content
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    FilledTonalIconButton(
-                        onClick = onEditClick,
-                        modifier = Modifier.size(32.dp),
-                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f),
-                            contentColor = MaterialTheme.colorScheme.secondary
-                        )
-                    ) {
-                        Icon(
-                            Icons.Outlined.Edit,
-                            contentDescription = "Edit",
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+                    Text(
+                        text = role.name,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-                    FilledTonalIconButton(
-                        onClick = onDeleteClick,
-                        modifier = Modifier.size(32.dp),
-                        colors = IconButtonDefaults.filledTonalIconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
-                            contentColor = MaterialTheme.colorScheme.error
+                    if (!role.description.isNullOrEmpty()) {
+                        Text(
+                            text = role.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
                         )
-                    ) {
-                        Icon(
-                            Icons.Outlined.Delete,
-                            contentDescription = "Delete",
-                            modifier = Modifier.size(16.dp)
+                    } else {
+                        Text(
+                            text = "No description",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = role.name,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            if (!role.description.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = role.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
+            // Right side: Action buttons
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = roleColor.copy(alpha = 0.12f)
+                IconButton(
+                    onClick = onEditClick,
+                    modifier = Modifier.size(36.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .clip(CircleShape)
-                                .background(roleColor)
-                        )
-                        Text(
-                            "Active",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Medium,
-                            color = roleColor
-                        )
-                    }
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = "Edit",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
 
-                Text(
-                    text = "ID: ${role.id}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        Icons.Outlined.Delete,
+                        contentDescription = "Delete",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
