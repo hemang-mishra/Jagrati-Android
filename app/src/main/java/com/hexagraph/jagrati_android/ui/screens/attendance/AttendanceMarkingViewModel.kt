@@ -48,7 +48,8 @@ class AttendanceMarkingViewModel(
     private val groupsDao: GroupsDao,
     private val attendanceRepository: AttendanceRepository,
     private val appPreferences: AppPreferences,
-    private val isSearching: Boolean
+    private val isSearching: Boolean,
+    private val defaultDateMillis: Long
 ) : BaseViewModel<AttendanceMarkingUiState>() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -58,7 +59,7 @@ class AttendanceMarkingViewModel(
     private val _liveRecognizedFaces = MutableStateFlow<List<RecognizedPerson>>(emptyList())
     private val _showBottomSheet = MutableStateFlow(false)
     private val _isMarkingAttendance = MutableStateFlow(false)
-    private val _selectedDateMillis = MutableStateFlow(System.currentTimeMillis())
+    private val _selectedDateMillis = MutableStateFlow(defaultDateMillis)
     private var acceptingCaptureFromCamera = true
 
     private val semaphore = Semaphore(1)
@@ -92,12 +93,14 @@ class AttendanceMarkingViewModel(
                 showBottomSheet = _showBottomSheet.value,
                 isMarkingAttendance = _isMarkingAttendance.value,
                 error = errorFlow.value,
-                successMessage = successMsgFlow.value
+                successMessage = successMsgFlow.value,
             )
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = AttendanceMarkingUiState()
+            initialValue = AttendanceMarkingUiState(
+                selectedDateMillis = defaultDateMillis
+            )
         )
     }
 

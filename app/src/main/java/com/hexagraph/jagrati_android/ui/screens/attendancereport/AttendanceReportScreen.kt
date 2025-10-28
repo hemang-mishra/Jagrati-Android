@@ -74,7 +74,7 @@ import java.util.Locale
 fun AttendanceReportScreen(
     onNavigateToStudentProfile: (String) -> Unit,
     onNavigateToVolunteerProfile: (String) -> Unit,
-    onNavigateToTakeAttendance: () -> Unit = {},
+    onNavigateToTakeAttendance: (Long) -> Unit = {},
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     viewModel: AttendanceReportViewModel = koinViewModel()
 ) {
@@ -105,7 +105,9 @@ fun AttendanceReportScreen(
         onPreviousDay = viewModel::goToPreviousDay,
         onNextDay = viewModel::goToNextDay,
         onToday = viewModel::goToToday,
-        onTakeAttendance = onNavigateToTakeAttendance,
+        onTakeAttendance = {
+            onNavigateToTakeAttendance(uiState.selectedDateMillis)
+        },
         onStudentVillageFilter = viewModel::setStudentVillageFilter,
         onStudentGenderFilter = viewModel::setStudentGenderFilter,
         onStudentGroupFilter = viewModel::setStudentGroupFilter,

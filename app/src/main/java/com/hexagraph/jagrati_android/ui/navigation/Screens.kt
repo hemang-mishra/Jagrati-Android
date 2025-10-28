@@ -126,7 +126,9 @@ sealed interface Screens: NavKey {
     ): Screens
 
     @Serializable
-    data object NavCameraAttendanceMarkingRoute: Screens
+    data class NavCameraAttendanceMarkingRoute(
+        val dateMillis: Long
+    ): Screens
 
     @Serializable
     data object NavAttendanceReportRoute: Screens

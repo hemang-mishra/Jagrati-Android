@@ -287,11 +287,11 @@ fun AppNavigation(
                     onSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
                     },
-                    updateFacialData = {
-                        backstack.add(Screens.NavFaceDataRegisterRoute(it))
+                    updateFacialData = { pid->
+                        backstack.add(Screens.NavFaceDataRegisterRoute(pid))
                     },
-                    navigateToAttendanceMarking = {
-                        backstack.add(Screens.NavCameraAttendanceMarkingRoute)
+                    navigateToAttendanceMarking = { millis->
+                        backstack.add(Screens.NavCameraAttendanceMarkingRoute(millis))
                     },
                     navigateToFullScreenImage = {
                         backstack.add(
@@ -622,7 +622,7 @@ fun AppNavigation(
 
             // Attendance marking screen
             entry<Screens.NavCameraAttendanceMarkingRoute> {
-                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(false)}
+                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(false, it.dateMillis)}
 
                 AttendanceMarkingScreen(
                     viewModel = vm,
@@ -635,16 +635,16 @@ fun AppNavigation(
                             Toast.makeText(context, "Attendance marked!!", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    onTextSearchClick = {
+                    onTextSearchClick = {id->
                         backstack.popBackStack()
-                        backstack.add(Screens.NavUnifiedSearchAttendanceRoute(it))
+                        backstack.add(Screens.NavUnifiedSearchAttendanceRoute(id))
                     },
                     isSearching = false
                 )
             }
 
             entry<Screens.NavCameraSearchRoute>{
-                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(true)}
+                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(true, System.currentTimeMillis())}
                 AttendanceMarkingScreen(
                     viewModel = vm,
                     onNavigateBack = {

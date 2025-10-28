@@ -83,7 +83,7 @@ val viewModelModule = module {
 
     factory { MyProfileViewModel(get(), get(), get()) }
 
-    factory { (isSearching: Boolean)-> AttendanceMarkingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(),get(), isSearching) }
+    factory { (isSearching: Boolean, millis: Long)-> AttendanceMarkingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(),get(), isSearching, millis) }
     factory { (pid: String) -> FaceDataRegisterViewModel(get(),  get(), get(), get(), get(),get(),get(),get(),pid) }
     factory { AttendanceReportViewModel(get(), get(), get(), get()) } // AttendanceRepository, AppPreferences, StudentDao, VolunteerDao
     factory { (pid: String, isStudent: Boolean) -> AttendanceViewModel(pid, isStudent, get(), get(), get()) }
