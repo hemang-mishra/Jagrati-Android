@@ -42,6 +42,7 @@ class AppPreferences(private val context: Context) {
         private val USER_DETAILS = stringPreferencesKey("user_details")
         private val USER_ROLES = stringPreferencesKey("user_roles")
         private val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
+        private val LAST_USED_TIME = longPreferencesKey("last_used_time")
         private val VILLAGES = stringPreferencesKey("villages")
         private val GROUPS = stringPreferencesKey("groups")
         private val IS_VOLUNTEER = stringPreferencesKey("is_volunteer")
@@ -57,6 +58,20 @@ class AppPreferences(private val context: Context) {
         override suspend fun set(value: Long) {
             context.dataStore.edit { preferences ->
                 preferences[LAST_SYNC_TIME] = value
+            }
+        }
+    }
+
+    val lastUsedTime: DataStorePreference<Long> = object : DataStorePreference<Long> {
+        override fun getFlow(): Flow<Long> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[LAST_USED_TIME] ?: 0L }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: Long) {
+            context.dataStore.edit { preferences ->
+                preferences[LAST_USED_TIME] = value
             }
         }
     }

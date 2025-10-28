@@ -42,7 +42,7 @@ val viewModelModule = module {
     factory<ForgotPasswordViewModel>{ ForgotPasswordViewModel(get()) }
 
     // Main app ViewModels
-    factory<DetailsSyncViewModel> { DetailsSyncViewModel(get(), get(), get()) }
+    factory<DetailsSyncViewModel> { DetailsSyncViewModel(get()) }
     factory<ManagementViewModel> { ManagementViewModel(get()) }
     factory<ManageRolesViewModel> { ManageRolesViewModel(get()) }
 

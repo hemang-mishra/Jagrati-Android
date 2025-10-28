@@ -595,7 +595,7 @@ fun AppNavigation(
             }
 
             entry<Screens.NavUnifiedSearchAttendanceRoute> {
-                val vm = koinViewModel<UnifiedSearchViewModel>{parametersOf(appViewModel.hasVolunteerAttendanceMarkingPermission)}
+                val vm = koinViewModel<UnifiedSearchViewModel>{parametersOf(appViewModel.hasVolunteerAttendanceMarkingPermission, true)}
                 vm.selectedDateMillis = it.dateMillis
                 val uiState by vm.uiState.collectAsState()
                 LaunchedEffect(uiState.errorMessage) {

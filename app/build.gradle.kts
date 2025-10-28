@@ -183,4 +183,7 @@ dependencies {
     // Chucker
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.noop)
+
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.koin.androidx.workmanager)
 }

@@ -32,7 +32,7 @@ val repositoryModule = module {
     single<OmniScanRepository> { OmniScanImplementation(get(), androidApplication(), get(), get()) }
 
     single<AuthRepository>{
-        KtorAuthRepository(get(), get(), get(), get())
+        KtorAuthRepository(get(), get(), get(), get(), get())
     }
     single<StudentRepository> {
         KtorStudentRepository(get())
