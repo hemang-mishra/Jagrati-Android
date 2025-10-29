@@ -64,6 +64,7 @@ import com.hexagraph.jagrati_android.ui.screens.imageviewer.FullScreenImageViewe
 import com.hexagraph.jagrati_android.ui.screens.notifications.NotificationScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
+import com.hexagraph.jagrati_android.ui.screens.settings.SettingsScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -314,6 +315,9 @@ fun AppNavigation(
                     },
                     navigateToNotifications = {
                         backstack.add(Screens.NavNotificationScreen)
+                    },
+                    navigateToSettingsScreen = {
+                        backstack.add(Screens.NavSettingsRoute)
                     }
                 )
             }
@@ -751,6 +755,18 @@ fun AppNavigation(
                             }
                         }
                     }
+                )
+            }
+
+            entry<Screens.NavSettingsRoute> {
+                SettingsScreen(
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    onLogout = {
+                        appViewModel.logout()
+                    },
+                    snackbarHostState = snackbarHostState
                 )
             }
         }

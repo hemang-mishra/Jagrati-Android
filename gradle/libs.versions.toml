@@ -39,6 +39,7 @@ nav3Lifecycle = "1.0.0-alpha04"
 chucker = "4.2.0"
 firebaseMessaging = "25.0.1"
 workRuntimeKtx = "2.11.0"
+appUpdate = "2.1.0"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
@@ -102,6 +103,8 @@ androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecy
 chucker = { module = "com.github.chuckerteam.chucker:library", version.ref = "chucker" }
 chucker-noop = { module = "com.github.chuckerteam.chucker:library-no-op", version.ref = "chucker" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
+app_update = { module = "com.google.android.play:app-update", version.ref = "appUpdate" }
+app_update_ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "appUpdate" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

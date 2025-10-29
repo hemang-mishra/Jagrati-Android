@@ -78,6 +78,7 @@ fun MainHomeScreen(
     navigateToEditProfile: (String) -> Unit,
     navigateToCameraSearch: () -> Unit,
     navigateToNotifications: () -> Unit,
+    navigateToSettingsScreen: () -> Unit,
     appPreferences: AppPreferences = koinInject(),
     notificationViewModel: NotificationViewModel = koinViewModel()
 ) {
@@ -134,7 +135,7 @@ fun MainHomeScreen(
                     },
                     onSettingsClick = {
                         scope.launch { drawerState.close() }
-                        // TODO: Navigate to settings
+                        navigateToSettingsScreen()
                     },
                     onTakeStudentAttendanceClick = {
                         scope.launch { drawerState.close() }

@@ -151,4 +151,7 @@ sealed interface Screens: NavKey {
 
     @Serializable
     data object NavNotificationScreen: Screens
+
+    @Serializable
+    data object NavSettingsRoute: Screens
 }
