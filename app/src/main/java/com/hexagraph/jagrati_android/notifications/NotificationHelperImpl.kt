@@ -6,21 +6,28 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.ui.screens.main.MainActivity
 import com.hexagraph.jagrati_android.model.NotificationMessage
 import com.hexagraph.jagrati_android.model.NotificationType
 import com.hexagraph.jagrati_android.model.repository.NotificationRepository
+import com.hexagraph.jagrati_android.worker.SaveNotificationWorker
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 
 class NotificationHelperImpl(
     private val context: Context,
-    private val notificationRepository: NotificationRepository
 ): NotificationHelper {
     private val notificationManager = NotificationManagerCompat.from(context)
 
@@ -34,6 +41,7 @@ class NotificationHelperImpl(
         saveToDatabase: Boolean
     ): Int {
         createChannels()
+        Log.d("NotificationHelperImpl", "Showing notification: $title - $message")
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
@@ -57,26 +65,21 @@ class NotificationHelperImpl(
             }
             .build()
 
+        if(saveToDatabase) {
+            val data = Data.Builder()
+                .putString("title", title)
+                .putString("message", message)
+                .putString("channelId", channelId)
+                .build()
+            val workRequest = OneTimeWorkRequestBuilder<SaveNotificationWorker>()
+                .setInputData(data)
+                .build()
+            WorkManager.getInstance(context).enqueue(workRequest)
+        }
+
         val nid = Random.nextInt(10000)
         notificationManager.notify(nid, notification)
 
-        if(saveToDatabase) {
-            runBlocking(Dispatchers.IO) {
-                try {
-                    notificationRepository.insertNotification(
-                        NotificationMessage(
-                            title = title,
-                            body = message,
-                            type = NotificationType.TEXT,
-                            channelId = channelId,
-                            timestamp = System.currentTimeMillis()
-                        )
-                    )
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
         return nid
     }
 

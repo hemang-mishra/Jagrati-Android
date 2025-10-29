@@ -72,5 +72,10 @@ enum class ManagementScreen(
             AllPermissions.GROUP_MANAGE,
         )
     ),
-    ;
+    APP_SETTINGS(
+        screenName = "App Settings",
+        section = "Settings",
+        screen = Screens.NavSettingsRoute,
+        permissionsRequired = listOf()
+    );
 }

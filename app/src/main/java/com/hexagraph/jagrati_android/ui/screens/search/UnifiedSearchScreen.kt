@@ -107,7 +107,6 @@ fun UnifiedSearchScreenLayout(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
         ) {
             val onActiveChange: (Boolean) -> Unit = { active = it }
             val colors1 = SearchBarDefaults.colors(

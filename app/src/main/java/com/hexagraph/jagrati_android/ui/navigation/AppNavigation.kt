@@ -64,6 +64,7 @@ import com.hexagraph.jagrati_android.ui.screens.imageviewer.FullScreenImageViewe
 import com.hexagraph.jagrati_android.ui.screens.notifications.NotificationScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchScreen
 import com.hexagraph.jagrati_android.ui.screens.search.UnifiedSearchViewModel
+import com.hexagraph.jagrati_android.ui.screens.settings.SettingsScreen
 import com.hexagraph.jagrati_android.ui.screens.volunteerprofile.VolunteerProfileScreen
 import com.hexagraph.jagrati_android.ui.viewmodels.auth.AuthViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -287,11 +288,11 @@ fun AppNavigation(
                     onSearchClick = {
                         backstack.add(Screens.NavUnifiedSearchRoute)
                     },
-                    updateFacialData = {
-                        backstack.add(Screens.NavFaceDataRegisterRoute(it))
+                    updateFacialData = { pid->
+                        backstack.add(Screens.NavFaceDataRegisterRoute(pid))
                     },
-                    navigateToAttendanceMarking = {
-                        backstack.add(Screens.NavCameraAttendanceMarkingRoute)
+                    navigateToAttendanceMarking = { millis->
+                        backstack.add(Screens.NavCameraAttendanceMarkingRoute(millis))
                     },
                     navigateToFullScreenImage = {
                         backstack.add(
@@ -314,6 +315,9 @@ fun AppNavigation(
                     },
                     navigateToNotifications = {
                         backstack.add(Screens.NavNotificationScreen)
+                    },
+                    navigateToSettingsScreen = {
+                        backstack.add(Screens.NavSettingsRoute)
                     }
                 )
             }
@@ -595,7 +599,7 @@ fun AppNavigation(
             }
 
             entry<Screens.NavUnifiedSearchAttendanceRoute> {
-                val vm = koinViewModel<UnifiedSearchViewModel>{parametersOf(appViewModel.hasVolunteerAttendanceMarkingPermission)}
+                val vm = koinViewModel<UnifiedSearchViewModel>{parametersOf(appViewModel.hasVolunteerAttendanceMarkingPermission, true)}
                 vm.selectedDateMillis = it.dateMillis
                 val uiState by vm.uiState.collectAsState()
                 LaunchedEffect(uiState.errorMessage) {
@@ -622,7 +626,7 @@ fun AppNavigation(
 
             // Attendance marking screen
             entry<Screens.NavCameraAttendanceMarkingRoute> {
-                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(false)}
+                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(false, it.dateMillis)}
 
                 AttendanceMarkingScreen(
                     viewModel = vm,
@@ -635,16 +639,16 @@ fun AppNavigation(
                             Toast.makeText(context, "Attendance marked!!", Toast.LENGTH_SHORT).show()
                         }
                     },
-                    onTextSearchClick = {
+                    onTextSearchClick = {id->
                         backstack.popBackStack()
-                        backstack.add(Screens.NavUnifiedSearchAttendanceRoute(it))
+                        backstack.add(Screens.NavUnifiedSearchAttendanceRoute(id))
                     },
                     isSearching = false
                 )
             }
 
             entry<Screens.NavCameraSearchRoute>{
-                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(true)}
+                val vm = koinViewModel<AttendanceMarkingViewModel> {parametersOf(true, System.currentTimeMillis())}
                 AttendanceMarkingScreen(
                     viewModel = vm,
                     onNavigateBack = {
@@ -751,6 +755,18 @@ fun AppNavigation(
                             }
                         }
                     }
+                )
+            }
+
+            entry<Screens.NavSettingsRoute> {
+                SettingsScreen(
+                    onBackPressed = {
+                        backstack.popBackStack()
+                    },
+                    onLogout = {
+                        appViewModel.logout()
+                    },
+                    snackbarHostState = snackbarHostState
                 )
             }
         }

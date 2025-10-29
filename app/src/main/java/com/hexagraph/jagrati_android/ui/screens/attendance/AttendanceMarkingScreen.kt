@@ -39,10 +39,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
@@ -52,6 +51,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -60,6 +60,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -98,7 +99,6 @@ import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
 import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
@@ -142,7 +142,8 @@ fun AttendanceMarkingScreen(
             viewModel.getImageAnalyzer(lensFacing, paint, executor)
         },
         onImageFromGallery = { bitmap, paint ->
-            viewModel.processImageFromGallery(bitmap, paint,
+            viewModel.processImageFromGallery(
+                bitmap, paint,
                 onNoFaceDetected = {
                     scope.launch {
                         snackbarHostState.showSnackbar("No face detected in the selected image")
@@ -179,8 +180,8 @@ fun AttendanceMarkingScreenLayout(
     getImageAnalyzer: (Int, Paint, java.util.concurrent.Executor) -> ImageAnalysis.Analyzer,
     onImageFromGallery: (Bitmap, Paint) -> Unit,
     onUpdateCapturedImage: (ProcessedImage) -> Unit,
-    onTextSearchClick: ()->Unit,
-    stopFaceDetection: ()->Unit
+    onTextSearchClick: () -> Unit,
+    stopFaceDetection: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -230,7 +231,8 @@ fun AttendanceMarkingScreenLayout(
                 if (orientation > 0) {
                     val matrix = Matrix()
                     matrix.postRotate(orientation.toFloat())
-                    bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                    bitmap =
+                        Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
                 }
                 bitmap?.let { bmp ->
                     onImageFromGallery(bmp, paint)
@@ -261,7 +263,7 @@ fun AttendanceMarkingScreenLayout(
                 TopAppBar(
                     title = {
                         Text(
-                            text = if(isSearching) "Search" else "Mark Attendance",
+                            text = if (isSearching) "Search" else "Mark Attendance",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -362,17 +364,25 @@ fun AttendanceMarkingScreenLayout(
                     .align(Alignment.BottomEnd)
                     .padding(bottom = 180.dp, start = 16.dp, end = 16.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .verticalScroll(rememberScrollState()),
+                val lazyListState = rememberLazyListState()
+                LaunchedEffect(uiState.liveRecognizedFaces) {
+                    val lastIndex = uiState.liveRecognizedFaces.lastIndex
+                    if (lastIndex >= 0)
+                        lazyListState.animateScrollToItem(lastIndex)
+                }
+                LazyColumn(
+                    state = lazyListState,
+                    modifier = Modifier,
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.Bottom)
                 ) {
                     val list = uiState.liveRecognizedFaces.take(5)
                     val size = list.size
-                    list.reversed().forEachIndexed { index, person ->
-                        val opacity = (0.5f/size)*index + 0.5f
+                    items(list.size) { index ->
+                        val person = list.reversed()[index]
+                        val opacity = (0.5f / size) * index + 0.5f
                         LiveRecognitionCard(person, opacity)
+
                     }
                 }
             }
@@ -510,11 +520,17 @@ fun AttendanceMarkingScreenLayout(
                 )
             }
         }
+        val selectableDates= object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis <= System.currentTimeMillis()
+            }
+        }
 
         // Date Picker Dialog - updated to use and update UI state
         if (showDatePicker) {
             val datePickerState = rememberDatePickerState(
-                initialSelectedDateMillis = uiState.selectedDateMillis
+                initialSelectedDateMillis = uiState.selectedDateMillis,
+                selectableDates = selectableDates
             )
 
             DatePickerDialog(
@@ -597,8 +613,7 @@ fun LiveRecognitionCard(person: RecognizedPerson, opacity: Float = 1f) {
         modifier = Modifier
             .width(120.dp)
             .height(140.dp)
-            .alpha(opacity)
-        ,
+            .alpha(opacity),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFFE53935)

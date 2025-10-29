@@ -32,4 +32,4 @@ google-services2.json
 
 # Android Profiling
 *.hprof
-/app
+/app/release/

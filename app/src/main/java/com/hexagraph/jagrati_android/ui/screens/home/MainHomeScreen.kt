@@ -73,11 +73,12 @@ fun MainHomeScreen(
     navigateToVolunteerProfile: (String) -> Unit = {},
     updateFacialData: (String) -> Unit,
     onSearchClick: () -> Unit,
-    navigateToAttendanceMarking: () -> Unit = {},
+    navigateToAttendanceMarking: (Long) -> Unit = {},
     navigateToFullScreenImage: (ImageKitResponse) -> Unit,
     navigateToEditProfile: (String) -> Unit,
     navigateToCameraSearch: () -> Unit,
     navigateToNotifications: () -> Unit,
+    navigateToSettingsScreen: () -> Unit,
     appPreferences: AppPreferences = koinInject(),
     notificationViewModel: NotificationViewModel = koinViewModel()
 ) {
@@ -134,11 +135,11 @@ fun MainHomeScreen(
                     },
                     onSettingsClick = {
                         scope.launch { drawerState.close() }
-                        // TODO: Navigate to settings
+                        navigateToSettingsScreen()
                     },
                     onTakeStudentAttendanceClick = {
                         scope.launch { drawerState.close() }
-                        navigateToAttendanceMarking()
+                        navigateToAttendanceMarking(System.currentTimeMillis())
                     },
                     onRegisterNewStudentClick = {
                         scope.launch { drawerState.close() }
@@ -175,7 +176,9 @@ fun MainHomeScreen(
                         notificationCount = notificationState.unreadCount,
                         onSearchClick = onSearchClick,
                         onOpenDrawer = { scope.launch { drawerState.open() } },
-                        onTakeAttendanceClick = navigateToAttendanceMarking,
+                        onTakeAttendanceClick = {
+                            navigateToAttendanceMarking(System.currentTimeMillis())
+                        },
                         onRegisterStudentClick = navigateToStudentRegistrationScreen,
                         onSearchByCameraClick = { navigateToCameraSearch() },
                         onNotificationClick = navigateToNotifications

@@ -20,7 +20,7 @@ import org.koin.dsl.module
 
 val serviceModule = module{
     single<NotificationHelper> {
-        NotificationHelperImpl(androidApplication(), get())
+        NotificationHelperImpl(androidApplication())
     }
 
     single<FaceRecognitionService> {

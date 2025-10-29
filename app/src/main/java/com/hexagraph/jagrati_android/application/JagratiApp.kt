@@ -9,6 +9,7 @@ import com.hexagraph.jagrati_android.di.networkModule
 import com.hexagraph.jagrati_android.di.preferencesModule
 import com.hexagraph.jagrati_android.di.repositoryModule
 import com.hexagraph.jagrati_android.di.serviceModule
+import com.hexagraph.jagrati_android.di.useCaseModule
 import com.hexagraph.jagrati_android.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -25,7 +26,8 @@ class JagratiApp : Application() {
                 networkModule,
                 preferencesModule,
                 repositoryModule,
-                serviceModule
+                serviceModule,
+                useCaseModule
             )
         }
     }

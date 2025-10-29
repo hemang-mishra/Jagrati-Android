@@ -12,30 +12,26 @@ plugins {
 
 // Load properties from local.properties file
 val localPropertiesFile = rootProject.file("local.properties")
+// Read web client ID from local.properties
+
+val localProperties = Properties()
+    .takeIf { localPropertiesFile.exists() }
+    ?.apply { load(FileInputStream(localPropertiesFile)) }
+
+
+fun propOrEnv(name: String, default: String = ""): String =
+    localProperties?.getProperty(name) ?: System.getenv(name) ?: default
 
 android {
     namespace = "com.hexagraph.jagrati_android"
     compileSdk = 36
 
     defaultConfig {
-        // Read web client ID from local.properties
-        val localProperties = Properties()
-            .takeIf { localPropertiesFile.exists() }
-            ?.apply { load(FileInputStream(localPropertiesFile)) }
-
-        fun addStringRes(name: String) =
-            resValue("string", name, localProperties?.getProperty(name)?.toString().toString())
-
-        addStringRes("WEB_CLIENT_ID")
-        addStringRes("BASE_URL")
-        addStringRes("IMAGE_KIT_URL_ENDPOINT")
-        addStringRes("IMAGE_KIT_PUBLIC_KEY")
-        addStringRes("IMAGE_KIT_PRIVATE_KEY")
         applicationId = "com.hexagraph.jagrati_android"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -61,6 +57,7 @@ android {
                 keyAlias = System.getenv("RELEASE_KEY_ALIAS")
                 keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
             }
+
         }
     }
 
@@ -70,6 +67,11 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             resValue("string", "app_name", "Jagrati Debug")
+
+            resValue("string", "WEB_CLIENT_ID", propOrEnv("WEB_CLIENT_ID"))
+            resValue("string", "BASE_URL", propOrEnv("BASE_URL"))
+            resValue("string", "IMAGE_KIT_URL_ENDPOINT", propOrEnv("IMAGE_KIT_URL_ENDPOINT"))
+            resValue("string", "IMAGE_KIT_PUBLIC_KEY", propOrEnv("IMAGE_KIT_PUBLIC_KEY"))
         }
         release {
             isMinifyEnabled = false
@@ -79,6 +81,11 @@ android {
             )
             resValue("string", "app_name", "Jagrati")
             signingConfig = signingConfigs.getByName("release")
+
+            resValue("string", "WEB_CLIENT_ID", propOrEnv("PROD_WEB_CLIENT_ID"))
+            resValue("string", "BASE_URL", propOrEnv("PROD_BASE_URL"))
+            resValue("string", "IMAGE_KIT_URL_ENDPOINT", propOrEnv("PROD_IMAGE_KIT_URL_ENDPOINT"))
+            resValue("string", "IMAGE_KIT_PUBLIC_KEY", propOrEnv("PROD_IMAGE_KIT_PUBLIC_KEY"))
         }
     }
     compileOptions {
@@ -183,4 +190,11 @@ dependencies {
     // Chucker
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.noop)
+
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.koin.androidx.workmanager)
+
+    // Play Core App Update
+    implementation(libs.app.update)
+    implementation(libs.app.update.ktx)
 }

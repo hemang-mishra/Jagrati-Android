@@ -24,19 +24,19 @@ val LightColorScheme = lightColorScheme(
     primary = JagratiColors.Red,
     onPrimary = Color.White,
     primaryContainer = JagratiColors.Red.copy(alpha = 0.1f),
-    onPrimaryContainer = JagratiColors.Red,
+    onPrimaryContainer = Color(0xFF8B0000), // Dark red for better contrast on light container
 
     // Secondary - Purple (contrast color)
     secondary = JagratiColors.Purple,
     onSecondary = Color.White,
     secondaryContainer = JagratiColors.Purple.copy(alpha = 0.1f),
-    onSecondaryContainer = JagratiColors.Purple,
+    onSecondaryContainer = Color(0xFF5A4D8A), // Darker purple for better contrast
 
     // Tertiary - Yellow (accent)
     tertiary = JagratiColors.Yellow,
     onTertiary = Color.Black,
     tertiaryContainer = JagratiColors.Yellow.copy(alpha = 0.1f),
-    onTertiaryContainer = JagratiColors.Yellow,
+    onTertiaryContainer = Color(0xFF8B6F00), // Dark yellow/gold for better contrast
 
     // Surface colors
     surface = Color.White,
@@ -73,19 +73,19 @@ val DarkColorScheme = darkColorScheme(
     primary = JagratiColors.Red,
     onPrimary = Color.White,
     primaryContainer = JagratiColors.Red.copy(alpha = 0.2f),
-    onPrimaryContainer = JagratiColors.Red.copy(alpha = 0.9f),
+    onPrimaryContainer = Color(0xFFFFB4AB), // Light red/pink for better contrast on dark container
 
     // Secondary - Purple (adjusted for dark theme)
     secondary = JagratiColors.Purple,
     onSecondary = Color.White,
     secondaryContainer = JagratiColors.Purple.copy(alpha = 0.2f),
-    onSecondaryContainer = JagratiColors.Purple.copy(alpha = 0.9f),
+    onSecondaryContainer = Color(0xFFD4C6FF), // Light purple for better contrast
 
     // Tertiary - Turquoise (using turquoise instead of yellow for better dark theme contrast)
     tertiary = JagratiColors.Turquoise,
     onTertiary = Color.White,
     tertiaryContainer = JagratiColors.Turquoise.copy(alpha = 0.2f),
-    onTertiaryContainer = JagratiColors.Turquoise,
+    onTertiaryContainer = Color(0xFF9FECF7), // Light turquoise for better contrast
 
     // Surface colors - Using neutral dark gray instead of brown
     surface = JagratiColors.DarkGray,

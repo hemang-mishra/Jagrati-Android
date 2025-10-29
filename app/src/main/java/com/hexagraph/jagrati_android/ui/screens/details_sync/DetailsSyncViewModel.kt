@@ -7,6 +7,7 @@ import com.hexagraph.jagrati_android.model.user.UserDetailsWithRolesAndPermissio
 import com.hexagraph.jagrati_android.repository.sync.SyncRepository
 import com.hexagraph.jagrati_android.repository.user.UserRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
+import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Resource
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +24,7 @@ import kotlinx.coroutines.launch
  * Fetches user permissions and other details and stores them in AppPreferences.
  */
 class DetailsSyncViewModel(
-    private val userRepository: UserRepository,
-    private val appPreferences: AppPreferences,
-    private val syncRepository: SyncRepository
+    private val syncUseCase: DataSyncUseCase
 ) : BaseViewModel<DetailsSyncUiState>() {
 
     private val _uiState = MutableStateFlow(DetailsSyncUiState())
@@ -60,86 +59,29 @@ class DetailsSyncViewModel(
             clearErrorFlow()
             clearMsgFlow()
             _uiState.update { it.copy(isLoading = true) }
-            val lastSyncTime = appPreferences.lastSyncTime.get()
-            userRepository.getCurrentUserPermissions(lastSyncTime).collect { result ->
-                when (result.status) {
-                    Resource.Status.SUCCESS -> {
-                        val data = result.data
-                        if (data != null) {
-                            processUserData(data)
-                            _uiState.update {
-                                it.copy(
-                                    isLoading = false,
-                                    isSuccess = true,
-                                    userDetails = data.userDetails,
-                                    roles = data.roles,
-                                    isVolunteer = data.isVolunteer
-                                )
-                            }
-                            emitMsg("User details fetched successfully")
-                        } else {
-                            _uiState.update {
-                                it.copy(
-                                    isLoading = false,
-                                    isSuccess = false
-                                )
-                            }
-                            emitError(result.error ?: createGenericError("Failed to fetch user details"))
-                        }
+            syncUseCase.fetchUserDetails(
+                onSuccessfulFetch = { data ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isSuccess = true,
+                            userDetails = data.userDetails,
+                            roles = data.roles,
+                            isVolunteer = data.isVolunteer
+                        )
                     }
-                    Resource.Status.FAILED -> {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                isSuccess = false
-                            )
-                        }
-                        emitError(result.error)
+                    emitMsg("User details fetched successfully")
+                },
+                onError = { msg ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isSuccess = false
+                        )
                     }
-                    Resource.Status.LOADING -> {
-                        _uiState.update { it.copy(isLoading = true) }
-                    }
+                    emitError(msg)
                 }
-            }
-        }
-    }
-
-    /**
-     * Creates a generic error with a message
-     */
-    private fun createGenericError(message: String) =
-        ResponseError.UNKNOWN.apply {
-            actualResponse = message
-        }
-
-    /**
-     * Process and store user details in AppPreferences
-     */
-    private suspend fun processUserData(data: UserDetailsWithRolesAndPermissions) {
-        // Store user details in preferences
-        appPreferences.saveUserDetails(data.userDetails)
-
-        // Store user roles in preferences
-        appPreferences.saveUserRoles(data.roles)
-        appPreferences.isVolunteer.set(data.isVolunteer)
-
-        // Map permission names to AllPermissions enum values
-        val permissions = data.permissions.permissions.mapNotNull { permission ->
-            try {
-                // Try to find matching enum value by name
-                AllPermissions.valueOf(permission.name)
-                permission.name
-            } catch (e: IllegalArgumentException) {
-                // Skip permissions that don't match our enum
-                null
-            }
-        }
-
-        // Store permissions in AppPreferences
-        appPreferences.saveUserPermissions(permissions)
-
-        syncRepository.syncToLocalDb(data){
-            appPreferences.lastSyncTime.set(System.currentTimeMillis())
+            )
         }
     }
 }

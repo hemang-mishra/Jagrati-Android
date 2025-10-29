@@ -2,7 +2,6 @@ package com.hexagraph.jagrati_android.repository.auth
 
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
-import com.hexagraph.jagrati_android.BuildConfig
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.model.AuthResult
 import com.hexagraph.jagrati_android.model.User
@@ -13,6 +12,7 @@ import com.hexagraph.jagrati_android.model.auth.RegisterRequest
 import com.hexagraph.jagrati_android.model.auth.ResendVerificationRequest
 import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
 import com.hexagraph.jagrati_android.model.village.StringRequest
+import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.FirbaseAuthJwtUtils
 import com.hexagraph.jagrati_android.util.Utils
@@ -37,7 +37,8 @@ class KtorAuthRepository(
     private val authService: KtorAuthService,
     private val appPreferences: AppPreferences,
     private val client: HttpClient,
-    private val database: PrimaryDatabase
+    private val database: PrimaryDatabase,
+    private val dataSyncUseCase: DataSyncUseCase
 ) : AuthRepository {
 
     override fun getCurrentUser(): Flow<User?> = appPreferences.userDetails.getFlow()
@@ -63,6 +64,7 @@ class KtorAuthRepository(
             response.isSuccess && response.data != null -> {
                 // Save tokens
                 appPreferences.saveTokens(response.data.accessToken, response.data.refreshToken)
+                dataSyncUseCase.subscribeToSyncTopic()
                 refreshTokens()
                 // Create user object
                 val user = User(
@@ -105,6 +107,7 @@ class KtorAuthRepository(
             response.isSuccess && response.data != null -> {
                 // Save tokens
                 appPreferences.saveTokens(response.data.accessToken, response.data.refreshToken)
+                dataSyncUseCase.subscribeToSyncTopic()
                 refreshTokens()
                 // Create user object - we'll need to get user details from the token or make another API call
                 val user = User(
@@ -214,6 +217,7 @@ class KtorAuthRepository(
     }
 
     override suspend fun signOut() {
+        dataSyncUseCase.unsubscribeFromSyncTopic()
         withContext(Dispatchers.Default) {
             database.clearAll()
         }
