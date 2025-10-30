@@ -5,57 +5,434 @@
     <title>Jagrati - Privacy Policy</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 900px; margin: auto; padding: 20px; line-height: 1.6; }
-        h1, h2 { color: #004aad; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.8;
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 8px;
+        }
+
+        .header .meta {
+            font-size: 0.95em;
+            opacity: 0.85;
+        }
+
+        .content {
+            padding: 50px 40px;
+        }
+
+        .intro {
+            background: #f8f9ff;
+            padding: 30px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 40px;
+            font-size: 1.05em;
+            color: #333;
+        }
+
+        h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            font-weight: 600;
+            margin: 40px 0 20px 0;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h2:first-of-type {
+            margin-top: 0;
+        }
+
+        h3 {
+            color: #764ba2;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin: 30px 0 15px 0;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: #444;
+        }
+
+        ul {
+            margin: 20px 0 20px 30px;
+        }
+
+        li {
+            margin-bottom: 12px;
+            color: #444;
+            line-height: 1.7;
+        }
+
+        .data-section {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #764ba2;
+        }
+
+        .data-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .data-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .data-item strong {
+            color: #667eea;
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .highlight-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .highlight-box strong {
+            color: #856404;
+        }
+
+        a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .contact-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            margin-top: 40px;
+            border-radius: 12px;
+        }
+
+        .contact-section h2 {
+            color: white;
+            border-bottom: 3px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .contact-section a {
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.2em;
+            text-decoration: underline;
+        }
+
+        .footer {
+            background: #f8f9ff;
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            h2 {
+                font-size: 1.5em;
+            }
+
+            .contact-section {
+                padding: 30px 20px;
+            }
+        }
     </style>
 </head>
 <body>
 
-<h1>Privacy Policy - Jagrati</h1>
-<p><strong>Last Updated:</strong> October 2025</p>
-<p><strong>Publisher:</strong> Hemang Mishra</p>
+<div class="container">
+    <div class="header">
+        <h1>🌟 Jagrati</h1>
+        <div class="subtitle">Privacy Policy</div>
+        <div class="meta">Last Updated: October 31, 2025 | Published by: Hemang Mishra</div>
+    </div>
 
-<p>Jagrati (“we”, “our”, “us”) is committed to protecting your privacy. This policy outlines how we handle your data when using our Android application ("App").</p>
+    <div class="content">
+        <div class="intro">
+            <p><strong>Welcome to Jagrati!</strong></p>
+            <p>At Jagrati ("we", "our", "us"), your privacy and data security are our top priorities. This Privacy Policy explains in detail how we collect, use, store, and protect your personal information when you use our Android application ("the App"). By using Jagrati, you agree to the practices described in this policy.</p>
+        </div>
 
-<h2>1. Information We Collect</h2>
-<ul>
-    <li><strong>Profile Photo:</strong> Captured using the device camera and stored securely on ImageKit. Can be updated or deleted by you anytime.</li>
-    <li><strong>Google Account Information:</strong> Basic details used for Google Sign-In authentication only.</li>
-    <li><strong>Device Token (from FCM):</strong> Used for sending notifications.</li>
-</ul>
+        <h2>1. Information We Collect</h2>
+        <p>We collect only the information necessary to provide you with the best experience. Here's a detailed breakdown:</p>
 
-<h2>2. Why We Collect Data</h2>
-<ul>
-    <li>To allow login and verify your identity.</li>
-    <li>To show your profile photo within the app.</li>
-    <li>To send important notifications.</li>
-</ul>
+        <div class="data-section">
+            <div class="data-item">
+                <strong>📸 Profile Photos & Facial Recognition Data</strong>
+                <p><strong>What we collect:</strong> Profile photos captured through your device camera, along with facial recognition data used for attendance tracking.</p>
+                <p><strong>How we store it:</strong> Images are securely stored on ImageKit's cloud infrastructure with enterprise-grade security. Facial data is processed and stored in our secure backend servers.</p>
+                <p><strong>Why we collect it:</strong> To enable automated attendance marking, display your profile within the app, and facilitate student/volunteer identification.</p>
+                <p><strong>Your control:</strong> You can update or delete your profile photo anytime through the app settings. When you delete a photo, it is permanently removed from ImageKit servers within 24 hours.</p>
+            </div>
 
-<h2>3. Permissions Used</h2>
-<p><strong>Camera:</strong> Required only when uploading/changing your profile photo. The camera is not used in the background.</p>
+            <div class="data-item">
+                <strong>🔐 Google Account Information</strong>
+                <p><strong>What we collect:</strong> Your name, email address, and profile picture from your Google account when you sign in using Google Sign-In.</p>
+                <p><strong>Why we collect it:</strong> For secure authentication and to create your user profile in the app.</p>
+                <p><strong>How we use it:</strong> This information is used solely for account verification and login purposes. We do not access any other Google account data.</p>
+                <p><strong>Third-party service:</strong> Google Sign-In is provided by Google LLC and is subject to <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</p>
+            </div>
 
-<h2>4. User Control & Deletion</h2>
-<ul>
-    <li>You may delete or change your profile photo anytime — old data is permanently removed from ImageKit.</li>
-    <li>You may delete your entire account via Settings → Account Deletion.</li>
-    <li>We comply with user-initiated data removal requests.</li>
-</ul>
+            <div class="data-item">
+                <strong>📱 Device & Technical Information</strong>
+                <p><strong>What we collect:</strong></p>
+                <ul>
+                    <li>Device model, manufacturer, and operating system version</li>
+                    <li>Firebase Cloud Messaging (FCM) device token for push notifications</li>
+                    <li>App version and build information</li>
+                    <li>Crash logs and performance data (via Firebase Crashlytics)</li>
+                </ul>
+                <p><strong>Why we collect it:</strong> To send you important notifications about attendance, events, and updates; to diagnose and fix technical issues; and to improve app performance.</p>
+                <p><strong>Note:</strong> We do not track your location or access any personal files on your device.</p>
+            </div>
 
-<h2>5. Third-Party Services</h2>
-<ul>
-    <li><a href="https://policies.google.com/privacy">Google Sign-In</a></li>
-    <li><a href="https://firebase.google.com/support/privacy">Firebase Cloud Messaging</a></li>
-    <li><a href="https://imagekit.io/docs/security/privacy-policy">ImageKit</a></li>
-</ul>
+            <div class="data-item">
+                <strong>👤 Personal & Registration Information</strong>
+                <p><strong>What we collect:</strong></p>
+                <ul>
+                    <li>Full name, date of birth, gender</li>
+                    <li>Contact information (phone number, email, address)</li>
+                    <li>Educational details (roll number, batch, branch, year of study, college)</li>
+                    <li>Parent/guardian information (for students)</li>
+                    <li>Village and group assignments</li>
+                </ul>
+                <p><strong>Why we collect it:</strong> To maintain accurate records, facilitate communication, organize groups and batches, and generate attendance reports.</p>
+                <p><strong>How long we keep it:</strong> Your registration data is retained as long as your account is active. Upon account deletion, all personal information is permanently removed from our servers.</p>
+            </div>
 
-<h2>6. Security</h2>
-<p>All communication is encrypted (HTTPS). Data is protected using secure access practices.</p>
+            <div class="data-item">
+                <strong>📊 Attendance Records</strong>
+                <p><strong>What we collect:</strong> Date, time, and location of attendance marking; associated photos from attendance sessions.</p>
+                <p><strong>Why we collect it:</strong> To maintain accurate attendance records, generate reports, and provide historical data for analysis.</p>
+                <p><strong>Retention period:</strong> Attendance records are retained for administrative and reporting purposes. When you delete your account, all associated attendance data is permanently deleted.</p>
+            </div>
 
-<h2>8. Contact Us</h2>
-<p>If you have concerns or requests, please contact:<br>
-    <strong>Email:</strong> devs.jagrati@gmail.com</p>
+            <div class="data-item">
+                <strong>💾 Draft Data</strong>
+                <p><strong>What we collect:</strong> Form data that you haven't submitted yet (stored locally on your device using DataStore preferences).</p>
+                <p><strong>Why we collect it:</strong> To allow you to continue where you left off if you exit a registration form before completing it.</p>
+                <p><strong>Storage:</strong> Draft data is stored locally on your device and is automatically deleted once you successfully submit the form.</p>
+            </div>
+        </div>
 
-<p>We may update this policy occasionally. Changes will appear on this page with a new date.</p>
+        <h2>2. How We Use Your Information</h2>
+        <p>We use the collected information for the following purposes:</p>
+        <ul>
+            <li><strong>Authentication & Account Management:</strong> To verify your identity, manage your account, and provide secure access to the app.</li>
+            <li><strong>Attendance Tracking:</strong> To mark, record, and manage attendance using facial recognition and manual methods.</li>
+            <li><strong>Communication:</strong> To send you notifications about attendance, events, updates, and important announcements.</li>
+            <li><strong>Reporting & Analytics:</strong> To generate attendance reports, track participation, and provide insights to administrators.</li>
+            <li><strong>App Improvement:</strong> To diagnose issues, fix bugs, and enhance app performance and user experience.</li>
+            <li><strong>Support:</strong> To respond to your queries, feedback, and support requests.</li>
+        </ul>
+
+        <h2>3. Permissions We Require</h2>
+        <div class="data-section">
+            <div class="data-item">
+                <strong>📷 Camera Permission</strong>
+                <p>Required for capturing profile photos, taking attendance photos, and facial recognition.</p>
+                <p><strong>When it's used:</strong> Only when you explicitly tap the camera button to take a photo. The camera is never accessed in the background.</p>
+                <p><strong>You can revoke:</strong> This permission can be revoked anytime through your device settings.</p>
+            </div>
+
+            <div class="data-item">
+                <strong>🔔 Notification Permission</strong>
+                <p>Required to send you push notifications about attendance, events, and important updates.</p>
+                <p><strong>You can control:</strong> You can disable notifications anytime through app settings or device settings.</p>
+            </div>
+
+            <div class="data-item">
+                <strong>📂 Storage Permission (if applicable)</strong>
+                <p>May be required on older Android versions to save photos and reports.</p>
+                <p><strong>How it's used:</strong> Only to save files you explicitly choose to download or export.</p>
+            </div>
+        </div>
+
+        <div class="highlight-box">
+            <strong>⚠️ Important:</strong> All permissions are requested only when needed and with clear context. You can manage permissions through your device settings at any time. Denying permissions may limit some app functionality.
+        </div>
+
+        <h2>4. Data Sharing & Third-Party Services</h2>
+        <p>We value your privacy and do not sell, rent, or trade your personal information. However, we use the following trusted third-party services to operate the app:</p>
+
+        <h3>Third-Party Services</h3>
+        <ul>
+            <li><strong>Google Sign-In:</strong> For secure authentication. Subject to <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a>.</li>
+            <li><strong>Firebase Cloud Messaging (FCM):</strong> For push notifications. Subject to <a href="https://firebase.google.com/support/privacy" target="_blank">Firebase Privacy Policy</a>.</li>
+            <li><strong>Firebase Crashlytics:</strong> For crash reporting and app stability. Subject to <a href="https://firebase.google.com/support/privacy" target="_blank">Firebase Privacy Policy</a>.</li>
+            <li><strong>ImageKit:</strong> For secure image storage and delivery. Subject to <a href="https://imagekit.io/docs/security/privacy-policy" target="_blank">ImageKit Privacy Policy</a>.</li>
+        </ul>
+
+        <p>These services may process your data in accordance with their own privacy policies. We recommend reviewing their policies for more information.</p>
+
+        <h2>5. Data Security</h2>
+        <p>We implement industry-standard security measures to protect your information:</p>
+        <ul>
+            <li><strong>Encryption:</strong> All data transmitted between the app and our servers is encrypted using HTTPS/TLS protocols.</li>
+            <li><strong>Secure Storage:</strong> Personal data is stored on secure servers with restricted access and regular security audits.</li>
+            <li><strong>Authentication:</strong> We use OAuth 2.0 with Google Sign-In for secure authentication.</li>
+            <li><strong>Access Control:</strong> Only authorized personnel with legitimate needs can access user data.</li>
+            <li><strong>Regular Updates:</strong> We regularly update our security practices to address new threats and vulnerabilities.</li>
+        </ul>
+
+        <div class="highlight-box">
+            <strong>Note:</strong> While we strive to protect your information, no method of electronic storage or transmission is 100% secure. We cannot guarantee absolute security but are committed to using best practices.
+        </div>
+
+        <h2>6. Your Rights & Control</h2>
+        <p>You have complete control over your data. Here's what you can do:</p>
+
+        <h3>Access & Update</h3>
+        <ul>
+            <li>View and edit your profile information anytime through the app.</li>
+            <li>Update your profile photo, contact details, and other personal information.</li>
+        </ul>
+
+        <h3>Delete Data</h3>
+        <ul>
+            <li><strong>Profile Photo:</strong> Delete or change your profile photo anytime. Old photos are permanently removed from ImageKit servers.</li>
+            <li><strong>Account Deletion:</strong> Request complete account deletion through <strong>Settings → Account → Delete Account</strong>. This will permanently delete:
+                <ul>
+                    <li>Your profile and personal information</li>
+                    <li>All photos and facial recognition data</li>
+                    <li>Attendance records associated with your account</li>
+                    <li>All other data linked to your account</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Data Portability</h3>
+        <ul>
+            <li>You can request a copy of your data by contacting us at <a href="mailto:devs.jagrati@gmail.com">devs.jagrati@gmail.com</a>.</li>
+        </ul>
+
+        <h3>Opt-Out</h3>
+        <ul>
+            <li>Disable push notifications through app or device settings.</li>
+            <li>Revoke camera permissions through device settings (may limit functionality).</li>
+        </ul>
+
+        <div class="highlight-box">
+            <strong>⚠️ Account Deletion is Permanent:</strong> Once you delete your account, you will not be able to login again, and all your data will be permanently removed from our databases. This action cannot be undone.
+        </div>
+
+        <h2>7. Data Retention</h2>
+        <ul>
+            <li><strong>Active Accounts:</strong> Your data is retained as long as your account is active and you continue to use the app.</li>
+            <li><strong>Inactive Accounts:</strong> If you don't use the app for an extended period, we may archive or delete your account after notifying you.</li>
+            <li><strong>Deleted Accounts:</strong> Upon account deletion, all personal data is permanently removed from our servers within 30 days. Some aggregate, anonymized data may be retained for analytical purposes.</li>
+            <li><strong>Legal Requirements:</strong> We may retain certain data if required by law or for legitimate business purposes (e.g., resolving disputes).</li>
+        </ul>
+
+        <h2>8. Children's Privacy</h2>
+        <p>The Jagrati app is designed for use by students and volunteers of all ages. If you are under 18, please ensure you have parental consent before using the app. We do not knowingly collect personal information from children under 13 without parental consent.</p>
+        <p>Parents/guardians can review their child's information and request deletion by contacting us.</p>
+
+        <h2>9. Changes to This Policy</h2>
+        <p>We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. When we make significant changes, we will:</p>
+        <ul>
+            <li>Update the "Last Updated" date at the top of this policy.</li>
+            <li>Notify you through the app or via email.</li>
+            <li>Post the updated policy on this page.</li>
+        </ul>
+        <p>Your continued use of the app after changes constitutes acceptance of the updated policy.</p>
+
+        <h2>10. International Data Transfers</h2>
+        <p>Your data may be transferred to and stored on servers located outside your country of residence. By using the app, you consent to such transfers. We ensure that appropriate safeguards are in place to protect your data in accordance with this Privacy Policy.</p>
+
+        <h2>11. Cookies & Tracking</h2>
+        <p>The Jagrati app does not use cookies or tracking technologies. We do not track your browsing activity or collect data from other apps or websites.</p>
+
+        <div class="contact-section">
+            <h2>📧 Contact Us</h2>
+            <p>If you have any questions, concerns, or requests regarding this Privacy Policy or your data, please don't hesitate to reach out:</p>
+            <p><strong>Email:</strong> <a href="mailto:devs.jagrati@gmail.com">devs.jagrati@gmail.com</a></p>
+            <p style="margin-top: 20px;">We strive to respond to all inquiries within 48 hours.</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>Jagrati Android App</strong></p>
+            <p>Published by Hemang Mishra</p>
+            <p style="margin-top: 15px;">© 2025 Jagrati. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">This privacy policy is effective as of October 31, 2025.</p>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
+

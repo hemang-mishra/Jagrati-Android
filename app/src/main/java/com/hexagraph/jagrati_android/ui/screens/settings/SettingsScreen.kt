@@ -64,6 +64,7 @@ import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.util.AppUpdateHelper
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -340,6 +341,28 @@ fun SettingsScreen(
                                 context.startActivity(Intent.createChooser(intent, "Send Email"))
                             } catch (e: Exception) {
                                 // Handle case where no email app is installed
+                            }
+                        },
+                        iconTint = MaterialTheme.colorScheme.tertiary
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                    SettingsActionItem(
+                        icon = painterResource(R.drawable.ic_shield),
+                        showRefreshButton = false,
+                        title = "Privacy Policy",
+                        description = "View our privacy policy",
+                        isLoading = false,
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                data = "https://hemang-mishra.github.io/Jagrati-Android/".toUri()
+                            }
+                            try {
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                // Handle case where browser is not available
                             }
                         },
                         iconTint = MaterialTheme.colorScheme.tertiary
