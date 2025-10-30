@@ -40,6 +40,7 @@ import androidx.core.graphics.scale
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.toBitmap
 import com.hexagraph.jagrati_android.BuildConfig
+import java.util.UUID
 import kotlin.math.max
 import kotlin.math.sqrt
 
@@ -235,9 +236,10 @@ object Utils {
     fun timestamp(pattern: String = "yyyy-MM-dd HH:mm:ss", date: Date = Date()): String =
         SimpleDateFormat(pattern, Locale.getDefault()).format(date)
 
-    fun PIDGenerator(timeInMills: Long = System.currentTimeMillis(), name: String): String {
-        val sanitizedName = name.replace(Regex("[^a-zA-Z0-9]"), "_")
-        return "${sanitizedName}_$timeInMills"
+
+    fun generatePid(timeInMillis: Long = System.currentTimeMillis()): String{
+        val uuid = UUID.randomUUID().toString()
+        return "${uuid}_$timeInMillis"
     }
 
     fun bitmapToFile(context: Context, bitmap: Bitmap, fileName: String): File {

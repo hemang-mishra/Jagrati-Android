@@ -60,11 +60,31 @@ class VolunteerRequestViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             checkVolunteerRole()
             loadMyVolunteerRequests()
-            _firstName.update {
-                appPreferences.userDetails.get()?.firstName ?: ""
+
+            // Load draft if exists, otherwise load from user details
+            val draft = appPreferences.getVolunteerRegistrationDraft()
+            if (draft != null) {
+                loadDraftData(draft)
+            } else {
+                _firstName.update {
+                    appPreferences.userDetails.get()?.firstName ?: ""
+                }
+                _lastName.update {
+                    appPreferences.userDetails.get()?.lastName ?: ""
+                }
             }
-            _lastName.update {
-                appPreferences.userDetails.get()?.lastName ?: ""
+
+            // Auto-save draft on form changes
+            launch {
+                combine(
+                    _firstName, _lastName, _gender, _rollNumber, _alternateEmail,
+                    _batch, _programme, _streetAddress1, _streetAddress2, _pincode,
+                    _city, _state, _dateOfBirth, _contactNumber, _college,
+                    _branch, _yearOfStudy
+                ) { values -> values }
+                    .collect {
+                        saveDraft()
+                    }
             }
         }
     }
@@ -187,6 +207,49 @@ class VolunteerRequestViewModel(
     private suspend fun checkVolunteerRole() {
         val roles = appPreferences.userRoles.getFlow().firstOrNull() ?: emptyList()
         _hasVolunteerRole.value = roles.any { it.name == "VOLUNTEER" }
+    }
+
+    private fun loadDraftData(draft: com.hexagraph.jagrati_android.util.VolunteerRegistrationDraft) {
+        _firstName.update { draft.firstName }
+        _lastName.update { draft.lastName }
+        _alternateEmail.update { draft.email }
+        _contactNumber.update { draft.contactNo }
+        _dateOfBirth.update {
+            draft.dateOfBirth?.let {
+                try {
+                    LocalDate.parse(it)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+        _batch.update { draft.batch }
+        _streetAddress1.update { draft.address }
+    }
+
+    private suspend fun saveDraft() {
+        try {
+            val draft = com.hexagraph.jagrati_android.util.VolunteerRegistrationDraft(
+                firstName = _firstName.value,
+                lastName = _lastName.value,
+                email = _alternateEmail.value,
+                contactNo = _contactNumber.value,
+                dateOfBirth = _dateOfBirth.value?.toString(),
+                batch = _batch.value,
+                address = _streetAddress1.value
+            )
+            appPreferences.saveVolunteerRegistrationDraft(draft)
+        } catch (e: Exception) {
+            // Ignore draft saving errors
+        }
+    }
+
+    private suspend fun clearDraft() {
+        try {
+            appPreferences.clearVolunteerRegistrationDraft()
+        } catch (e: Exception) {
+            // Ignore draft clearing errors
+        }
     }
 
     // Form update methods
@@ -425,6 +488,7 @@ class VolunteerRequestViewModel(
                         _isLoading.value = false
                         _submissionSuccessful.value = true
                         emitMsg("Volunteer request submitted successfully")
+                        clearDraft() // Clear draft on success
                         loadMyVolunteerRequests() // Refresh the list
                     }
                     resource.isFailed -> {

@@ -64,6 +64,7 @@ import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.util.AppUpdateHelper
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,6 +109,9 @@ fun SettingsScreen(
     // Logout confirmation dialog state
     var showLogoutDialog by remember { mutableStateOf(false) }
 
+    // Delete account confirmation dialog state
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+
     // Show snackbar for messages
     LaunchedEffect(uiState.updateMessage, uiState.errorMessage) {
         uiState.updateMessage?.let {
@@ -125,6 +129,75 @@ fun SettingsScreen(
         if (uiState.updateAvailable) {
             viewModel.startUpdate(updateLauncher)
         }
+    }
+
+    // Delete Account Confirmation Dialog
+    if (showDeleteAccountDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAccountDialog = false },
+            title = {
+                Text(
+                    text = "Delete Account",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "⚠️ Warning: This action cannot be undone!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = "By proceeding, you understand that:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "• Your entire account and all associated data will be permanently deleted\n" +
+                               "• You will not be able to login again with this account\n" +
+                               "• All your personal data will be completely removed from our databases\n" +
+                               "• This includes attendance records, profile information, and all other data",
+                        style = MaterialTheme.typography.bodyMedium,
+                        lineHeight = 20.sp
+                    )
+                    Text(
+                        text = "You will be redirected to a form to confirm your deletion request.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteAccountDialog = false
+                        // Open the Google Form
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse("https://docs.google.com/forms/d/e/1FAIpQLSfpy8yr2D0Pv4NTMDmN4ACHXq-1s2SFsTWaZLjV2hx112e2Bw/viewform?usp=header")
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            // Handle case where browser is not available
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Continue to Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAccountDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     // Logout Confirmation Dialog
@@ -221,6 +294,25 @@ fun SettingsScreen(
                         description = if (BuildConfig.DEBUG) "Debug" else "Release",
                         iconTint = MaterialTheme.colorScheme.primary
                     )
+
+                    // Test Crashlytics - Only in Debug builds
+                    if (BuildConfig.DEBUG) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                        SettingsActionItem(
+                            icon = painterResource(R.drawable.bug_report),
+                            showRefreshButton = false,
+                            title = "Test Crashlytics",
+                            description = "Force a test crash (Debug only)",
+                            isLoading = false,
+                            onClick = {
+                                com.hexagraph.jagrati_android.util.CrashlyticsHelper.testCrash()
+                            },
+                            iconTint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 
@@ -271,6 +363,45 @@ fun SettingsScreen(
                             }
                         },
                         iconTint = MaterialTheme.colorScheme.tertiary
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                    SettingsActionItem(
+                        icon = painterResource(R.drawable.ic_shield),
+                        showRefreshButton = false,
+                        title = "Privacy Policy",
+                        description = "View our privacy policy",
+                        isLoading = false,
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                data = "https://hemang-mishra.github.io/Jagrati-Android/".toUri()
+                            }
+                            try {
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                // Handle case where browser is not available
+                            }
+                        },
+                        iconTint = MaterialTheme.colorScheme.tertiary
+                    )
+                }
+            }
+
+            // Account Section
+            item {
+                SettingsSection(title = "Account", colorIndex = 3) {
+                    SettingsActionItem(
+                        icon = painterResource(R.drawable.ic_delete),
+                        showRefreshButton = false,
+                        title = "Delete Account",
+                        description = "Permanently delete your account and all data",
+                        isLoading = false,
+                        onClick = {
+                            showDeleteAccountDialog = true
+                        },
+                        iconTint = MaterialTheme.colorScheme.error
                     )
                 }
             }

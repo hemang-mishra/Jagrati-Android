@@ -18,5 +18,7 @@ interface StudentRepository {
     suspend fun getAllStudents(): Flow<Resource<StudentListResponse>>
 
     suspend fun getStudentByPid(pid: String): Flow<Resource<StudentResponse>>
+
+    suspend fun deleteStudent(pid: String): Flow<Resource<String>>
 }
 

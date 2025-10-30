@@ -7,6 +7,7 @@ import com.hexagraph.jagrati_android.model.student.StudentResponse
 import com.hexagraph.jagrati_android.model.student.UpdateStudentRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -42,6 +43,10 @@ class KtorStudentService(
 
     suspend fun getStudentByPid(pid: String): StudentResponse {
         return client.get("$baseUrl/api/students/$pid").body()
+    }
+
+    suspend fun deleteStudent(pid: String): String {
+        return client.delete("$baseUrl/api/students/$pid").body()
     }
 }
 

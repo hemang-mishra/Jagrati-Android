@@ -53,7 +53,9 @@ fun HomeContentScreen(
     onTakeAttendanceClick: () -> Unit,
     onRegisterStudentClick: () -> Unit,
     onSearchByCameraClick: () -> Unit,
-    onNotificationClick: () -> Unit = {}
+    onNotificationClick: () -> Unit = {},
+    hasStudentRegistrationPermission: Boolean = false,
+    hasAttendancePermission: Boolean = false
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -70,18 +72,22 @@ fun HomeContentScreen(
             )
         }
 
-        // Take Attendance Card
-        item {
-            TakeAttendanceCard(
-                onClick = onTakeAttendanceClick
-            )
+        // Take Attendance Card - Only show if user has permission
+        if (hasAttendancePermission) {
+            item {
+                TakeAttendanceCard(
+                    onClick = onTakeAttendanceClick
+                )
+            }
         }
 
-        // Register New Student Card
-        item {
-            RegisterStudentCard(
-                onClick = onRegisterStudentClick
-            )
+        // Register New Student Card - Only show if user has permission
+        if (hasStudentRegistrationPermission) {
+            item {
+                RegisterStudentCard(
+                    onClick = onRegisterStudentClick
+                )
+            }
         }
 
         // Search Section

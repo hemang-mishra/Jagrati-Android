@@ -1,8 +1,6 @@
 package com.hexagraph.jagrati_android.service.user
 
-import com.hexagraph.jagrati_android.model.permission.PermissionListResponse
 import com.hexagraph.jagrati_android.model.user.AssignRoleToUserRequest
-import com.hexagraph.jagrati_android.model.user.RemoveRoleFromUserRequest
 import com.hexagraph.jagrati_android.model.user.UserDetailsWithRolesAndPermissions
 import com.hexagraph.jagrati_android.model.user.UserRoleAssignmentResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesListResponse
@@ -11,12 +9,9 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
 
 /**
  * Ktor client implementation for user management API calls.
@@ -52,7 +47,6 @@ class KtorUserService(
      * Assign a role to a user.
      *
      * @param request The assignment request containing user PID and role ID
-     * @param authToken The authorization token
      * @return Assignment response
      */
     suspend fun assignRoleToUser(request: AssignRoleToUserRequest): UserRoleAssignmentResponse {
@@ -80,5 +74,16 @@ class KtorUserService(
     suspend fun getCurrentUserDetails(timeMillis: Long): UserDetailsWithRolesAndPermissions {
         return client.get("$baseUrl/api/users/me/$timeMillis")
             .body()
+    }
+
+    /**
+     * Delete a user by PID.
+     *
+     * @param pid User PID
+     * @return Deletion response message
+     */
+    suspend fun deleteUser(pid: String): String {
+        val response: Map<String, String> = client.delete("$baseUrl/api/users/$pid").body()
+        return response["message"] ?: "User deleted successfully"
     }
 }

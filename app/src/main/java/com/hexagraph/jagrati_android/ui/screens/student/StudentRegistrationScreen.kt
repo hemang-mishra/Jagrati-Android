@@ -28,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -39,12 +40,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -74,22 +77,30 @@ fun StudentRegistrationScreen(
     viewModel: StudentRegistrationViewModel,
     snackbarHostState: SnackbarHostState,
     onBackPressed: () -> Unit,
-    navigateToFacialData: (String) -> Unit
+    navigateToFacialData: (String) -> Unit,
+    onDeleteClicked: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(key1 = uiState.error) {
         uiState.error?.let { error ->
-            snackbarHostState.showSnackbar(message = error.genericToast)
+            Toast.makeText(context, error.genericToast, Toast.LENGTH_SHORT).show()
             viewModel.clearErrorFlow()
         }
     }
 
     LaunchedEffect(key1 = uiState.successMessage) {
         uiState.successMessage?.let { message ->
-            snackbarHostState.showSnackbar(message = message)
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             viewModel.clearMsgFlow()
+        }
+    }
+
+    LaunchedEffect(key1 = uiState.draftLoaded) {
+        if (uiState.draftLoaded) {
+            Toast.makeText(context, "Draft restored", Toast.LENGTH_SHORT).show()
+            viewModel.clearDraftLoadedFlag()
         }
     }
 
@@ -99,12 +110,13 @@ fun StudentRegistrationScreen(
 
             if (uiState.isUpdateMode) {
                 Toast.makeText(context, "Student updated successfully", Toast.LENGTH_SHORT).show()
-                if(viewModel.pid != null)
-                navigateToFacialData(viewModel.pid!!)
+                if (viewModel.pid != null)
+                    navigateToFacialData(viewModel.pid!!)
                 onBackPressed()
             } else {
-                if(viewModel.pid != null)
-                navigateToFacialData(viewModel.pid!!)
+                Toast.makeText(context, "Student registered successfully", Toast.LENGTH_SHORT).show()
+                if (viewModel.pid != null)
+                    navigateToFacialData(viewModel.pid!!)
             }
         }
     }
@@ -123,7 +135,12 @@ fun StudentRegistrationScreen(
         onMothersNameChanged = viewModel::updateMothersName,
         onVillageSelected = viewModel::updateSelectedVillageId,
         onGroupSelected = viewModel::updateSelectedGroupId,
-        onSubmitClicked = viewModel::submitStudent
+        onSubmitClicked = viewModel::submitStudent,
+        onDeleteClicked = {
+            viewModel.deleteStudent(){
+                onDeleteClicked()
+            }
+        }
     )
 }
 
@@ -143,7 +160,8 @@ fun StudentRegistrationScreenLayout(
     onMothersNameChanged: (String) -> Unit,
     onVillageSelected: (Long) -> Unit,
     onGroupSelected: (Long) -> Unit,
-    onSubmitClicked: () -> Unit
+    onSubmitClicked: () -> Unit,
+    onDeleteClicked: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -253,7 +271,23 @@ fun StudentRegistrationScreenLayout(
                         isRequired = false
                     )
 
-                    val schoolClasses = listOf("Kindergarten","1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th","Not registered in school", "None of the above")
+                    val schoolClasses = listOf(
+                        "Kindergarten",
+                        "1st",
+                        "2nd",
+                        "3rd",
+                        "4th",
+                        "5th",
+                        "6th",
+                        "7th",
+                        "8th",
+                        "9th",
+                        "10th",
+                        "11th",
+                        "12th",
+                        "Not registered in school",
+                        "None of the above"
+                    )
 
                     StudentDropdownField(
                         label = "School Class",
@@ -350,6 +384,40 @@ fun StudentRegistrationScreenLayout(
                             text = if (uiState.isUpdateMode) "Update Student" else "Register Student",
                             style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Show delete button only in update mode and if user has permission
+                if (uiState.isUpdateMode && uiState.canDeleteStudent) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    var showDeleteDialog by remember { mutableStateOf(false) }
+
+                    OutlinedButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        enabled = !uiState.isLoading,
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Delete Student",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    if (showDeleteDialog) {
+                        DeleteStudentConfirmationDialog(
+                            studentName = "${uiState.firstName} ${uiState.lastName}",
+                            onDismiss = { showDeleteDialog = false },
+                            onConfirm = {
+                                showDeleteDialog = false
+                                onDeleteClicked()
+                            },
+                            isLoading = uiState.isLoading
                         )
                     }
                 }
@@ -575,7 +643,9 @@ fun StudentDropdownField(
             ) {
                 Text(
                     text = selectedItem.ifEmpty { "Select $label" },
-                    color = if (selectedItem.isEmpty()) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = if (selectedItem.isEmpty()) MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = 0.6f
+                    )
                     else MaterialTheme.colorScheme.onSurface
                 )
 
@@ -661,7 +731,9 @@ fun VillageDropdownField(
             ) {
                 Text(
                     text = selectedVillageName.ifEmpty { "Select $label" },
-                    color = if (selectedVillageName.isEmpty()) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = if (selectedVillageName.isEmpty()) MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = 0.6f
+                    )
                     else MaterialTheme.colorScheme.onSurface
                 )
 
@@ -747,7 +819,9 @@ fun GroupDropdownField(
             ) {
                 Text(
                     text = selectedGroupName.ifEmpty { "Select $label" },
-                    color = if (selectedGroupName.isEmpty()) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = if (selectedGroupName.isEmpty()) MaterialTheme.colorScheme.onSurface.copy(
+                        alpha = 0.6f
+                    )
                     else MaterialTheme.colorScheme.onSurface
                 )
 
@@ -794,6 +868,79 @@ fun GroupDropdownField(
     }
 }
 
+@Composable
+fun DeleteStudentConfirmationDialog(
+    studentName: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    isLoading: Boolean
+) {
+    AlertDialog(
+        onDismissRequest = { if (!isLoading) onDismiss() },
+        title = {
+            Text(
+                text = "Delete Student",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.error
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Are you sure you want to delete this student?",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Student: $studentName",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "This action will anonymize all student data and cannot be undone.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                } else {
+                    Text(
+                        "Delete",
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
+                Text("Cancel")
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
 @Preview(showBackground = true)
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
@@ -818,7 +965,8 @@ fun StudentRegistrationScreenPreview() {
             onMothersNameChanged = {},
             onVillageSelected = {},
             onGroupSelected = {},
-            onSubmitClicked = {}
+            onSubmitClicked = {},
+            onDeleteClicked = {}
         )
     }
 }

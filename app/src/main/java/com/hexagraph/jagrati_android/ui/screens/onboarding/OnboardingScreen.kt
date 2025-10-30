@@ -55,7 +55,8 @@ import kotlinx.coroutines.launch
 
 enum class OnboardingPage {
     Welcome,
-    Features
+    Features,
+    PrivacyPolicy
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,6 +73,7 @@ fun OnboardingScreen(
     BackHandler(enabled = currentPage != OnboardingPage.Welcome) {
         when (currentPage) {
             OnboardingPage.Features -> currentPage = OnboardingPage.Welcome
+            OnboardingPage.PrivacyPolicy -> currentPage = OnboardingPage.Features
             else -> {}
         }
     }
@@ -117,7 +119,7 @@ fun OnboardingScreen(
                                 description = "More than an initiative, a promise. To learn, to share, and to keep the light of education alive in every home we reach.",
                                 buttonText = "Get Started",
                                 currentStep = 1,
-                                totalSteps = 2,
+                                totalSteps = 3,
                                 showLearnMore = true,
                                 onNextClick = { currentPage = OnboardingPage.Features },
                                 modifier = Modifier
@@ -129,7 +131,7 @@ fun OnboardingScreen(
                                 description = "More than an initiative, a promise. To learn, to share, and to keep the light of education alive in every home we reach.",
                                 buttonText = "Get Started",
                                 currentStep = 1,
-                                totalSteps = 2,
+                                totalSteps = 3,
                                 showLearnMore = true,
                                 onNextClick = { currentPage = OnboardingPage.Features },
                                 isTablet = isTablet
@@ -142,11 +144,11 @@ fun OnboardingScreen(
                                 title = "Powerful Features",
                                 highlight = "All in One Place",
                                 description = "Smart facial recognition attendance, seamless volunteer management, secure profile access, event participation, and real-time progress tracking.",
-                                buttonText = "Let's Begin",
+                                buttonText = "Continue",
                                 currentStep = 2,
-                                totalSteps = 2,
+                                totalSteps = 3,
                                 showLearnMore = false,
-                                onNextClick = onCompleteOnboarding,
+                                onNextClick = { currentPage = OnboardingPage.PrivacyPolicy },
                                 showNextIcon = true,
                                 modifier = Modifier
                             )
@@ -155,15 +157,21 @@ fun OnboardingScreen(
                                 title = "Powerful Features",
                                 highlight = "All in One Place",
                                 description = "Smart facial recognition attendance, seamless volunteer management, secure profile access, event participation, and real-time progress tracking.",
-                                buttonText = "Let's Begin",
+                                buttonText = "Continue",
                                 currentStep = 2,
-                                totalSteps = 2,
+                                totalSteps = 3,
                                 showLearnMore = false,
-                                onNextClick = onCompleteOnboarding,
+                                onNextClick = { currentPage = OnboardingPage.PrivacyPolicy },
                                 showNextIcon = true,
                                 isTablet = isTablet
                             )
                         }
+                    }
+                    OnboardingPage.PrivacyPolicy -> {
+                        PrivacyPolicyPage(
+                            onAccept = onCompleteOnboarding,
+                            onDecline = { currentPage = OnboardingPage.Features }
+                        )
                     }
                 }
             }
@@ -712,6 +720,235 @@ private fun ActionButtons(
                     fontWeight = FontWeight.Medium
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun PrivacyPolicyPage(
+    onAccept: () -> Unit,
+    onDecline: () -> Unit
+) {
+    val context = LocalContext.current
+    var privacyAccepted by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Progress indicator
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(3) { index ->
+                Box(
+                    modifier = Modifier
+                        .size(if (index == 2) 12.dp else 8.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (index == 2)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                        )
+                )
+                if (index < 2) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Title
+        Text(
+            text = "Privacy Policy",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Your Privacy Matters to Us",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Privacy policy summary card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(20.dp)
+            ) {
+                PrivacyPolicySummaryItem(
+                    iconRes = R.drawable.ic_photo_camera,
+                    title = "Photos & Data Collection",
+                    description = "We collect profile photos and attendance data to provide our services. You have full control over your data."
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                PrivacyPolicySummaryItem(
+                    iconRes = R.drawable.ic_lock,
+                    title = "Secure & Encrypted",
+                    description = "All your data is encrypted and stored securely. We use industry-standard security practices."
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                PrivacyPolicySummaryItem(
+                    iconRes = R.drawable.ic_shield,
+                    title = "Your Control",
+                    description = "You can update or delete your data anytime. Account deletion permanently removes all your information."
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                PrivacyPolicySummaryItem(
+                    iconRes = R.drawable.ic_admin_panel_settings,
+                    title = "No Selling or Sharing",
+                    description = "We never sell or share your personal information with third parties for marketing purposes."
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse("https://hemang-mishra.github.io/Jagrati-Android/")
+                        }
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = "Read Full Privacy Policy",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Checkbox for acceptance
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = privacyAccepted,
+                onCheckedChange = { privacyAccepted = it },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary
+                )
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "I have read and accept the Privacy Policy",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Action buttons
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            OutlinedButton(
+                onClick = onDecline,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Back")
+            }
+
+            Button(
+                onClick = onAccept,
+                enabled = privacyAccepted,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                )
+            ) {
+                Text(
+                    text = "Accept & Continue",
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun PrivacyPolicySummaryItem(
+    iconRes: Int,
+    title: String,
+    description: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            modifier = Modifier
+                .size(24.dp)
+                .padding(end = 0.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                lineHeight = 20.sp
+            )
         }
     }
 }

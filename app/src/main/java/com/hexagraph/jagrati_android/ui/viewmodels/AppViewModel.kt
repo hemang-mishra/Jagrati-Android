@@ -7,6 +7,7 @@ import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
 import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.CrashlyticsHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,8 +32,16 @@ class AppViewModel(
 
     init {
         viewModelScope.launch {
-            appPreferences.userDetails.getFlow().collect {
-                currentUserPid = it?.pid
+            appPreferences.userDetails.getFlow().collect { userDetails ->
+                currentUserPid = userDetails?.pid
+
+                // Set Crashlytics user identifier
+                if (userDetails != null) {
+                    CrashlyticsHelper.setUserId(userDetails.pid)
+                    CrashlyticsHelper.setCustomKey("user_email", userDetails.email ?: "")
+                    CrashlyticsHelper.setCustomKey("user_name", "${userDetails.firstName} ${userDetails.lastName}")
+                    Log.d("AppViewModel", "Crashlytics user ID set: ${userDetails.pid}")
+                }
             }
         }
         viewModelScope.launch {
@@ -80,6 +89,8 @@ class AppViewModel(
     fun logout() {
         viewModelScope.launch {
             Log.d("AppViewModel", "Manual logout triggered")
+            // Clear Crashlytics user identifier on logout
+            CrashlyticsHelper.clearUserId()
             appPreferences.clearAll()
             _shouldLogout.value = true
         }
