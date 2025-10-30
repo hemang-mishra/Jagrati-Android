@@ -2,13 +2,13 @@ package com.hexagraph.jagrati_android.ui.screens.userroles
 
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ResponseError
-import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
+import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.model.role.RoleResponse
-import com.hexagraph.jagrati_android.model.user.UserRoleAssignmentResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesResponse
 import com.hexagraph.jagrati_android.repository.role.RoleRepository
 import com.hexagraph.jagrati_android.repository.user.UserRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
+import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +26,9 @@ data class UserDetailUiState(
     val availableRoles: List<RoleResponse> = emptyList(),
     val showRoleSelectionDialog: Boolean = false,
     val roleAssignmentLoading: Boolean = false,
+    val canDeleteUser: Boolean = false,
+    val showDeleteDialog: Boolean = false,
+    val isDeleting: Boolean = false,
     val error: ResponseError? = null,
     val successMessage: String? = null
 )
@@ -33,7 +36,8 @@ data class UserDetailUiState(
 class UserDetailViewModel(
     private val userPid: String,
     private val userRepository: UserRepository,
-    private val roleRepository: RoleRepository
+    private val roleRepository: RoleRepository,
+    private val appPreferences: AppPreferences
 ) : BaseViewModel<UserDetailUiState>() {
 
     private val _uiState = MutableStateFlow(UserDetailUiState(userPid = userPid))
@@ -41,6 +45,15 @@ class UserDetailViewModel(
 
     init {
         loadUserDetails()
+        checkDeletePermission()
+    }
+
+    private fun checkDeletePermission() {
+        viewModelScope.launch(Dispatchers.IO) {
+            appPreferences.hasPermission(AllPermissions.USER_DELETE).collect { hasPermission ->
+                _uiState.update { it.copy(canDeleteUser = hasPermission) }
+            }
+        }
     }
 
     override fun createUiStateFlow(): StateFlow<UserDetailUiState> {
@@ -184,6 +197,47 @@ class UserDetailViewModel(
                     }
                     Resource.Status.LOADING -> {
                         _uiState.update { it.copy(roleAssignmentLoading = true) }
+                    }
+                }
+            }
+        }
+    }
+
+    fun showDeleteDialog() {
+        _uiState.update { it.copy(showDeleteDialog = true) }
+    }
+
+    fun hideDeleteDialog() {
+        _uiState.update { it.copy(showDeleteDialog = false) }
+    }
+
+    fun deleteUser(onSuccess: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(isDeleting = true) }
+
+            userRepository.deleteUser(userPid).collect { result ->
+                when (result.status) {
+                    Resource.Status.SUCCESS -> {
+                        _uiState.update {
+                            it.copy(
+                                isDeleting = false,
+                                showDeleteDialog = false
+                            )
+                        }
+                        emitMsg(result.data ?: "User deleted successfully")
+                        onSuccess()
+                    }
+                    Resource.Status.FAILED -> {
+                        _uiState.update {
+                            it.copy(
+                                isDeleting = false,
+                                showDeleteDialog = false
+                            )
+                        }
+                        emitError(result.error)
+                    }
+                    Resource.Status.LOADING -> {
+                        _uiState.update { it.copy(isDeleting = true) }
                     }
                 }
             }

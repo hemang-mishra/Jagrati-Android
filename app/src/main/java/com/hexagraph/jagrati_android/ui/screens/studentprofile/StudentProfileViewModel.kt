@@ -105,7 +105,7 @@ class StudentProfileViewModel(
     private fun checkEditPermission() {
         viewModelScope.launch(Dispatchers.IO) {
             val hasPermission = appPreferences.hasPermission(AllPermissions.STUDENT_UPDATE).firstOrNull() ?: false
-            _canEditProfile.update { hasPermission }
+            _canEditProfile.update { hasPermission && (_student.value?.isActive != false) }
         }
     }
 
@@ -123,6 +123,9 @@ class StudentProfileViewModel(
                     resource.isSuccess -> {
                         resource.data?.let { studentResponse ->
                             _student.update { studentResponse }
+                            if(!studentResponse.isActive){
+                                _canEditProfile.update { false }
+                            }
                         }
                     }
                     resource.isFailed -> {

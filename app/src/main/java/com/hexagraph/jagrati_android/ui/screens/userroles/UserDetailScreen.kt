@@ -99,7 +99,10 @@ fun UserDetailScreen(
         onAssignRoleClick = { viewModel.showRoleSelectionDialog() },
         onRemoveRoleClick = { roleId -> viewModel.removeRoleFromUser(roleId) },
         onRoleSelected = { roleId -> viewModel.assignRoleToUser(roleId) },
-        onDismissDialog = { viewModel.hideRoleSelectionDialog() }
+        onDismissDialog = { viewModel.hideRoleSelectionDialog() },
+        onDeleteUserClick = { viewModel.showDeleteDialog() },
+        onConfirmDelete = { viewModel.deleteUser(onSuccess = onBackPressed) },
+        onDismissDeleteDialog = { viewModel.hideDeleteDialog() }
     )
 }
 
@@ -112,7 +115,10 @@ fun UserDetailScreenLayout(
     onAssignRoleClick: () -> Unit,
     onRemoveRoleClick: (Long) -> Unit,
     onRoleSelected: (Long) -> Unit,
-    onDismissDialog: () -> Unit
+    onDismissDialog: () -> Unit,
+    onDeleteUserClick: () -> Unit,
+    onConfirmDelete: () -> Unit,
+    onDismissDeleteDialog: () -> Unit
 ) {
     val pullRefreshState = rememberPullToRefreshState()
     val configuration = LocalConfiguration.current
@@ -135,6 +141,17 @@ fun UserDetailScreenLayout(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
+                    }
+                },
+                actions = {
+                    if (uiState.canDeleteUser) {
+                        IconButton(onClick = onDeleteUserClick) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_delete),
+                                contentDescription = "Delete User",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -222,6 +239,16 @@ fun UserDetailScreenLayout(
                         onRoleSelected = onRoleSelected,
                         onDismiss = onDismissDialog,
                         isLoading = uiState.roleAssignmentLoading
+                    )
+                }
+
+                // Delete user warning dialog
+                if (uiState.showDeleteDialog) {
+                    DeleteUserWarningDialog(
+                        userName = uiState.user?.let { "${it.firstName} ${it.lastName}" } ?: "this user",
+                        onConfirm = onConfirmDelete,
+                        onDismiss = onDismissDeleteDialog,
+                        isDeleting = uiState.isDeleting
                     )
                 }
             }
@@ -775,6 +802,135 @@ fun EnhancedRoleSelectionDialog(
     )
 }
 
+@Composable
+fun DeleteUserDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    isLoading: Boolean
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = {
+            Text(
+                text = "Delete User",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        text = {
+            Text(
+                text = "Are you sure you want to delete this user? This action cannot be undone.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                enabled = !isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                Text(
+                    if (isLoading) "Deleting..." else "Delete",
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onError
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isLoading
+            ) {
+                Text(
+                    "Cancel",
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun DeleteUserWarningDialog(
+    userName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+    isDeleting: Boolean
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = {
+            Text(
+                text = "Delete User",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        text = {
+            Text(
+                text = "Are you sure you want to delete $userName? This action cannot be undone.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                enabled = !isDeleting,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                if (isDeleting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                Text(
+                    if (isDeleting) "Deleting..." else "Delete",
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onError
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isDeleting
+            ) {
+                Text(
+                    "Cancel",
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    )
+}
+
 @Preview(showBackground = true)
 @Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
 @Composable
@@ -810,7 +966,10 @@ fun UserDetailScreenPreview() {
             onAssignRoleClick = {},
             onRemoveRoleClick = {},
             onRoleSelected = {},
-            onDismissDialog = {}
+            onDismissDialog = {},
+            onDeleteUserClick = {},
+            onConfirmDelete = {},
+            onDismissDeleteDialog = {}
         )
     }
 }
@@ -849,7 +1008,10 @@ fun UserDetailScreenTabletPreview() {
             onAssignRoleClick = {},
             onRemoveRoleClick = {},
             onRoleSelected = {},
-            onDismissDialog = {}
+            onDismissDialog = {},
+            onDeleteUserClick = {},
+            onConfirmDelete = {},
+            onDismissDeleteDialog = {}
         )
     }
 }
@@ -883,7 +1045,10 @@ fun EmptyRolesPreview() {
             onAssignRoleClick = {},
             onRemoveRoleClick = {},
             onRoleSelected = {},
-            onDismissDialog = {}
+            onDismissDialog = {},
+            onDeleteUserClick = {},
+            onConfirmDelete = {},
+            onDismissDeleteDialog = {}
         )
     }
 }
@@ -906,6 +1071,37 @@ fun RoleSelectionDialogPreview() {
                 onRoleSelected = {},
                 onDismiss = {},
                 isLoading = false
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun DeleteUserDialogPreview() {
+    JagratiAndroidTheme {
+        Box(modifier = Modifier.fillMaxSize()) {
+            DeleteUserDialog(
+                onConfirm = {},
+                onDismiss = {},
+                isLoading = false
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun DeleteUserWarningDialogPreview() {
+    JagratiAndroidTheme {
+        Box(modifier = Modifier.fillMaxSize()) {
+            DeleteUserWarningDialog(
+                userName = "John Doe",
+                onConfirm = {},
+                onDismiss = {},
+                isDeleting = false
             )
         }
     }

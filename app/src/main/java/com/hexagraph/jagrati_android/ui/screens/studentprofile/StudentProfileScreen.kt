@@ -178,7 +178,8 @@ fun StudentProfileLayout(
                         ) {
                             ProfilePhotoSection(
                                 student = uiState.student,
-                                onPhotoClick = onPhotoClick
+                                onPhotoClick = onPhotoClick,
+                                canEditProfile = uiState.canEditProfile
                             )
                         }
                     }
@@ -279,6 +280,7 @@ fun StudentProfileLayout(
 @Composable
 fun ProfilePhotoSection(
     student: StudentResponse,
+    canEditProfile: Boolean,
     onPhotoClick: () -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
@@ -408,7 +410,7 @@ fun ProfilePhotoSection(
         }
 
         // Add face data button if no profile pic
-        if (student.profilePic == null) {
+        if (student.profilePic == null && canEditProfile) {
             Button(
                 onClick = onPhotoClick,
                 colors = ButtonDefaults.buttonColors(

@@ -53,7 +53,7 @@ val viewModelModule = module {
 
     // User role management ViewModels
     factory { UserRolesViewModel(get()) }
-    factory { (userPid: String) -> UserDetailViewModel(userPid, get(), get()) }
+    factory { (userPid: String) -> UserDetailViewModel(userPid, get(), get(), get()) }
 
     factory { VillageManagementViewModel(get(), get()) }
 
@@ -68,7 +68,7 @@ val viewModelModule = module {
     factory {(hasVolunteerAttendancePerms: Boolean, isMarkingAttendance: Boolean)-> UnifiedSearchViewModel(get(), get(), get(), get(), get(), hasVolunteerAttendancePerms, isMarkingAttendance) }
 
     // Student management ViewModels
-    factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), get(), get(), pid) }
+    factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), get(), get(), get(), pid) }
     factory { StudentListViewModel(get(), get(), get()) }
     factory { (studentPid: String) -> StudentProfileViewModel(studentPid, get(), get(), get()) }
 

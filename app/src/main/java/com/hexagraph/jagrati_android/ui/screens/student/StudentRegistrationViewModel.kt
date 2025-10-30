@@ -2,10 +2,10 @@ package com.hexagraph.jagrati_android.ui.screens.student
 
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ResponseError
-import com.hexagraph.jagrati_android.model.Student
 import com.hexagraph.jagrati_android.model.dao.GroupsDao
 import com.hexagraph.jagrati_android.model.dao.StudentDao
 import com.hexagraph.jagrati_android.model.dao.VillageDao
+import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.model.student.StudentRequest
 import com.hexagraph.jagrati_android.model.student.StudentResponse
 import com.hexagraph.jagrati_android.model.student.UpdateStudentRequest
@@ -42,6 +42,7 @@ data class StudentRegistrationUiState(
     val selectedGroupId: Long? = null,
     val formErrors: Map<String, String> = emptyMap(),
     val submissionSuccessful: Boolean = false,
+    val canDeleteStudent: Boolean = false,
     val error: ResponseError? = null,
     val successMessage: String? = null
 )
@@ -51,6 +52,7 @@ class StudentRegistrationViewModel(
     private val studentDao: StudentDao,
     private val villagesDao: VillageDao,
     private val groupsDao: GroupsDao,
+    private val appPreferences: AppPreferences,
     private val pidToUpdate: String?
 ) : BaseViewModel<StudentRegistrationUiState>() {
 
@@ -75,6 +77,7 @@ class StudentRegistrationViewModel(
 
     private val _formErrors = MutableStateFlow<Map<String, String>>(emptyMap())
     private val _submissionSuccessful = MutableStateFlow(false)
+    private val _canDeleteStudent = MutableStateFlow(false)
 
     override val uiState: StateFlow<StudentRegistrationUiState> = createUiStateFlow()
     var pid: String? = pidToUpdate
@@ -89,6 +92,11 @@ class StudentRegistrationViewModel(
             launch {
                 groupsDao.getAllActiveGroups().collect { groups ->
                     _groups.update { groups.associate { Pair(it.id, it.name) } }
+                }
+            }
+            launch {
+                appPreferences.hasPermission(AllPermissions.STUDENT_DELETE).collect { hasPermission ->
+                    _canDeleteStudent.update { hasPermission && _isUpdateMode.value }
                 }
             }
             if (pidToUpdate != null) {
@@ -117,6 +125,7 @@ class StudentRegistrationViewModel(
             _selectedGroupId,
             _formErrors,
             _submissionSuccessful,
+            _canDeleteStudent,
             errorFlow,
             successMsgFlow
         ) { flows ->
@@ -139,8 +148,9 @@ class StudentRegistrationViewModel(
                 selectedGroupId = flows[15] as Long?,
                 formErrors = flows[16] as Map<String, String>,
                 submissionSuccessful = flows[17] as Boolean,
-                error = flows[18] as ResponseError?,
-                successMessage = flows[19] as String?
+                canDeleteStudent = flows[18] as Boolean,
+                error = flows[19] as ResponseError?,
+                successMessage = flows[20] as String?
             )
         }.stateIn(
             scope = viewModelScope,
@@ -269,7 +279,7 @@ class StudentRegistrationViewModel(
     }
 
     private suspend fun registerNewStudent() {
-        val pid = Utils.PIDGenerator(name = _firstName.value + _lastName.value)
+        val pid = Utils.generatePid()
         this.pid = pid
 
         val request = StudentRequest(
@@ -374,5 +384,36 @@ class StudentRegistrationViewModel(
 
     fun resetSubmissionStatus() {
         _submissionSuccessful.update { false }
+    }
+
+    fun deleteStudent(onSuccess: ()-> Unit) {
+        val pidToDelete = _existingPid.value
+        if (pidToDelete == null) {
+            emitError(ResponseError.UNKNOWN)
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _isLoading.update { true }
+            try {
+                studentRepository.deleteStudent(pidToDelete).collect { resource ->
+                    when {
+                        resource.isSuccess -> {
+                            emitMsg("Student deleted successfully!")
+                            // No need to delete from local database
+                            onSuccess()
+                            _isLoading.update { false }
+                        }
+                        resource.isFailed -> {
+                            emitError(resource.error)
+                            _isLoading.update { false }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                emitError(ResponseError.UNKNOWN)
+                _isLoading.update { false }
+            }
+        }
     }
 }

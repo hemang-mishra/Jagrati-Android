@@ -466,6 +466,10 @@ fun AppNavigation(
                     navigateToFacialData = {pid->
                         backstack.popBackStack()
                         backstack.add(Screens.NavFaceDataRegisterRoute(pid))
+                    },
+                    onDeleteClicked = {
+                        backstack.clear()
+                        backstack.add(Screens.NavHomeRoute)
                     }
                 )
             }

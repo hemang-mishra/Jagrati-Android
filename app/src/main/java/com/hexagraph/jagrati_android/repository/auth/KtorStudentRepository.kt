@@ -43,5 +43,11 @@ class KtorStudentRepository(
         val response = safeApiCall { studentService.getStudentByPid(pid) }
         emit(response)
     }
+
+    override suspend fun deleteStudent(pid: String): Flow<Resource<String>> = flow {
+        emit(Resource.loading())
+        val response = safeApiCall { studentService.deleteStudent(pid) }
+        emit(response)
+    }
 }
 
