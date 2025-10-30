@@ -15,6 +15,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.model.permission.AllPermissions
@@ -46,6 +47,10 @@ class AppPreferences(private val context: Context) {
         private val VILLAGES = stringPreferencesKey("villages")
         private val GROUPS = stringPreferencesKey("groups")
         private val IS_VOLUNTEER = stringPreferencesKey("is_volunteer")
+
+        // Draft keys
+        private val STUDENT_REGISTRATION_DRAFT = stringPreferencesKey("student_registration_draft")
+        private val VOLUNTEER_REGISTRATION_DRAFT = stringPreferencesKey("volunteer_registration_draft")
     }
 
     val lastSyncTime: DataStorePreference<Long> = object : DataStorePreference<Long> {
@@ -258,6 +263,63 @@ class AppPreferences(private val context: Context) {
         userRoles.set(emptyList())
     }
 
+    // Student Registration Draft
+    suspend fun saveStudentRegistrationDraft(draft: StudentRegistrationDraft) {
+        context.dataStore.edit { preferences ->
+            preferences[STUDENT_REGISTRATION_DRAFT] = gson.toJson(draft)
+        }
+    }
+
+    suspend fun getStudentRegistrationDraft(): StudentRegistrationDraft? {
+        return try {
+            val json = context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[STUDENT_REGISTRATION_DRAFT] }
+                .distinctUntilChanged()
+                .first()
+            if (json != null) {
+                gson.fromJson(json, StudentRegistrationDraft::class.java)
+            } else null
+        } catch (e: Exception) {
+            Log.e("AppPreferences", "Error getting student draft", e)
+            null
+        }
+    }
+
+    suspend fun clearStudentRegistrationDraft() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(STUDENT_REGISTRATION_DRAFT)
+        }
+    }
+
+    // Volunteer Registration Draft
+    suspend fun saveVolunteerRegistrationDraft(draft: VolunteerRegistrationDraft) {
+        context.dataStore.edit { preferences ->
+            preferences[VOLUNTEER_REGISTRATION_DRAFT] = gson.toJson(draft)
+        }
+    }
+
+    suspend fun getVolunteerRegistrationDraft(): VolunteerRegistrationDraft? {
+        return try {
+            val json = context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[VOLUNTEER_REGISTRATION_DRAFT] }
+                .distinctUntilChanged()
+                .first()
+            if (json != null) {
+                gson.fromJson(json, VolunteerRegistrationDraft::class.java)
+            } else null
+        } catch (e: Exception) {
+            Log.e("AppPreferences", "Error getting volunteer draft", e)
+            null
+        }
+    }
+
+    suspend fun clearVolunteerRegistrationDraft() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(VOLUNTEER_REGISTRATION_DRAFT)
+        }
+    }
 
     suspend fun clearAll() {
         context.dataStore.edit { preferences ->
@@ -265,3 +327,29 @@ class AppPreferences(private val context: Context) {
         }
     }
 }
+
+// Draft data classes
+data class StudentRegistrationDraft(
+    val firstName: String = "",
+    val lastName: String = "",
+    val gender: String? = null,
+    val yearOfBirth: Int? = null,
+    val schoolClass: String = "",
+    val primaryContactNo: String = "",
+    val secondaryContactNo: String = "",
+    val fathersName: String = "",
+    val mothersName: String = "",
+    val selectedVillageId: Long? = null,
+    val selectedGroupId: Long? = null
+)
+
+data class VolunteerRegistrationDraft(
+    val firstName: String = "",
+    val lastName: String = "",
+    val email: String = "",
+    val contactNo: String = "",
+    val dateOfBirth: String? = null,
+    val batch: String = "",
+    val address: String = ""
+)
+

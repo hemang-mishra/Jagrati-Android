@@ -13,6 +13,7 @@ import com.hexagraph.jagrati_android.model.student.toStudent
 import com.hexagraph.jagrati_android.repository.auth.StudentRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.StudentRegistrationDraft
 import com.hexagraph.jagrati_android.util.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +44,7 @@ data class StudentRegistrationUiState(
     val formErrors: Map<String, String> = emptyMap(),
     val submissionSuccessful: Boolean = false,
     val canDeleteStudent: Boolean = false,
+    val draftLoaded: Boolean = false,
     val error: ResponseError? = null,
     val successMessage: String? = null
 )
@@ -78,6 +80,7 @@ class StudentRegistrationViewModel(
     private val _formErrors = MutableStateFlow<Map<String, String>>(emptyMap())
     private val _submissionSuccessful = MutableStateFlow(false)
     private val _canDeleteStudent = MutableStateFlow(false)
+    private val _draftLoaded = MutableStateFlow(false)
 
     override val uiState: StateFlow<StudentRegistrationUiState> = createUiStateFlow()
     var pid: String? = pidToUpdate
@@ -101,6 +104,23 @@ class StudentRegistrationViewModel(
             }
             if (pidToUpdate != null) {
                 loadExistingStudentData(pidToUpdate)
+            } else {
+                // Load draft for new registration
+                loadDraftIfExists()
+            }
+
+            // Observe form changes and save as draft (only for new registrations)
+            if (pidToUpdate == null) {
+                launch {
+                    combine(
+                        _firstName, _lastName, _gender, _yearOfBirth,
+                        _schoolClass, _primaryContactNo, _secondaryContactNo,
+                        _fathersName, _mothersName, _selectedVillageId, _selectedGroupId
+                    ) { values -> values }
+                        .collect {
+                            saveDraft()
+                        }
+                }
             }
         }
     }
@@ -126,6 +146,7 @@ class StudentRegistrationViewModel(
             _formErrors,
             _submissionSuccessful,
             _canDeleteStudent,
+            _draftLoaded,
             errorFlow,
             successMsgFlow
         ) { flows ->
@@ -149,14 +170,66 @@ class StudentRegistrationViewModel(
                 formErrors = flows[16] as Map<String, String>,
                 submissionSuccessful = flows[17] as Boolean,
                 canDeleteStudent = flows[18] as Boolean,
-                error = flows[19] as ResponseError?,
-                successMessage = flows[20] as String?
+                draftLoaded = flows[19] as Boolean,
+                error = flows[20] as ResponseError?,
+                successMessage = flows[21] as String?
             )
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = StudentRegistrationUiState()
         )
+    }
+
+    private suspend fun loadDraftIfExists() {
+        try {
+            val draft = appPreferences.getStudentRegistrationDraft()
+            draft?.let {
+                _firstName.update { draft.firstName }
+                _lastName.update { draft.lastName }
+                _gender.update { draft.gender }
+                _yearOfBirth.update { draft.yearOfBirth }
+                _schoolClass.update { draft.schoolClass }
+                _primaryContactNo.update { draft.primaryContactNo }
+                _secondaryContactNo.update { draft.secondaryContactNo }
+                _fathersName.update { draft.fathersName }
+                _mothersName.update { draft.mothersName }
+                _selectedVillageId.update { draft.selectedVillageId }
+                _selectedGroupId.update { draft.selectedGroupId }
+                _draftLoaded.update { true }
+            }
+        } catch (e: Exception) {
+            // Ignore draft loading errors
+        }
+    }
+
+    private suspend fun saveDraft() {
+        try {
+            val draft = StudentRegistrationDraft(
+                firstName = _firstName.value,
+                lastName = _lastName.value,
+                gender = _gender.value,
+                yearOfBirth = _yearOfBirth.value,
+                schoolClass = _schoolClass.value,
+                primaryContactNo = _primaryContactNo.value,
+                secondaryContactNo = _secondaryContactNo.value,
+                fathersName = _fathersName.value,
+                mothersName = _mothersName.value,
+                selectedVillageId = _selectedVillageId.value,
+                selectedGroupId = _selectedGroupId.value
+            )
+            appPreferences.saveStudentRegistrationDraft(draft)
+        } catch (e: Exception) {
+            // Ignore draft saving errors
+        }
+    }
+
+    private suspend fun clearDraft() {
+        try {
+            appPreferences.clearStudentRegistrationDraft()
+        } catch (e: Exception) {
+            // Ignore draft clearing errors
+        }
     }
 
     private suspend fun loadExistingStudentData(pid: String) {
@@ -305,6 +378,8 @@ class StudentRegistrationViewModel(
                     studentDao.upsertStudentDetails(
                         request.toStudent()
                     )
+                    // Clear draft on successful registration
+                    clearDraft()
                     _submissionSuccessful.update { true }
                     _isLoading.update { false }
                 }
@@ -415,5 +490,9 @@ class StudentRegistrationViewModel(
                 _isLoading.update { false }
             }
         }
+    }
+
+    fun clearDraftLoadedFlag() {
+        _draftLoaded.update { false }
     }
 }

@@ -85,15 +85,22 @@ fun StudentRegistrationScreen(
 
     LaunchedEffect(key1 = uiState.error) {
         uiState.error?.let { error ->
-            snackbarHostState.showSnackbar(message = error.genericToast)
+            Toast.makeText(context, error.genericToast, Toast.LENGTH_SHORT).show()
             viewModel.clearErrorFlow()
         }
     }
 
     LaunchedEffect(key1 = uiState.successMessage) {
         uiState.successMessage?.let { message ->
-            snackbarHostState.showSnackbar(message = message)
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             viewModel.clearMsgFlow()
+        }
+    }
+
+    LaunchedEffect(key1 = uiState.draftLoaded) {
+        if (uiState.draftLoaded) {
+            Toast.makeText(context, "Draft restored", Toast.LENGTH_SHORT).show()
+            viewModel.clearDraftLoadedFlag()
         }
     }
 
