@@ -33,3 +33,5 @@ google-services2.json
 # Android Profiling
 *.hprof
 /app/release/
+/app/google-services-debug.json
+/app/google-services-prod.json
