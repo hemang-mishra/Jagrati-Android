@@ -802,7 +802,7 @@ private fun PrivacyPolicyPage(
                     .padding(20.dp)
             ) {
                 PrivacyPolicySummaryItem(
-                    icon = "📸",
+                    iconRes = R.drawable.ic_photo_camera,
                     title = "Photos & Data Collection",
                     description = "We collect profile photos and attendance data to provide our services. You have full control over your data."
                 )
@@ -810,7 +810,7 @@ private fun PrivacyPolicyPage(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 PrivacyPolicySummaryItem(
-                    icon = "🔒",
+                    iconRes = R.drawable.ic_lock,
                     title = "Secure & Encrypted",
                     description = "All your data is encrypted and stored securely. We use industry-standard security practices."
                 )
@@ -818,7 +818,7 @@ private fun PrivacyPolicyPage(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 PrivacyPolicySummaryItem(
-                    icon = "✋",
+                    iconRes = R.drawable.ic_shield,
                     title = "Your Control",
                     description = "You can update or delete your data anytime. Account deletion permanently removes all your information."
                 )
@@ -826,7 +826,7 @@ private fun PrivacyPolicyPage(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 PrivacyPolicySummaryItem(
-                    icon = "🚫",
+                    iconRes = R.drawable.ic_admin_panel_settings,
                     title = "No Selling or Sharing",
                     description = "We never sell or share your personal information with third parties for marketing purposes."
                 )
@@ -904,7 +904,9 @@ private fun PrivacyPolicyPage(
             ) {
                 Text(
                     text = "Accept & Continue",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
         }
@@ -915,19 +917,24 @@ private fun PrivacyPolicyPage(
 
 @Composable
 private fun PrivacyPolicySummaryItem(
-    icon: String,
+    iconRes: Int,
     title: String,
     description: String
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
+        horizontalArrangement = Arrangement.Start,
+        verticalAlignment = Alignment.Top
     ) {
-        Text(
-            text = icon,
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(end = 12.dp)
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = null,
+            modifier = Modifier
+                .size(24.dp)
+                .padding(end = 0.dp),
+            tint = MaterialTheme.colorScheme.primary
         )
+        Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
                 text = title,

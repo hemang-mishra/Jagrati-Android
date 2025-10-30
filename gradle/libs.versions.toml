@@ -38,6 +38,8 @@ nav3Lifecycle = "1.0.0-alpha04"
 
 chucker = "4.2.0"
 firebaseMessaging = "25.0.1"
+firebaseCrashlytics = "20.0.3"
+firebaseCrashlyticsGradle = "3.0.6"
 workRuntimeKtx = "2.11.0"
 appUpdate = "2.1.0"
 
@@ -103,6 +105,7 @@ androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecy
 chucker = { module = "com.github.chuckerteam.chucker:library", version.ref = "chucker" }
 chucker-noop = { module = "com.github.chuckerteam.chucker:library-no-op", version.ref = "chucker" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics", version.ref = "firebaseCrashlytics" }
 app_update = { module = "com.google.android.play:app-update", version.ref = "appUpdate" }
 app_update_ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "appUpdate" }
 
@@ -113,3 +116,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 ksp = {id = "com.google.devtools.ksp", version.ref = "ksp"}
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsGradle" }

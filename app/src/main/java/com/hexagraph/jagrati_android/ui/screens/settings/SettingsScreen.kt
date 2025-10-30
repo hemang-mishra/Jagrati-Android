@@ -294,6 +294,25 @@ fun SettingsScreen(
                         description = if (BuildConfig.DEBUG) "Debug" else "Release",
                         iconTint = MaterialTheme.colorScheme.primary
                     )
+
+                    // Test Crashlytics - Only in Debug builds
+                    if (BuildConfig.DEBUG) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant
+                        )
+                        SettingsActionItem(
+                            icon = painterResource(R.drawable.bug_report),
+                            showRefreshButton = false,
+                            title = "Test Crashlytics",
+                            description = "Force a test crash (Debug only)",
+                            isLoading = false,
+                            onClick = {
+                                com.hexagraph.jagrati_android.util.CrashlyticsHelper.testCrash()
+                            },
+                            iconTint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
 

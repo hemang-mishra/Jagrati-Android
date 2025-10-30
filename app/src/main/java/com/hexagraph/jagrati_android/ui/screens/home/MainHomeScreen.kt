@@ -181,7 +181,9 @@ fun MainHomeScreen(
                         },
                         onRegisterStudentClick = navigateToStudentRegistrationScreen,
                         onSearchByCameraClick = { navigateToCameraSearch() },
-                        onNotificationClick = navigateToNotifications
+                        onNotificationClick = navigateToNotifications,
+                        hasStudentRegistrationPermission = hasStudentRegistrationPermission,
+                        hasAttendancePermission = hasAttendancePermission
                     )
 
                     1 -> AttendanceReportScreen(
