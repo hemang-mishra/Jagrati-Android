@@ -104,7 +104,6 @@ fun AttendanceReportScreen(
         onRefresh = { viewModel.loadAttendanceReport(isRefreshing = true) },
         onPreviousDay = viewModel::goToPreviousDay,
         onNextDay = viewModel::goToNextDay,
-        onToday = viewModel::goToToday,
         onTakeAttendance = {
             onNavigateToTakeAttendance(uiState.selectedDateMillis)
         },
@@ -128,7 +127,6 @@ fun AttendanceReportScreenLayout(
     onRefresh: () -> Unit,
     onPreviousDay: () -> Unit,
     onNextDay: () -> Unit,
-    onToday: () -> Unit,
     onTakeAttendance: () -> Unit,
     onStudentVillageFilter: (Long?) -> Unit,
     onStudentGenderFilter: (Gender?) -> Unit,
@@ -141,8 +139,21 @@ fun AttendanceReportScreenLayout(
     snackbarHostState: SnackbarHostState
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+    val todayMillis = remember {
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = uiState.selectedDateMillis,
+        selectableDates = object : androidx.compose.material3.SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis <= todayMillis
+            }
+        }
     )
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -164,7 +175,6 @@ fun AttendanceReportScreenLayout(
                             isToday = isToday(uiState.selectedDateMillis),
                             onPreviousDay = onPreviousDay,
                             onNextDay = onNextDay,
-                            onToday = onToday,
                             onDateClick = { showDatePicker = true },
                             onTakeAttendance = onTakeAttendance
                         )
@@ -227,7 +237,6 @@ fun AttendanceReportScreenLayout(
                             isToday = isToday(uiState.selectedDateMillis),
                             onPreviousDay = onPreviousDay,
                             onNextDay = onNextDay,
-                            onToday = onToday,
                             onDateClick = { showDatePicker = true },
                             onTakeAttendance = onTakeAttendance
                         )
@@ -359,7 +368,6 @@ fun DateNavigationSection(
     isToday: Boolean,
     onPreviousDay: () -> Unit,
     onNextDay: () -> Unit,
-    onToday: () -> Unit,
     onDateClick: () -> Unit,
     onTakeAttendance: () -> Unit
 ) {
@@ -439,23 +447,24 @@ fun DateNavigationSection(
                     )
                 }
 
-                TextButton(
-                    onClick = onToday,
+                Text(
+                    text = formatShortDate(date),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                IconButton(
+                    onClick = onNextDay,
                     enabled = !isToday
                 ) {
-                    Text(
-                        text = "Today",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = if (isToday) FontWeight.Bold else FontWeight.SemiBold,
-                        color = if (isToday) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                IconButton(onClick = onNextDay) {
                     Icon(
                         painter = painterResource(R.drawable.ic_chevron_right),
                         contentDescription = "Next Day",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = if (isToday)
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        else
+                            MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -1314,6 +1323,12 @@ fun StudentFilters(
 fun formatDate(millis: Long): String {
     val dateFormat = SimpleDateFormat("EEEE, MMM dd, yyyy", Locale.getDefault())
     return dateFormat.format(Date(millis))
+}
+
+fun formatShortDate(fullDate: String): String {
+    // Extract "MMM dd" from "EEEE, MMM dd, yyyy"
+    val parts = fullDate.split(", ")
+    return if (parts.size >= 2) parts[1] else fullDate
 }
 
 fun isToday(millis: Long): Boolean {

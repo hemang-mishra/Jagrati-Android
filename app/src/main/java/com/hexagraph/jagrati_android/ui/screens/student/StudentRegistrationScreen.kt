@@ -107,6 +107,7 @@ fun StudentRegistrationScreen(
                     navigateToFacialData(viewModel.pid!!)
                 onBackPressed()
             } else {
+                Toast.makeText(context, "Student registered successfully", Toast.LENGTH_SHORT).show()
                 if (viewModel.pid != null)
                     navigateToFacialData(viewModel.pid!!)
             }
