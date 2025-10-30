@@ -1,0 +1,28 @@
+name: Create GitHub Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          body: |
+            Release for ${{ github.ref_name }}
+            Commit message:
+            $(git log -1 --pretty=format:"%s")
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

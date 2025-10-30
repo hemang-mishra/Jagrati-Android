@@ -30,8 +30,8 @@ android {
         applicationId = "com.hexagraph.jagrati_android"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -64,6 +64,7 @@ android {
 
     buildTypes {
         debug {
+            isMinifyEnabled = false
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             resValue("string", "app_name", "Jagrati Debug")
@@ -74,7 +75,7 @@ android {
             resValue("string", "IMAGE_KIT_PUBLIC_KEY", propOrEnv("IMAGE_KIT_PUBLIC_KEY"))
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
