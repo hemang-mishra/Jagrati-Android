@@ -4,11 +4,16 @@ import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase
+import com.hexagraph.jagrati_android.util.AppPreferences
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 class JagratiFirebaseService: FirebaseMessagingService() {
     private val notificationHelper by inject<NotificationHelper>()
     private val syncUseCase by inject<DataSyncUseCase>()
+    private val appPreferences by inject<AppPreferences>()
 
     override fun onMessageReceived(message: RemoteMessage) {
         if(message.data.getOrDefault("Sync", "false") == "true"){
@@ -24,4 +29,10 @@ class JagratiFirebaseService: FirebaseMessagingService() {
         }
     }
 
+    override fun onNewToken(token: String) {
+        super.onNewToken(token)
+        CoroutineScope(Dispatchers.Default).launch {
+            appPreferences.fcmToken.set(token)
+        }
+    }
 }

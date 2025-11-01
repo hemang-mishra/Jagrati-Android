@@ -65,7 +65,7 @@ val viewModelModule = module {
     factory { VolunteerListViewModel(get()) }
 
     // Search ViewModels
-    factory {(hasVolunteerAttendancePerms: Boolean, isMarkingAttendance: Boolean)-> UnifiedSearchViewModel(get(), get(), get(), get(), get(), hasVolunteerAttendancePerms, isMarkingAttendance) }
+    factory {(hasVolunteerAttendancePerms: Boolean, isMarkingAttendance: Boolean, selectedDateMillis: Long)-> UnifiedSearchViewModel(get(), get(), get(), get(), get(), hasVolunteerAttendancePerms, isMarkingAttendance, dateMillis = selectedDateMillis) }
 
     // Student management ViewModels
     factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), get(), get(), get(), pid) }

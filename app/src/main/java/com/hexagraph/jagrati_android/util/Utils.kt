@@ -3,8 +3,6 @@ package com.hexagraph.jagrati_android.util
 import android.content.Context
 import android.graphics.Bitmap
 import android.icu.text.SimpleDateFormat
-import android.os.Build
-import android.util.Log
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -105,7 +103,6 @@ object Utils {
                 Resource.failure(error = error)
             }
         } catch (e: IllegalArgumentException) {
-            Log.e("SafeApiCall-caught", "IllegalArgumentException")
             logException(e)
             Resource.failure(error = ResponseError.BAD_REQUEST.apply { actualResponse = e.message })
         } catch (e: SocketTimeoutException) {
@@ -124,7 +121,6 @@ object Utils {
                 actualResponse = "Failed to connect to server"
             })
         } catch (e: ResponseException) {
-            Log.e("SafeApiCall-caught", "ResponseException")
             // Handle Retrofit HTTP exceptions
             logException(e)
             when (e.response.status.value) {
@@ -152,21 +148,18 @@ object Utils {
                 })
             }
         } catch (e: NoTransformationFoundException) {
-            Log.e("SafeApiCall-caught", "NoTransformationFoundException")
             logException(e)
 
             Resource.failure(error = ResponseError.INTERNAL_SERVER_ERROR.apply {
                 actualResponse = "Some error occurred. Error parsing server response."
             })
         } catch (e: JsonConvertException) {
-            Log.e("SafeApiCall-caught", "JsonConvertException ${e.cause}")
             logException(e)
 
             Resource.failure(error = ResponseError.INTERNAL_SERVER_ERROR.apply {
                 actualResponse = "Some error occurred. Error parsing server response."
             })
         } catch (e: Exception) {
-            Log.e("SafeApiCall-caught", "Exception")
             logException(e)
             Resource.failure(error = ResponseError.UNKNOWN.apply { actualResponse = e.message })
         }
@@ -181,9 +174,7 @@ object Utils {
         } catch (_: Exception) {
             null
         }
-        Log.e("SafeApiCall-Handle", "Error body: $errorBody")
         val errorResponse = parseErrorResponse(errorBody)
-        Log.e("SafeApiCall-Handle", "Error response: $errorResponse")
 //        val errorMessage = errorResponse?.message ?: "Unknown error"
 
         val error = when (e.response.status.value) {
@@ -226,9 +217,9 @@ object Utils {
      */
     fun logException(e: Exception) {
         e.printStackTrace()
-        Log.e(
-            "SafeApiCall",
-            "API call failed with exception: ${e.javaClass.simpleName}, message: ${e.message}"
+        CrashlyticsHelper.log(
+            tag = "SafeApiCall",
+            message = "API call failed with exception: ${e.javaClass.simpleName}, message: ${e.message}"
         )
     }
 
@@ -252,7 +243,7 @@ object Utils {
 
     suspend fun getBitmapFromURL(context: Context, url: String): Bitmap? {
         try {
-            Log.d("Utils", "Attempting to load image from: $url")
+            CrashlyticsHelper.log("Utils", "Attempting to load image from: $url")
             val loader = ImageLoader.Builder(context).components {
                 add(OkHttpNetworkFetcherFactory())
             }
@@ -265,14 +256,14 @@ object Utils {
 
             val result = loader.execute(request)
             return if (result is SuccessResult) {
-                Log.d("Utils", "Image loaded successfully from: $url")
+                CrashlyticsHelper.log("Utils", "Image loaded successfully from: $url")
                 result.image.toBitmap()
             } else {
-                Log.e("Utils", "Failed to load image: $result")
+                CrashlyticsHelper.log("Utils", "Failed to load image: $result")
                 null
             }
         } catch (e: Exception) {
-            Log.e("Utils", "Exception loading image: ${e.javaClass.name}: ${e.message}")
+            CrashlyticsHelper.log("Utils", "Exception loading image: ${e.javaClass.name}: ${e.message}")
             e.printStackTrace()
             return null
         }
@@ -335,7 +326,7 @@ object Utils {
                     // Found acceptable size, write to file and return
                     val file = File(context.cacheDir, fileName)
                     file.outputStream().use { out -> out.write(compressed) }
-                    Log.d("BitmapCompress", "Compressed to ${compressed.size} bytes (target: $targetBytes)")
+                    CrashlyticsHelper.log("BitmapCompress", "Compressed to ${compressed.size} bytes (target: $targetBytes)")
                     return@withContext file
                 }
                 quality -= stepSize
@@ -358,7 +349,7 @@ object Utils {
 
             val newW = max((working.width * scaleRatio).roundToInt(), minSidePx)
             val newH = max((working.height * scaleRatio).roundToInt(), minSidePx)
-            working = Bitmap.createScaledBitmap(working, newW, newH, true)
+            working = working.scale(newW, newH)
         }
 
         // Fallback: write best bytes found (may be > target)
@@ -366,10 +357,10 @@ object Utils {
             val finalBytes = bestBytes ?: compressToQuality(working, minQuality)
             val file = File(context.cacheDir, fileName)
             file.outputStream().use { out -> out.write(finalBytes) }
-            Log.w("BitmapCompress", "Final size ${finalBytes.size} bytes exceeds target $targetBytes")
+            CrashlyticsHelper.log("BitmapCompress", "Final size ${finalBytes.size} bytes exceeds target $targetBytes")
             file
         } catch (e: Exception) {
-            Log.e("BitmapCompress", "Final compression failed: ${e.message}")
+            CrashlyticsHelper.log("BitmapCompress", "Final compression failed: ${e.message}")
             null
         }
     }

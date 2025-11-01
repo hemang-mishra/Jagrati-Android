@@ -74,6 +74,7 @@ fun MainHomeScreen(
     updateFacialData: (String) -> Unit,
     onSearchClick: () -> Unit,
     navigateToAttendanceMarking: (Long) -> Unit = {},
+    navigateToManualAttendanceMarking: (Long) -> Unit,
     navigateToFullScreenImage: (ImageKitResponse) -> Unit,
     navigateToEditProfile: (String) -> Unit,
     navigateToCameraSearch: () -> Unit,
@@ -157,7 +158,9 @@ fun MainHomeScreen(
                         scope.launch { drawerState.close() }
                         authViewModel.signOut()
                         navigateToLogin()
-                    })
+                    },
+                    navigateToManualAttendanceMarking = navigateToManualAttendanceMarking
+                    )
             }
         }) {
         Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }, bottomBar = {
@@ -225,7 +228,8 @@ fun DrawerContent(
     onRegisterNewStudentClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onStudentListClick: () -> Unit = {},
-    onVolunteerListClick: () -> Unit = {}
+    onVolunteerListClick: () -> Unit = {},
+    navigateToManualAttendanceMarking: (Long) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -281,10 +285,17 @@ fun DrawerContent(
 
         if (hasAttendancePermission) {
             DrawerItem(
-                label = "Take Attendance",
+                label = "Smart Attendance",
                 icon = R.drawable.ic_camera,
                 onClick = onTakeStudentAttendanceClick,
                 colorIndex = 3
+            )
+
+            DrawerItem(
+                label = "Manual Attendance",
+                icon = R.drawable.ic_search_with_t,
+                onClick = { navigateToManualAttendanceMarking(System.currentTimeMillis()) },
+                colorIndex = 4
             )
         }
 
@@ -293,7 +304,7 @@ fun DrawerContent(
                 label = "Register New Student",
                 icon = R.drawable.ic_person_add_rounded,
                 onClick = onRegisterNewStudentClick,
-                colorIndex = 4
+                colorIndex = 5
             )
         }
 
@@ -448,7 +459,9 @@ fun DrawerContentPreview() {
             onSettingsClick = {},
             onTakeStudentAttendanceClick = {},
             onRegisterNewStudentClick = {},
-            onLogoutClick = {})
+            onLogoutClick = {},
+            navigateToManualAttendanceMarking = {}
+        )
     }
 }
 

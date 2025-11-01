@@ -506,7 +506,7 @@ fun MonthCalendarCard(
                 }
 
                 Icon(
-                    painter = painterResource(R.drawable.ic_chevron_right),
+                    painter = painterResource(if(isExpanded) R.drawable.ic_chevron_bottom else R.drawable.ic_chevron_right),
                     contentDescription = if (isExpanded) "Collapse" else "Expand",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(24.dp)

@@ -1,6 +1,5 @@
 package com.hexagraph.jagrati_android.ui.screens.search
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.Groups
@@ -13,6 +12,7 @@ import com.hexagraph.jagrati_android.model.dao.StudentDao
 import com.hexagraph.jagrati_android.model.dao.VillageDao
 import com.hexagraph.jagrati_android.model.dao.VolunteerDao
 import com.hexagraph.jagrati_android.repository.auth.AttendanceRepository
+import com.hexagraph.jagrati_android.util.CrashlyticsHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,8 @@ data class UnifiedSearchUiState(
     val villages: List<Village> = emptyList(),
     val groups: List<Groups> = emptyList(),
     val isSearching: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val selectedDateMillis: Long = System.currentTimeMillis()
 )
 
 class UnifiedSearchViewModel(
@@ -40,18 +41,22 @@ class UnifiedSearchViewModel(
     private val groupsDao: GroupsDao,
     private val attendanceRepository: AttendanceRepository,
     private val hasVolunteerAttendancePerms: Boolean,
-    private val isMarkingAttendance: Boolean
+    private val isMarkingAttendance: Boolean,
+    private val dateMillis: Long
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(UnifiedSearchUiState())
+    private val _uiState = MutableStateFlow(UnifiedSearchUiState(selectedDateMillis = dateMillis))
     val uiState: StateFlow<UnifiedSearchUiState> = _uiState.asStateFlow()
 
     private val searchQueryFlow = MutableStateFlow("")
-    var selectedDateMillis: Long = 0L
 
     init {
         loadMetadata()
         setupSearch()
+    }
+
+    fun updateSelectedDate(dateMillis: Long) {
+        _uiState.update { it.copy(selectedDateMillis = dateMillis) }
     }
 
     private fun loadMetadata() {
@@ -136,7 +141,7 @@ class UnifiedSearchViewModel(
 
                 // Format the selected date from UI state
                 val dateFormatter = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                val formattedDate = dateFormatter.format(java.util.Date(selectedDateMillis))
+                val formattedDate = dateFormatter.format(java.util.Date(_uiState.value.selectedDateMillis))
 
                 val request = BulkAttendanceRequest(
                     date = formattedDate,
@@ -174,7 +179,7 @@ class UnifiedSearchViewModel(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("AttendanceMarkingViewModel", "Failed to mark attendance: ${e.message}")
+                CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Failed to mark attendance: ${e.message}")
                 _uiState.update {
                     it.copy(errorMessage = "Failed to mark attendance")
                 }

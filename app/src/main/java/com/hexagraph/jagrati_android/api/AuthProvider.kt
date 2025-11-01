@@ -63,14 +63,19 @@ class AuthProvider(
                 Log.d("AuthProvider", "Token refresh triggered")
 
                 try {
-                    val deviceToken = FirebaseMessaging.getInstance().token.await()
+                    val savedDeviceToken =
+                        runBlocking {
+                        appPreferences.fcmToken.get()
+                            ?: FirebaseMessaging.getInstance().token.await()
+                    }
+
                     val tokenResponse = client.post("$baseUrl/api/auth/refresh") {
                         contentType(ContentType.Application.Json)
-                        setBody(RefreshRequest(refreshToken = oldRefreshToken, deviceToken = deviceToken))
+                        setBody(RefreshRequest(refreshToken = oldRefreshToken, deviceToken = savedDeviceToken))
                     }.body<TokenPair>()
 
-                    // Save the new tokens
                     runBlocking {
+                    // Save the new tokens
                         appPreferences.saveTokens(
                             tokenResponse.accessToken,
                             tokenResponse.refreshToken

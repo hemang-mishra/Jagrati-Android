@@ -17,11 +17,11 @@ object CrashlyticsHelper {
     /**
      * Log a non-fatal exception to Crashlytics
      */
-    fun logException(exception: Throwable) {
+    fun logException(exception: Throwable, tag:String = "Crashlytics") {
         try {
             crashlytics.recordException(exception)
             if (BuildConfig.DEBUG) {
-                Log.e("Crashlytics", "Exception logged", exception)
+                Log.e(tag, "Exception logged", exception)
             }
         } catch (e: Exception) {
             Log.e("CrashlyticsHelper", "Error logging exception", e)
@@ -31,11 +31,11 @@ object CrashlyticsHelper {
     /**
      * Log a message to Crashlytics
      */
-    fun log(message: String) {
+    fun log(tag: String = "Crashlytics", message: String) {
         try {
             crashlytics.log(message)
             if (BuildConfig.DEBUG) {
-                Log.d("Crashlytics", message)
+                Log.d(tag, message)
             }
         } catch (e: Exception) {
             Log.e("CrashlyticsHelper", "Error logging message", e)
