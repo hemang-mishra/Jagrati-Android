@@ -2,13 +2,16 @@ package com.hexagraph.jagrati_android.ui.screens.search
 
 import android.content.res.Configuration
 import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -20,12 +23,17 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,6 +47,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
+import java.util.Locale
 import com.hexagraph.jagrati_android.model.Groups
 import com.hexagraph.jagrati_android.model.Student
 import com.hexagraph.jagrati_android.model.Village
@@ -56,7 +67,7 @@ fun UnifiedSearchScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     hasVolunteerAttendancePerms: Boolean,
     isMarkingAttendance: Boolean,
-    viewModel: UnifiedSearchViewModel = koinViewModel{ parametersOf(hasVolunteerAttendancePerms, isMarkingAttendance) }
+    viewModel: UnifiedSearchViewModel = koinViewModel{ parametersOf(hasVolunteerAttendancePerms, isMarkingAttendance, System.currentTimeMillis()) }
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -68,6 +79,12 @@ fun UnifiedSearchScreen(
         }
     }
 
+    BackHandler() {
+        onBackPress()
+    }
+
+
+
     UnifiedSearchScreenLayout(
         query = uiState.query,
         students = uiState.students,
@@ -75,10 +92,13 @@ fun UnifiedSearchScreen(
         villages = uiState.villages,
         groups = uiState.groups,
         isSearching = uiState.isSearching,
+        isMarkingAttendance = isMarkingAttendance,
+        selectedDateMillis = uiState.selectedDateMillis,
         onQueryChange = viewModel::search,
         onBackPress = onBackPress,
         onStudentSelect = { pid -> onSelect(pid, true) },
         onVolunteerSelect = { pid -> onSelect(pid, false) },
+        onDateSelected = viewModel::updateSelectedDate,
         snackbarHostState = snackbarHostState
     )
 }
@@ -92,26 +112,35 @@ fun UnifiedSearchScreenLayout(
     villages: List<Village>,
     groups: List<Groups>,
     isSearching: Boolean,
+    isMarkingAttendance: Boolean,
+    selectedDateMillis: Long,
     onQueryChange: (String) -> Unit,
     onBackPress: () -> Unit,
     onStudentSelect: (String) -> Unit,
     onVolunteerSelect: (String) -> Unit,
+    onDateSelected: (Long) -> Unit,
     snackbarHostState: SnackbarHostState
 ) {
     var active by remember { mutableStateOf(true) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
+    val dateFormatter = remember { SimpleDateFormat("dd MMM", Locale.getDefault()) }
+    val selectedDateText = remember(selectedDateMillis) {
+        dateFormatter.format(java.util.Date(selectedDateMillis))
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
             val onActiveChange: (Boolean) -> Unit = { active = it }
             val colors1 = SearchBarDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.background
             )
+
             SearchBar(
                 inputField = {
                     SearchBarDefaults.InputField(
@@ -121,7 +150,8 @@ fun UnifiedSearchScreenLayout(
                         expanded = active,
                         onExpandedChange = onActiveChange,
                         placeholder = {
-                            Text("Search students or volunteers...")
+                            Text("Search name or roll no...",
+                                fontSize = 14.sp)
                         },
                         leadingIcon = {
                             if (active) {
@@ -139,19 +169,55 @@ fun UnifiedSearchScreenLayout(
                             }
                         },
                         trailingIcon = {
-                            if (query.isNotEmpty()) {
-                                IconButton(onClick = { onQueryChange("") }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Clear,
-                                        contentDescription = "Clear"
-                                    )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Date selector for marking attendance
+                                if (isMarkingAttendance) {
+                                    Surface(
+                                        onClick = { showDatePicker = true },
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        shape = MaterialTheme.shapes.small,
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                painter = androidx.compose.ui.res.painterResource(com.hexagraph.jagrati_android.R.drawable.ic_calendar),
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Text(
+                                                text = selectedDateText,
+                                                style = MaterialTheme.typography.labelLarge,
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Clear button
+                                if (query.isNotEmpty()) {
+                                    IconButton(onClick = { onQueryChange("") }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "Clear"
+                                        )
+                                    }
                                 }
                             }
                         },
                     )
                 },
                 expanded = active,
-                onExpandedChange = onActiveChange,
+                onExpandedChange = {
+                    onBackPress()
+                },
                 modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = if (active) 0.dp else 16.dp),
@@ -294,6 +360,60 @@ fun UnifiedSearchScreenLayout(
                     }
                 },
             )
+
+            // Date picker dialog
+            if (showDatePicker) {
+                val datePickerState = rememberDatePickerState(
+                    initialSelectedDateMillis = selectedDateMillis,
+                    selectableDates = object : androidx.compose.material3.SelectableDates {
+                        override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                            // Prevent selecting future dates
+                            return utcTimeMillis <= System.currentTimeMillis()
+                        }
+
+                        override fun isSelectableYear(year: Int): Boolean {
+                            // Prevent selecting future years
+                            val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
+                            return year <= currentYear
+                        }
+                    }
+                )
+
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                datePickerState.selectedDateMillis?.let { millis ->
+                                    onDateSelected(millis)
+                                }
+                                showDatePicker = false
+                            }
+                        ) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                ) {
+                    DatePicker(
+                        state = datePickerState,
+                        colors = DatePickerDefaults.colors()
+                    )
+                }
+            }
+        }
+
+        // SnackbarHost positioned at the bottom
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+        ) {
+            SnackbarHost(hostState = snackbarHostState)
         }
     }
 }
@@ -329,10 +449,13 @@ fun UnifiedSearchScreenPreview() {
             villages = listOf(Village(id = 1, name = "Bargi")),
             groups = listOf(Groups(id = 1, name = "Group A")),
             isSearching = false,
+            isMarkingAttendance = true,
+            selectedDateMillis = System.currentTimeMillis(),
             onQueryChange = {},
             onBackPress = {},
             onStudentSelect = {},
             onVolunteerSelect = {},
+            onDateSelected = {},
             snackbarHostState = remember { SnackbarHostState() }
         )
     }
