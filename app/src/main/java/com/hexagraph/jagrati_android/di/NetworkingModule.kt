@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.di
 
 import android.content.Context
+import android.util.Log
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.hexagraph.jagrati_android.BuildConfig
 import com.hexagraph.jagrati_android.R
@@ -78,19 +79,21 @@ val networkModule = module {
             }
 
             install(Logging) {
+                val debug = BuildConfig.DEBUG
                 logger = object : Logger {
                     private val dateFormat = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault())
 
                     override fun log(message: String) {
                         val timestamp = dateFormat.format(Date())
-                        android.util.Log.d("KtorClient", "[$timestamp] $message")
+                        Log.d("KtorClient", "[$timestamp] $message")
                     }
                 }
-                level = LogLevel.ALL
+                level = if(debug) LogLevel.ALL else LogLevel.NONE
             }
 
             install(ResponseObserver) {
                 onResponse { response ->
+                    if(!BuildConfig.DEBUG) return@onResponse
                     val status = response.status
                     val url = response.request.url
                     val time = response.responseTime.timestamp - response.requestTime.timestamp
@@ -104,7 +107,7 @@ val networkModule = module {
                             "Response ❌"
                         }
 
-                    android.util.Log.d("KtorResponse", "$logColor: $logMessage")
+                    Log.d("KtorResponse", "$logColor: $logMessage")
                 }
             }
 

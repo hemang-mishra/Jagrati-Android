@@ -54,7 +54,7 @@ class KtorAuthRepository(
         password: String
     ): Flow<AuthResult> = flow {
         emit(AuthResult.Loading)
-        val deviceToken = FirebaseMessaging.getInstance().token.await()
+        val deviceToken = appPreferences.fcmToken.get()?:FirebaseMessaging.getInstance().token.await()
         val loginRequest = LoginRequest(email = email, password = password, deviceToken)
         val response = safeApiCall {
             authService.login(loginRequest)
@@ -99,7 +99,7 @@ class KtorAuthRepository(
             return@flow
         }
 
-        val deviceToken = FirebaseMessaging.getInstance().token.await()
+        val deviceToken = appPreferences.fcmToken.get()?:FirebaseMessaging.getInstance().token.await()
         val googleLoginRequest = GoogleLoginRequest(idToken = idToken, deviceToken = deviceToken)
         val response = safeApiCall { authService.loginWithGoogle(googleLoginRequest) }
 
@@ -223,7 +223,7 @@ class KtorAuthRepository(
         }
         //Logout in background as we don't need to wait for response as it not compulsory currently
         CoroutineScope(Dispatchers.Default).launch {
-            val deviceId = FirebaseMessaging.getInstance().token.await()
+            val deviceId = appPreferences.fcmToken.get()?:FirebaseMessaging.getInstance().token.await()
             val response = safeApiCall { authService.logout(StringRequest(deviceId)) }
             Log.d("KtorAuthRepository", "Logout response: $response")
         }

@@ -35,6 +35,7 @@ class AppPreferences(private val context: Context) {
         // Auth related keys
         private val ACCESS_TOKEN = stringPreferencesKey("access_token")
         private val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+        private val FCM_TOKEN = stringPreferencesKey("fcm_token")
 
         // Permissions related key
         private val USER_PERMISSIONS = stringSetPreferencesKey("user_permissions")
@@ -44,8 +45,6 @@ class AppPreferences(private val context: Context) {
         private val USER_ROLES = stringPreferencesKey("user_roles")
         private val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
         private val LAST_USED_TIME = longPreferencesKey("last_used_time")
-        private val VILLAGES = stringPreferencesKey("villages")
-        private val GROUPS = stringPreferencesKey("groups")
         private val IS_VOLUNTEER = stringPreferencesKey("is_volunteer")
 
         // Draft keys
@@ -132,6 +131,24 @@ class AppPreferences(private val context: Context) {
         }
     }
 
+
+    val fcmToken: DataStorePreference<String?> = object : DataStorePreference<String?> {
+        override fun getFlow(): Flow<String?> =
+            context.dataStore.data
+                .catch { emit(emptyPreferences()) }
+                .map { it[FCM_TOKEN] }
+                .distinctUntilChanged()
+
+        override suspend fun set(value: String?) {
+            context.dataStore.edit { preferences ->
+                if (value == null) {
+                    preferences.remove(FCM_TOKEN)
+                } else {
+                    preferences[FCM_TOKEN] = value
+                }
+            }
+        }
+    }
 
 
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
