@@ -199,5 +199,8 @@ dependencies {
 
     // Play Core App Update
     implementation(libs.app.update)
+
+    // Lottie animations
+    implementation(libs.lottie.compose)
     implementation(libs.app.update.ktx)
 }

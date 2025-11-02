@@ -11,6 +11,7 @@ import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Resource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -59,6 +60,8 @@ class DetailsSyncViewModel(
             clearErrorFlow()
             clearMsgFlow()
             _uiState.update { it.copy(isLoading = true) }
+
+            delay(10000)
             syncUseCase.fetchUserDetails(
                 onSuccessfulFetch = { data ->
                     _uiState.update {
