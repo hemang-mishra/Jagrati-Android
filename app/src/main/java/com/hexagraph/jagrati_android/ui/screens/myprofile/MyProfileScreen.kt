@@ -102,6 +102,9 @@ fun MyProfileScreen(
         onViewDetails = {
             val pid = uiState.volunteer?.pid ?: uiState.currentUser?.pid ?: return@MyProfileLayout
             onAttendanceDetailedView(pid, false)
+        },
+        onDeleteFaceData = {
+            viewModel.deleteFaceData()
         }
     )
 }
@@ -117,6 +120,7 @@ fun MyProfileLayout(
     onChatWhatsApp: (String) -> Unit,
     onDismissEditOptions: () -> Unit,
     onViewDetails: () -> Unit,
+    onDeleteFaceData: () -> Unit,
     onViewFullScreenImage: (ImageKitResponse) -> Unit = {}
 ) {
     PullToRefreshBox(
@@ -175,7 +179,6 @@ fun MyProfileLayout(
         EditOptionsBottomSheet(
             hasProfilePic = uiState.volunteer?.profilePic != null || uiState.currentUser?.photoUrl != null,
             profilePicData = uiState.volunteer?.profilePic,
-            currentUserPhotoUrl = uiState.currentUser?.photoUrl,
             onDismiss = onDismissEditOptions,
             onEditFaceData = {
                 onDismissEditOptions()
@@ -183,6 +186,10 @@ fun MyProfileLayout(
             },
             onViewFullScreen = { imageData ->
                 onViewFullScreenImage(imageData)
+            },
+            onDeleteFaceData = {
+                onDismissEditOptions()
+                onDeleteFaceData()
             }
         )
     }
@@ -900,9 +907,9 @@ fun AttendanceStat(
 fun EditOptionsBottomSheet(
     hasProfilePic: Boolean,
     profilePicData: ImageKitResponse?,
-    currentUserPhotoUrl: String?,
     onDismiss: () -> Unit,
     onEditFaceData: () -> Unit,
+    onDeleteFaceData: () -> Unit,
     onViewFullScreen: (ImageKitResponse) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -931,6 +938,12 @@ fun EditOptionsBottomSheet(
                     onClick = {
                         onViewFullScreen(profilePicData)
                     }
+                )
+
+                BottomSheetOption(
+                    icon = painterResource(R.drawable.ic_delete),
+                    text = "Delete Facial Data",
+                    onClick = onDeleteFaceData
                 )
             }
 
@@ -1027,7 +1040,8 @@ fun MyProfilePreview() {
             onChatWhatsApp = {},
             onDismissEditOptions = {},
             onViewFullScreenImage = {},
-            onViewDetails = {}
+            onViewDetails = {},
+            onDeleteFaceData = {}
         )
     }
 }

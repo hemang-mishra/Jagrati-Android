@@ -20,6 +20,7 @@ import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.CrashlyticsHelper
 import com.hexagraph.jagrati_android.util.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -122,7 +123,7 @@ class AttendanceMarkingViewModel(
                                 recognizeFacesLive(processedImage)
                             }
                         } catch (e: Exception) {
-                            Log.e("AttendanceMarkingViewModel", "Live recognition failed: ${e.message}")
+                            CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Live recognition failed: ${e.message}")
                         } finally {
                             delay(300) // Throttle to avoid excessive processing
                             semaphore.release()
@@ -131,7 +132,7 @@ class AttendanceMarkingViewModel(
 
 
                 }.onFailure {
-                    Log.e("AttendanceMarkingViewModel", "Face detection failed: ${it.message}")
+                    CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Face detection failed: ${it.message}")
                 }
             }
         )
@@ -152,7 +153,7 @@ class AttendanceMarkingViewModel(
                     context
                 )
 
-                Log.d("AttendanceMarkingViewModel", "Live recognition results: $results")
+                CrashlyticsHelper.log("AttendanceMarkingViewModel", "Live recognition results: $results")
 
                 if (results != null && results.isNotEmpty()) {
                     val topMatches = results.filter { it.matchesCriteria }
@@ -164,7 +165,7 @@ class AttendanceMarkingViewModel(
                     _liveRecognizedFaces.update { emptyList() }
                 }
             } catch (e: Exception) {
-                Log.e("AttendanceMarkingViewModel", "Face recognition failed: ${e.message}")
+                CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Face recognition failed: ${e.message}")
 //                _liveRecognizedFaces.update { emptyList() }
             } finally {
                 liveFaceSemaphore.release()
@@ -229,7 +230,7 @@ class AttendanceMarkingViewModel(
                 _showBottomSheet.update { true }
 
             } catch (e: Exception) {
-                Log.e("AttendanceMarkingViewModel", "Capture failed: ${e.message}")
+                CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Capture failed: ${e.message}")
                 emitError(ResponseError.UNKNOWN.apply {
                     actualResponse = e.message ?: "Failed to recognize face"
                 })
@@ -314,7 +315,7 @@ class AttendanceMarkingViewModel(
                     retakePhoto()
                 }
             } catch (e: Exception) {
-                Log.e("AttendanceMarkingViewModel", "Gallery image processing failed: ${e.message}")
+                CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Gallery image processing failed: ${e.message}")
                 emitError(ResponseError.UNKNOWN.apply {
                     actualResponse = e.message ?: "Failed to process image"
                 })
@@ -356,7 +357,7 @@ class AttendanceMarkingViewModel(
 
                 null
             } catch (e: Exception) {
-                Log.e("AttendanceMarkingViewModel", "Failed to get person details: ${e.message}")
+                CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Failed to get person details: ${e.message}")
                 null
             }
         }
@@ -412,7 +413,7 @@ class AttendanceMarkingViewModel(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("AttendanceMarkingViewModel", "Failed to mark attendance: ${e.message}")
+                CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Failed to mark attendance: ${e.message}")
                 emitError(ResponseError.UNKNOWN.apply {
                     actualResponse = e.message ?: "Failed to mark attendance"
                 })

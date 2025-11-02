@@ -32,7 +32,7 @@ object MediaUtils {
             val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
             bitmap.rotate(imageInfo.rotationDegrees.toFloat()).getOrNull()
         }.onFailure {
-            Log.e("MediaUtils", it.message ?: "Error while converting image proxy to bitmap")
+            CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while converting image proxy to bitmap")
         }
 
     fun Bitmap.rotate(rotation: Float): Result<Bitmap> = runCatching {
@@ -40,7 +40,7 @@ object MediaUtils {
         matrix.postRotate(rotation)
         Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
     }.onFailure {
-        Log.e("MediaUtils", it.message ?: "Error while rotating bitmap")
+        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while rotating bitmap")
     }
 
     fun Bitmap.flip(horizontal: Boolean = false, vertical: Boolean = false): Result<Bitmap> =
@@ -52,12 +52,12 @@ object MediaUtils {
                 matrix.postScale(1f, -1f)
             Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
         }.onFailure {
-            Log.e("MediaUtils", it.message ?: "Error while flipping bitmap")
+            CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while flipping bitmap")
         }
 
     fun Bitmap.crop(left: Int, top: Int, width: Int, height: Int): Result<Bitmap> = runCatching {
         Bitmap.createBitmap(this, left, top, width, height)
     }.onFailure {
-        Log.e("MediaUtils", it.message ?: "Error while cropping bitmap")
+        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while cropping bitmap")
     }
 }
