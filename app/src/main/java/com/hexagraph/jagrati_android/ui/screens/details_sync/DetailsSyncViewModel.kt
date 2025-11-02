@@ -61,7 +61,6 @@ class DetailsSyncViewModel(
             clearMsgFlow()
             _uiState.update { it.copy(isLoading = true) }
 
-            delay(10000)
             syncUseCase.fetchUserDetails(
                 onSuccessfulFetch = { data ->
                     _uiState.update {

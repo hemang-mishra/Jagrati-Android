@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -96,6 +97,7 @@ fun VolunteerListScreenLayout(
     snackbarHostState: SnackbarHostState
 ) {
     var showBatchFilter by remember { mutableStateOf(false) }
+    val listState= rememberLazyListState()
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -203,6 +205,7 @@ fun VolunteerListScreenLayout(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
+                    state = listState,
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
