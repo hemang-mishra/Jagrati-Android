@@ -14,6 +14,7 @@ import com.hexagraph.jagrati_android.notifications.NotificationChannels
 import com.hexagraph.jagrati_android.notifications.NotificationHelper
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.CrashlyticsHelper
 import com.hexagraph.jagrati_android.util.Utils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -48,7 +49,7 @@ class SyncRepository(
         data.groups.forEach { groupDto ->
             groupsDao.upsertGroup(groupDto.toEntity())
         }
-        Log.d("SyncRepository", "Basic details synced to local DB.")
+        CrashlyticsHelper.log("SyncRepository", "Basic details synced to local DB.")
         //Launching face data sync in background
         CoroutineScope(Dispatchers.IO).launch {
             val nid = notificationHelper.showNotification(
@@ -58,12 +59,12 @@ class SyncRepository(
                 showIndeterminateProgress = true,
                 saveToDatabase = false
             )
-            Log.d("SyncRepository", "Starting face data sync...")
+            CrashlyticsHelper.log("SyncRepository", "Starting face data sync...")
             data.students.forEach { studentDto ->
                 if (studentDto.profilePic != null) {
                     val bitamp = Utils.getBitmapFromURL(context, studentDto.profilePic.url)
                     if (bitamp == null) {
-                        Log.d(
+                        CrashlyticsHelper.log(
                             "SyncRepository",
                             "Bitmap is null for student ID: ${studentDto.pid} name: ${studentDto.firstName}"
                         )
@@ -86,7 +87,7 @@ class SyncRepository(
                 if (volunteerDto.profilePic != null) {
                     val bitamp = Utils.getBitmapFromURL(context, volunteerDto.profilePic.url)
                     if (bitamp == null) {
-                        Log.d(
+                        CrashlyticsHelper.log(
                             "SyncRepository",
                             "Bitmap is null for volunteer ID: ${volunteerDto.pid} name: ${volunteerDto.firstName}"
                         )
@@ -114,9 +115,19 @@ class SyncRepository(
                     )
                 }
             }
+            handleDeletedFaces()
             onCompletion()
             notificationHelper.removeNotification(nid)
-            Log.d("SyncRepository", "Face data sync completed.")
+            CrashlyticsHelper.log("SyncRepository", "Face data sync completed.")
+        }
+    }
+
+    private suspend fun handleDeletedFaces(){
+        studentDao.getAllDeletedStudentPids().forEach {
+            omniScanRepository.deleteFaceIfExists(it)
+        }
+        volunteerDao.getAllDeletedVolunteerPids().forEach {
+            omniScanRepository.deleteFaceIfExists(it)
         }
     }
 }

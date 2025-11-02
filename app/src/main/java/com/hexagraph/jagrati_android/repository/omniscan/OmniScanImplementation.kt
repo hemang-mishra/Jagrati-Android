@@ -28,6 +28,7 @@ import com.hexagraph.jagrati_android.model.Student
 import com.hexagraph.jagrati_android.model.dao.EmbeddingsDAO
 import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
+import com.hexagraph.jagrati_android.util.CrashlyticsHelper
 import com.hexagraph.jagrati_android.util.FileUtility.writeBitmapIntoFile
 import com.hexagraph.jagrati_android.util.MediaUtils.bitmap
 import kotlinx.coroutines.sync.Semaphore
@@ -69,10 +70,17 @@ class OmniScanImplementation @Inject constructor(
         image.image?.let { application.writeBitmapIntoFile(info.imageFileName, it).getOrNull() }
         faceInfoDao.insert(info.copy(isStudent = isStudent))
     }.onFailure {
-        Log.e("MediaUtils", it.message ?: "Error while saving face")
+        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while saving face")
     }
 
-    suspend fun deleteFace(pid: String) = runCatching {
+    override suspend fun deleteFaceIfExists(pid: String): Result<Unit> {
+        return if (faceInfoDao.getFaceById(pid) != null) {
+            deleteFace(pid)
+        }else
+            Result.success(Unit)
+    }
+
+    private suspend fun deleteFace(pid: String) = runCatching {
         val face = faceInfoDao.getFaceById(pid) ?: throw Throwable("Face not found")
         faceInfoDao.delete(face.pid)
         application.deleteFile(face.faceFileName)
@@ -80,7 +88,7 @@ class OmniScanImplementation @Inject constructor(
         application.deleteFile(face.imageFileName)
         faceEmbeddingsDAO.deleteEmbeddingsByPid(pid)
     }.onFailure {
-        Log.e("MediaUtils", it.message ?: "Error while deleting face")
+        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while deleting face")
     }
 
 //    fun imageAnalysis(lensFacing: Int, paint: Paint, onData: (Result<ProcessedImage>) -> Unit): ImageAnalysis {
@@ -114,7 +122,7 @@ class OmniScanImplementation @Inject constructor(
                             )
                         }
                         .addOnFailureListener(cameraExecutor) {
-                            Log.e("MediaUtils", it.message ?: "Error while processing image")
+                            CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image")
                         }
                         .addOnCompleteListener {
                             imageProxy.close()
@@ -122,7 +130,7 @@ class OmniScanImplementation @Inject constructor(
                         }
                 }
             }.onFailure {
-                Log.e("MediaUtils", it.message ?: "Error while processing image")
+                CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image")
             }
         }
 
@@ -147,7 +155,7 @@ class OmniScanImplementation @Inject constructor(
         faceBitmap = faceBitmap?.let { alignBitmapByLandmarks(bitmap = it, face?.allLandmarks ?: listOf()).getOrNull() }
         return@runCatching ProcessedImage(image = bitmap, frame = frame, face = face, trackingId = face?.trackingId, faceBitmap = faceBitmap)
     }.onFailure {
-        Log.e("MediaUtils", it.message ?: "Error while processing image")
+        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image")
     }
 
     override suspend fun processImageFromBitmap(
@@ -158,7 +166,7 @@ class OmniScanImplementation @Inject constructor(
         val faces = com.google.android.gms.tasks.Tasks.await(faceDetector.process(image))
         processImage(CameraSelector.LENS_FACING_BACK, faces, bitmap, paint).getOrThrow()
     }.onFailure {
-        Log.e("MediaUtils", it.message ?: "Error while processing image from bitmap")
+        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image from bitmap")
     }
 
     private fun biggestFace(faces: MutableList<Face>): Face? {
@@ -207,7 +215,7 @@ class OmniScanImplementation @Inject constructor(
         // Apply the transformation matrix to the bitmap
         Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }.onFailure {
-        Log.e("MediaUtils", it.message ?: "Error while aligning bitmap by landmarks")
+        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while aligning bitmap by landmarks")
     }
 
 }

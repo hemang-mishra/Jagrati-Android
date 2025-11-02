@@ -33,4 +33,7 @@ interface StudentDao {
 
     @Query("SELECT * FROM student WHERE is_active=1 AND first_name LIKE '%' || :query || '%' OR last_name LIKE '%' || :query || '%'")
     suspend fun getStudentDetailsByQuery(query: String): List<Student>
+
+    @Query("SELECT pid FROM student WHERE is_active=0")
+    suspend fun getAllDeletedStudentPids(): List<String>
 }
