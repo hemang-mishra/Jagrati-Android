@@ -75,6 +75,7 @@ fun MainHomeScreen(
     onSearchClick: () -> Unit,
     navigateToAttendanceMarking: (Long) -> Unit = {},
     navigateToManualAttendanceMarking: (Long) -> Unit,
+    navigateToAttendanceDetailScreen: (String, Boolean) -> Unit,
     navigateToFullScreenImage: (ImageKitResponse) -> Unit,
     navigateToEditProfile: (String) -> Unit,
     navigateToCameraSearch: () -> Unit,
@@ -204,7 +205,8 @@ fun MainHomeScreen(
                             updateFacialData(pid)
                         }, onNavigateToFullScreenImage = { imageData ->
                             navigateToFullScreenImage(imageData)
-                        }, snackbarHostState = snackbarHostState
+                        }, snackbarHostState = snackbarHostState,
+                        onAttendanceDetailedView = navigateToAttendanceDetailScreen
                     )
                 }
             }

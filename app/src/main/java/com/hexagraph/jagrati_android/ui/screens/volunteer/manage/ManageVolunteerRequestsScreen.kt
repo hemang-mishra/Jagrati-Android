@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.ui.screens.volunteer.manage
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -50,6 +52,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -65,6 +68,7 @@ import com.hexagraph.jagrati_android.model.volunteer.AddressDTO
 import com.hexagraph.jagrati_android.model.volunteer.DetailedVolunteerRequestResponse
 import com.hexagraph.jagrati_android.model.volunteer.UserSummaryDTO
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -120,7 +124,8 @@ fun ManageVolunteerRequestsLayout(
     onConfirmReject: () -> Unit
 ) {
     val pullRefreshState = rememberPullToRefreshState()
-
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         topBar = {
@@ -174,6 +179,7 @@ fun ManageVolunteerRequestsLayout(
                 } else {
                     // List of requests
                     LazyColumn(
+                        state= listState,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 16.dp),
@@ -183,18 +189,42 @@ fun ManageVolunteerRequestsLayout(
 
                         // Stats section
                         item {
+                            val pendingCount = uiState.volunteerRequests.count { it.status == "PENDING" }
+                            val approvedCount = uiState.volunteerRequests.count { it.status == "APPROVED" }
+                            val rejectedCount = uiState.volunteerRequests.count { it.status == "REJECTED" }
                             RequestStatsCard(
                                 totalRequests = uiState.volunteerRequests.size,
-                                pendingRequests = uiState.volunteerRequests.count { it.status == "PENDING" },
-                                approvedRequests = uiState.volunteerRequests.count { it.status == "APPROVED" },
-                                rejectedRequests = uiState.volunteerRequests.count { it.status == "REJECTED" }
+                                pendingRequests = pendingCount,
+                                approvedRequests = approvedCount,
+                                rejectedRequests = rejectedCount,
+                                onApproveClick = {
+                                    if(approvedCount > 0){
+                                        scope.launch {
+                                            listState.animateScrollToItem(0+1 + if (pendingCount > 0) 1 + pendingCount else 0)
+                                        }
+                                    }
+                                },
+                                onPendingClick = {
+                                    if(pendingCount > 0){
+                                        scope.launch {
+                                            listState.animateScrollToItem(0+1)
+                                        }
+                                    }
+                                },
+                                onRejectClick = {
+                                    if (rejectedCount > 0) {
+                                        scope.launch {
+                                            listState.animateScrollToItem(0 + 1 + if (pendingCount > 0) 1 + pendingCount else 0 + if(approvedCount > 0 ) 1 + approvedCount else 0)
+                                        }
+                                    }
+                                }
                             )
                         }
 
                         // Section header for pending requests
                         val pendingRequests = uiState.volunteerRequests.filter { it.status == "PENDING" }
                         if (pendingRequests.isNotEmpty()) {
-                            item {
+                            item(key = "pending_header") {
                                 SectionHeader(
                                     title = "Pending Requests",
                                     count = pendingRequests.size,
@@ -219,7 +249,7 @@ fun ManageVolunteerRequestsLayout(
                         // Section header for approved requests
                         val approvedRequests = uiState.volunteerRequests.filter { it.status == "APPROVED" }
                         if (approvedRequests.isNotEmpty()) {
-                            item {
+                            item(key = "approved_header") {
                                 SectionHeader(
                                     title = "Approved Requests",
                                     count = approvedRequests.size,
@@ -244,7 +274,7 @@ fun ManageVolunteerRequestsLayout(
                         // Section header for rejected requests
                         val rejectedRequests = uiState.volunteerRequests.filter { it.status == "REJECTED" }
                         if (rejectedRequests.isNotEmpty()) {
-                            item {
+                            item(key = "rejected_header") {
                                 SectionHeader(
                                     title = "Rejected Requests",
                                     count = rejectedRequests.size,
@@ -334,7 +364,10 @@ fun RequestStatsCard(
     totalRequests: Int,
     pendingRequests: Int,
     approvedRequests: Int,
-    rejectedRequests: Int
+    rejectedRequests: Int,
+    onPendingClick: () -> Unit,
+    onRejectClick: () -> Unit,
+    onApproveClick: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -364,25 +397,29 @@ fun RequestStatsCard(
                 StatItem(
                     label = "Total",
                     value = totalRequests.toString(),
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    onClick = {}
                 )
 
                 StatItem(
                     label = "Pending",
                     value = pendingRequests.toString(),
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = MaterialTheme.colorScheme.tertiary,
+                    onClick = onPendingClick
                 )
 
                 StatItem(
                     label = "Approved",
                     value = approvedRequests.toString(),
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
+                    onClick = onApproveClick
                 )
 
                 StatItem(
                     label = "Rejected",
                     value = rejectedRequests.toString(),
-                    color = MaterialTheme.colorScheme.error
+                    color = MaterialTheme.colorScheme.error,
+                    onClick = onRejectClick
                 )
             }
         }
@@ -393,9 +430,11 @@ fun RequestStatsCard(
 fun StatItem(
     label: String,
     value: String,
-    color: Color
+    color: Color,
+    onClick: () -> Unit
 ) {
     Column(
+        modifier = Modifier.clickable {onClick()},
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {

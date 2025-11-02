@@ -321,6 +321,9 @@ fun AppNavigation(
                     },
                     navigateToManualAttendanceMarking ={
                         backstack.add(Screens.NavUnifiedSearchAttendanceRoute(System.currentTimeMillis()))
+                    },
+                    navigateToAttendanceDetailScreen = {pid, isStudent->
+                        backstack.add(Screens.NavDetailedAttendanceViewRoute(pid, isStudent = isStudent))
                     }
                 )
             }

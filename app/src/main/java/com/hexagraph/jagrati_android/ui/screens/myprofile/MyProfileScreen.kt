@@ -45,6 +45,7 @@ fun MyProfileScreen(
     onNavigateToFaceDataRegister: (String) -> Unit = {},
     onNavigateToFullScreenImage: (ImageKitResponse) -> Unit = {},
     viewModel: MyProfileViewModel = koinViewModel(),
+    onAttendanceDetailedView: (String, Boolean) -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -97,6 +98,10 @@ fun MyProfileScreen(
         onViewFullScreenImage = { imageData ->
             viewModel.hideEditOptionsSheet()
             onNavigateToFullScreenImage(imageData)
+        },
+        onViewDetails = {
+            val pid = uiState.volunteer?.pid ?: uiState.currentUser?.pid ?: return@MyProfileLayout
+            onAttendanceDetailedView(pid, false)
         }
     )
 }
@@ -111,6 +116,7 @@ fun MyProfileLayout(
     onAddFaceData: () -> Unit,
     onChatWhatsApp: (String) -> Unit,
     onDismissEditOptions: () -> Unit,
+    onViewDetails: () -> Unit,
     onViewFullScreenImage: (ImageKitResponse) -> Unit = {}
 ) {
     PullToRefreshBox(
@@ -146,7 +152,8 @@ fun MyProfileLayout(
                 item {
                     AttendanceSummarySection(
                         lastPresentDate = uiState.lastPresentDate,
-                        presentCountLastMonth = uiState.presentCountLastMonth
+                        presentCountLastMonth = uiState.presentCountLastMonth,
+                        viewDetails = onViewDetails
                     )
                 }
 
@@ -763,7 +770,8 @@ fun DetailRow(
 @Composable
 fun AttendanceSummarySection(
     lastPresentDate: String?,
-    presentCountLastMonth: Int
+    presentCountLastMonth: Int,
+    viewDetails: ()->Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -816,6 +824,27 @@ fun AttendanceSummarySection(
                     label = "Present in Last Month",
                     value = "$presentCountLastMonth days",
                     isHighlighted = presentCountLastMonth > 0
+                )
+            }
+
+            Button(
+                onClick = viewDetails,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_history),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "View Detailed Attendance",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -997,7 +1026,8 @@ fun MyProfilePreview() {
             onAddFaceData = {},
             onChatWhatsApp = {},
             onDismissEditOptions = {},
-            onViewFullScreenImage = {}
+            onViewFullScreenImage = {},
+            onViewDetails = {}
         )
     }
 }
