@@ -45,6 +45,7 @@ fun MyProfileScreen(
     onNavigateToFaceDataRegister: (String) -> Unit = {},
     onNavigateToFullScreenImage: (ImageKitResponse) -> Unit = {},
     viewModel: MyProfileViewModel = koinViewModel(),
+    onAttendanceDetailedView: (String, Boolean) -> Unit,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -97,6 +98,13 @@ fun MyProfileScreen(
         onViewFullScreenImage = { imageData ->
             viewModel.hideEditOptionsSheet()
             onNavigateToFullScreenImage(imageData)
+        },
+        onViewDetails = {
+            val pid = uiState.volunteer?.pid ?: uiState.currentUser?.pid ?: return@MyProfileLayout
+            onAttendanceDetailedView(pid, false)
+        },
+        onDeleteFaceData = {
+            viewModel.deleteFaceData()
         }
     )
 }
@@ -111,6 +119,8 @@ fun MyProfileLayout(
     onAddFaceData: () -> Unit,
     onChatWhatsApp: (String) -> Unit,
     onDismissEditOptions: () -> Unit,
+    onViewDetails: () -> Unit,
+    onDeleteFaceData: () -> Unit,
     onViewFullScreenImage: (ImageKitResponse) -> Unit = {}
 ) {
     PullToRefreshBox(
@@ -146,7 +156,8 @@ fun MyProfileLayout(
                 item {
                     AttendanceSummarySection(
                         lastPresentDate = uiState.lastPresentDate,
-                        presentCountLastMonth = uiState.presentCountLastMonth
+                        presentCountLastMonth = uiState.presentCountLastMonth,
+                        viewDetails = onViewDetails
                     )
                 }
 
@@ -168,7 +179,6 @@ fun MyProfileLayout(
         EditOptionsBottomSheet(
             hasProfilePic = uiState.volunteer?.profilePic != null || uiState.currentUser?.photoUrl != null,
             profilePicData = uiState.volunteer?.profilePic,
-            currentUserPhotoUrl = uiState.currentUser?.photoUrl,
             onDismiss = onDismissEditOptions,
             onEditFaceData = {
                 onDismissEditOptions()
@@ -176,6 +186,10 @@ fun MyProfileLayout(
             },
             onViewFullScreen = { imageData ->
                 onViewFullScreenImage(imageData)
+            },
+            onDeleteFaceData = {
+                onDismissEditOptions()
+                onDeleteFaceData()
             }
         )
     }
@@ -763,7 +777,8 @@ fun DetailRow(
 @Composable
 fun AttendanceSummarySection(
     lastPresentDate: String?,
-    presentCountLastMonth: Int
+    presentCountLastMonth: Int,
+    viewDetails: ()->Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -816,6 +831,27 @@ fun AttendanceSummarySection(
                     label = "Present in Last Month",
                     value = "$presentCountLastMonth days",
                     isHighlighted = presentCountLastMonth > 0
+                )
+            }
+
+            Button(
+                onClick = viewDetails,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_history),
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "View Detailed Attendance",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -871,9 +907,9 @@ fun AttendanceStat(
 fun EditOptionsBottomSheet(
     hasProfilePic: Boolean,
     profilePicData: ImageKitResponse?,
-    currentUserPhotoUrl: String?,
     onDismiss: () -> Unit,
     onEditFaceData: () -> Unit,
+    onDeleteFaceData: () -> Unit,
     onViewFullScreen: (ImageKitResponse) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -902,6 +938,12 @@ fun EditOptionsBottomSheet(
                     onClick = {
                         onViewFullScreen(profilePicData)
                     }
+                )
+
+                BottomSheetOption(
+                    icon = painterResource(R.drawable.ic_delete),
+                    text = "Delete Facial Data",
+                    onClick = onDeleteFaceData
                 )
             }
 
@@ -997,7 +1039,9 @@ fun MyProfilePreview() {
             onAddFaceData = {},
             onChatWhatsApp = {},
             onDismissEditOptions = {},
-            onViewFullScreenImage = {}
+            onViewFullScreenImage = {},
+            onViewDetails = {},
+            onDeleteFaceData = {}
         )
     }
 }

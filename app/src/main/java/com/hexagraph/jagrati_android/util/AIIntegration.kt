@@ -15,7 +15,6 @@ import java.nio.channels.FileChannel
 
 object AIIntegration {
     private const val FACE_NET_MODEL_PATH = "face_net_512.tflite"
-    private const val ANTI_SPOOF_MODEL_PATH = "anti_spoof_model.tflite"
     private const val MOBILE_NET_MODEL_PATH = "mobile_net.tflite"
 
     const val FACE_NET_IMAGE_SIZE = 160
@@ -37,7 +36,6 @@ object AIIntegration {
         return Interpreter(modelBuffer)
     }
     val Context.faceNetInterceptor get() = getInterceptor(FACE_NET_MODEL_PATH, this)
-    val Context.antiSpoofInterceptor get() = getInterceptor(ANTI_SPOOF_MODEL_PATH, this)
     val Context.mobileNetInterceptor get() = getInterceptor(MOBILE_NET_MODEL_PATH, this)
 
 
@@ -65,7 +63,7 @@ object AIIntegration {
         }
         inputBuffer
     }.onFailure {
-        Log.e("AIIntegration", it.message?:"Error while preprocessing bitmap for MobileFaceNet")
+        CrashlyticsHelper.logError("AIIntegration", it.message?:"Error while preprocessing bitmap for MobileFaceNet")
     }
 
     // Calculate the cosine similarity between two embeddings
@@ -87,7 +85,7 @@ object AIIntegration {
 
         dotProduct / (norm2 * norm1)
     }.onFailure {
-        Log.e("AIIntegration", it.message?:"Error while calculating cosine similarity")
+        CrashlyticsHelper.logError("AIIntegration", it.message?:"Error while calculating cosine similarity")
     }
 
     fun calculateDistanceBtwEmbeddings(embeddingBuffer1: ByteBuffer, embeddingBuffer2: ByteBuffer): Result<Float> = runCatching {
@@ -98,6 +96,6 @@ object AIIntegration {
         }
         sqrt(sum.toDouble()).toFloat()
     }.onFailure {
-        Log.e("AIIntegration", it.message?:"Error while calculating distance between embeddings")
+        CrashlyticsHelper.logError("AIIntegration", it.message?:"Error while calculating distance between embeddings")
     }
 }

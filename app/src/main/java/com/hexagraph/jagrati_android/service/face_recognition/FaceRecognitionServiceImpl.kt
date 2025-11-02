@@ -15,6 +15,7 @@ import com.hexagraph.jagrati_android.util.AIIntegration.faceNetInterceptor
 import com.hexagraph.jagrati_android.util.AIIntegration.isRunning
 import com.hexagraph.jagrati_android.util.AIIntegration.mobileNetInterceptor
 import com.hexagraph.jagrati_android.util.AIIntegration.preprocessBitmapForMobileFaceNet
+import com.hexagraph.jagrati_android.util.CrashlyticsHelper
 import kotlinx.coroutines.runBlocking
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -55,7 +56,7 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
         val data = referencedOutputBuffer.float
         data
     }.onFailure {
-        Log.e(
+        CrashlyticsHelper.logError(
             "FaceRecognitionServiceImpl",
             it.message ?: "Error while preprocessing bitmap for MobileFaceNet"
         )
@@ -193,7 +194,7 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
                 minHeap.toList().map { it.second }
             }
         } catch (th: Throwable) {
-            Log.e("FaceRecognitionServiceImpl", th.message ?: "Error while recognizing face")
+            CrashlyticsHelper.logError("FaceRecognitionServiceImpl", th.message ?: "Error while recognizing face")
             null
         } finally {
             synchronized(this) { isRunning = false }

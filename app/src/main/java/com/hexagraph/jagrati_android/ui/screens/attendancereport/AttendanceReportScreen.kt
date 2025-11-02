@@ -38,6 +38,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -141,15 +142,15 @@ fun AttendanceReportScreenLayout(
     var showDatePicker by remember { mutableStateOf(false) }
     val todayMillis = remember {
         Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
     }
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = uiState.selectedDateMillis,
-        selectableDates = object : androidx.compose.material3.SelectableDates {
+        selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 return utcTimeMillis <= todayMillis
             }

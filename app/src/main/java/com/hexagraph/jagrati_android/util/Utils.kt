@@ -217,9 +217,9 @@ object Utils {
      */
     fun logException(e: Exception) {
         e.printStackTrace()
-        CrashlyticsHelper.log(
+        CrashlyticsHelper.logException(
             tag = "SafeApiCall",
-            message = "API call failed with exception: ${e.javaClass.simpleName}, message: ${e.message}"
+            exception = e
         )
     }
 

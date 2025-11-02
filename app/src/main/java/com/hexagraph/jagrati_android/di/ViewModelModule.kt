@@ -82,7 +82,7 @@ val viewModelModule = module {
         )
     }
 
-    factory { MyProfileViewModel(get(), get(), get()) }
+    factory { MyProfileViewModel(get(), get(), get(), get()) }
 
     factory { (isSearching: Boolean, millis: Long)-> AttendanceMarkingViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(),get(), isSearching, millis) }
     factory { (pid: String) -> FaceDataRegisterViewModel(get(),  get(), get(), get(), get(),get(),get(),get(),pid) }

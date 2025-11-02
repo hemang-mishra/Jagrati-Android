@@ -381,7 +381,9 @@ fun AttendanceMarkingScreenLayout(
                     items(list.size) { index ->
                         val person = list.reversed()[index]
                         val opacity = (0.5f / size) * index + 0.5f
-                        LiveRecognitionCard(person, opacity)
+                        LiveRecognitionCard(person, opacity){
+                            onPersonSelect(person.pid, person.isStudent)
+                        }
 
                     }
                 }
@@ -608,12 +610,14 @@ fun CameraPreview(
 }
 
 @Composable
-fun LiveRecognitionCard(person: RecognizedPerson, opacity: Float = 1f) {
+fun LiveRecognitionCard(person: RecognizedPerson, opacity: Float = 1f, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .width(120.dp)
             .height(140.dp)
-            .alpha(opacity),
+            .alpha(opacity)
+            .clickable {onClick()}
+        ,
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFFE53935)

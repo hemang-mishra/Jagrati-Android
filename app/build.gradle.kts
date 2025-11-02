@@ -31,8 +31,8 @@ android {
         applicationId = "com.hexagraph.jagrati_android"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.1.1"
+        versionCode = 6
+        versionName = "1.1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -199,5 +199,8 @@ dependencies {
 
     // Play Core App Update
     implementation(libs.app.update)
+
+    // Lottie animations
+    implementation(libs.lottie.compose)
     implementation(libs.app.update.ktx)
 }

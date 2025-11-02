@@ -8,6 +8,7 @@ import com.hexagraph.jagrati_android.model.user.UserDetailsWithRolesAndPermissio
 import com.hexagraph.jagrati_android.repository.sync.SyncRepository
 import com.hexagraph.jagrati_android.repository.user.UserRepository
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.CrashlyticsHelper
 import com.hexagraph.jagrati_android.util.Resource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,19 +24,19 @@ class DataSyncUseCase(
     private val TAG = "DataSyncUseCase"
 
     fun syncDataInBackgroundAfterFCM(){
-        Log.d(TAG, "FCM received for data sync, starting background sync")
+        CrashlyticsHelper.log(TAG, "FCM received for data sync, starting background sync")
         CoroutineScope(Dispatchers.IO).launch {
             val lastUsedTime = appPreferences.lastUsedTime.get()
             if(System.currentTimeMillis() - lastUsedTime > 30*60*1000){
-                Log.d(TAG, "App not used in last 30 minutes, skipping data sync after FCM")
+                CrashlyticsHelper.log(TAG, "App not used in last 30 minutes, skipping data sync after FCM")
                 return@launch
             }
             fetchUserDetails(
                 onSuccessfulFetch = {
-                    Log.d(TAG, "Data sync completed successfully after FCM")
+                    CrashlyticsHelper.log(TAG, "Data sync completed successfully after FCM")
                 },
                 onError = { error ->
-                    Log.e(TAG, "Data sync failed after FCM: ${error.actualResponse}")
+                    CrashlyticsHelper.log(TAG, "Data sync failed after FCM: ${error.actualResponse}")
                 }
             )
         }
@@ -45,10 +46,10 @@ class DataSyncUseCase(
         FirebaseMessaging.getInstance()
             .subscribeToTopic(syncTopic)
             .addOnSuccessListener {
-                Log.d(TAG, "Subscribed to $syncTopic topic for real-time data sync")
+                CrashlyticsHelper.log(TAG, "Subscribed to $syncTopic topic for real-time data sync")
             }
             .addOnFailureListener {
-                Log.d(TAG, "Failed to subscribe to $syncTopic topic")
+                CrashlyticsHelper.log(TAG, "Failed to subscribe to $syncTopic topic")
             }
     }
 
@@ -56,10 +57,10 @@ class DataSyncUseCase(
         FirebaseMessaging.getInstance()
             .unsubscribeFromTopic(syncTopic)
             .addOnSuccessListener {
-                Log.d(TAG, "Unsubscribed from $syncTopic topic for real-time data sync")
+                CrashlyticsHelper.log(TAG, "Unsubscribed from $syncTopic topic for real-time data sync")
             }
             .addOnFailureListener {
-                Log.d(TAG, "Failed to unsubscribe from $syncTopic topic")
+                CrashlyticsHelper.log(TAG, "Failed to unsubscribe from $syncTopic topic")
             }
     }
     suspend fun fetchUserDetails(

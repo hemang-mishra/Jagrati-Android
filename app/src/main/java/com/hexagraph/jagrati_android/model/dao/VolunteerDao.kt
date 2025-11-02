@@ -29,5 +29,8 @@ interface VolunteerDao {
 
     @Query("SELECT * FROM volunteer WHERE is_active=1 AND first_name LIKE '%' || :query || '%' OR last_name LIKE '%' || :query || '%' OR roll_number LIKE '%' || :query || '%'")
     suspend fun getVolunteersByQuery(query: String): List<Volunteer>
+
+    @Query("SELECT pid FROM volunteer WHERE is_active=0")
+    suspend fun getAllDeletedVolunteerPids(): List<String>
 }
 
