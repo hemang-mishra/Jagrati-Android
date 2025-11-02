@@ -135,7 +135,7 @@ fun AttendanceMarkingScreen(
         onNavigateBack = onNavigateBack,
         onCapture = { viewModel.captureFace() },
         onRetake = { viewModel.retakePhoto() },
-        onPersonSelect = onPerso    nSelect,
+        onPersonSelect = onPersonSelect,
         onUpdateDate = { millis -> viewModel.updateSelectedDateMillis(millis) },
         onDismissBottomSheet = { viewModel.dismissBottomSheetAndRetakePhoto() },
         getImageAnalyzer = { lensFacing, paint, executor ->
