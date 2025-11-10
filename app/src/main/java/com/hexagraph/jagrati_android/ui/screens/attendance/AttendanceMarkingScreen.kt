@@ -147,7 +147,12 @@ fun AttendanceMarkingScreen(
                 bitmap, paint,
                 onNoFaceDetected = {
                     scope.launch {
-                        snackbarHostState.showSnackbar("No face detected in the selected image")
+                        val message = if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL) {
+                            "No face detected in the selected image"
+                        } else {
+                            "No faces detected in the selected image"
+                        }
+                        snackbarHostState.showSnackbar(message)
                     }
                 },
                 onSuccess = {}
