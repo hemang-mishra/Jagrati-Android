@@ -163,6 +163,7 @@ private fun LoadingContent() {
             LottieAnimation(
                 composition = composition,
                 iterations = LottieConstants.IterateForever,
+                reverseOnRepeat = true,
                 modifier = Modifier.size(200.dp)
             )
 
