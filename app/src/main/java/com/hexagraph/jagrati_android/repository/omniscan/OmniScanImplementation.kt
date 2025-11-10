@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
@@ -19,12 +18,12 @@ import com.hexagraph.jagrati_android.util.MediaUtils.crop
 import com.hexagraph.jagrati_android.util.MediaUtils.flip
 import kotlin.math.atan2
 import androidx.core.graphics.createBitmap
+import com.google.android.gms.tasks.Tasks
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import com.hexagraph.jagrati_android.model.Student
 import com.hexagraph.jagrati_android.model.dao.EmbeddingsDAO
 import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
@@ -163,10 +162,61 @@ class OmniScanImplementation @Inject constructor(
         paint: Paint
     ): Result<ProcessedImage> = runCatching {
         val image = InputImage.fromBitmap(bitmap, 0)
-        val faces = com.google.android.gms.tasks.Tasks.await(faceDetector.process(image))
+        val faces = Tasks.await(faceDetector.process(image))
         processImage(CameraSelector.LENS_FACING_BACK, faces, bitmap, paint).getOrThrow()
     }.onFailure {
         CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image from bitmap")
+    }
+
+    override suspend fun processImageFromBitmapGroupMode(
+        bitmap: Bitmap,
+        paint: Paint
+    ): Result<List<ProcessedImage>> = runCatching {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val faces = Tasks.await(faceDetector.process(image))
+        processAllFaces(CameraSelector.LENS_FACING_BACK, faces, bitmap, paint)
+    }.onFailure {
+        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image from bitmap in group mode")
+    }
+
+    private fun processAllFaces(
+        lensFacing: Int,
+        data: MutableList<Face>,
+        bitmap: Bitmap,
+        paint: Paint
+    ): List<ProcessedImage> {
+        paint.style = Paint.Style.STROKE
+        val processedImages = mutableListOf<ProcessedImage>()
+
+        data.forEach { face ->
+            try {
+                var faceBitmap = face.boundingBox.let {
+                    bitmap.crop(it.left, it.top, it.width(), it.height()).getOrNull()
+                }
+
+                if (lensFacing == CameraSelector.LENS_FACING_FRONT) {
+                    faceBitmap = faceBitmap?.flip(horizontal = true)?.getOrNull()
+                }
+
+                faceBitmap = faceBitmap?.let {
+                    alignBitmapByLandmarks(bitmap = it, face.allLandmarks).getOrNull()
+                }
+
+                val processedImage = ProcessedImage(
+                    image = bitmap,
+                    frame = bitmap,
+                    face = face,
+                    trackingId = face.trackingId,
+                    faceBitmap = faceBitmap
+                )
+
+                processedImages.add(processedImage)
+            } catch (e: Exception) {
+                CrashlyticsHelper.logError("MediaUtils", "Error processing face: ${e.message}")
+            }
+        }
+
+        return processedImages
     }
 
     private fun biggestFace(faces: MutableList<Face>): Face? {

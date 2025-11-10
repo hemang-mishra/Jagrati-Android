@@ -51,7 +51,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -95,6 +94,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.ProcessedImage
+import com.hexagraph.jagrati_android.model.RecognitionMode
 import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
 import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import kotlinx.coroutines.launch
@@ -138,6 +138,7 @@ fun AttendanceMarkingScreen(
         onPersonSelect = onPersonSelect,
         onUpdateDate = { millis -> viewModel.updateSelectedDateMillis(millis) },
         onDismissBottomSheet = { viewModel.dismissBottomSheetAndRetakePhoto() },
+        onToggleRecognitionMode = { viewModel.toggleRecognitionMode() },
         getImageAnalyzer = { lensFacing, paint, executor ->
             viewModel.getImageAnalyzer(lensFacing, paint, executor)
         },
@@ -177,6 +178,7 @@ fun AttendanceMarkingScreenLayout(
     onPersonSelect: (String, Boolean) -> Unit,
     onUpdateDate: (Long) -> Unit,
     onDismissBottomSheet: () -> Unit,
+    onToggleRecognitionMode: () -> Unit,
     getImageAnalyzer: (Int, Paint, java.util.concurrent.Executor) -> ImageAnalysis.Analyzer,
     onImageFromGallery: (Bitmap, Paint) -> Unit,
     onUpdateCapturedImage: (ProcessedImage) -> Unit,
@@ -185,7 +187,7 @@ fun AttendanceMarkingScreenLayout(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var lensFacing by remember { mutableIntStateOf(CameraSelector.LENS_FACING_FRONT) }
+    var lensFacing by remember { mutableIntStateOf(CameraSelector.LENS_FACING_BACK) }
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -317,6 +319,39 @@ fun AttendanceMarkingScreenLayout(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+
+                // Recognition Mode Toggle
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .clickable { onToggleRecognitionMode() }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL)
+                                R.drawable.ic_person
+                            else
+                                R.drawable.ic_group
+                        ),
+                        contentDescription = "Recognition Mode",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL)
+                            "Individual Mode"
+                        else
+                            "Group Mode",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -357,7 +392,9 @@ fun AttendanceMarkingScreenLayout(
             }
 
             AnimatedVisibility(
-                visible = uiState.liveRecognizedFaces.isNotEmpty() && uiState.isCameraActive,
+                visible = uiState.liveRecognizedFaces.isNotEmpty() &&
+                         uiState.isCameraActive &&
+                         uiState.recognitionMode == RecognitionMode.INDIVIDUAL,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                 exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
                 modifier = Modifier
@@ -423,6 +460,9 @@ fun AttendanceMarkingScreenLayout(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
+
+
+
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
@@ -515,11 +555,19 @@ fun AttendanceMarkingScreenLayout(
                 containerColor = MaterialTheme.colorScheme.surface,
                 dragHandle = { BottomSheetDefaults.DragHandle() }
             ) {
-                RecognizedFacesBottomSheet(
-                    recognizedFaces = uiState.recognizedFaces,
-                    isMarkingAttendance = uiState.isMarkingAttendance,
-                    onPersonSelect = onPersonSelect
-                )
+                if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL) {
+                    RecognizedFacesBottomSheet(
+                        recognizedFaces = uiState.recognizedFaces,
+                        isMarkingAttendance = uiState.isMarkingAttendance,
+                        onPersonSelect = onPersonSelect
+                    )
+                } else {
+                    GroupRecognitionBottomSheet(
+                        groupResults = uiState.groupRecognitionResults,
+                        isMarkingAttendance = uiState.isMarkingAttendance,
+                        onPersonSelect = onPersonSelect
+                    )
+                }
             }
         }
         val selectableDates= object : SelectableDates {
@@ -776,6 +824,169 @@ fun RecognizedPersonCard(
                     strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.primary
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupRecognitionBottomSheet(
+    groupResults: List<FaceRecognitionGroup>,
+    isMarkingAttendance: Boolean,
+    onPersonSelect: (String, Boolean) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        item {
+            Text(
+                text = "Group Recognition (${groupResults.size} face${if (groupResults.size != 1) "s" else ""} detected)",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        if (groupResults.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No faces detected",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
+        } else {
+            items(groupResults.size) { index ->
+                FaceGroupCard(
+                    faceGroup = groupResults[index],
+                    faceNumber = index + 1,
+                    isMarkingAttendance = isMarkingAttendance,
+                    onPersonSelect = onPersonSelect
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FaceGroupCard(
+    faceGroup: FaceRecognitionGroup,
+    faceNumber: Int,
+    isMarkingAttendance: Boolean,
+    onPersonSelect: (String, Boolean) -> Unit
+) {
+    var isViewAllMode by remember{
+        mutableStateOf(false)
+    }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Face header with thumbnail
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Face thumbnail
+                    faceGroup.processedImage.faceBitmap?.let { faceBitmap ->
+                        Image(
+                            bitmap = faceBitmap.asImageBitmap(),
+                            contentDescription = "Detected Face $faceNumber",
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Face #$faceNumber",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Text(
+                    text = "${faceGroup.matchedPersons.size} match${if (faceGroup.matchedPersons.size != 1) "es" else ""}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
+
+            if (faceGroup.matchedPersons.isEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "No matching persons found",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(start = 76.dp)
+                )
+            } else {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // List of matched persons sorted by similarity
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Similar People:",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(start = 76.dp, bottom = 4.dp)
+                    )
+
+                    faceGroup.matchedPersons.take(if(isViewAllMode)5 else 1).forEach { person ->
+                        RecognizedPersonCard(
+                            person = person,
+                            isMarkingAttendance = isMarkingAttendance,
+                            onSelect = { onPersonSelect(person.pid, person.isStudent) }
+                        )
+                    }
+
+                    TextButton(onClick = {
+                        isViewAllMode = !isViewAllMode
+                    }) {
+                        Text(
+                            text = if(isViewAllMode) "Show Less" else "View All",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    if (faceGroup.matchedPersons.size > 5) {
+                        Text(
+                            text = "... and ${faceGroup.matchedPersons.size - 5} more",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(start = 76.dp, top = 4.dp)
+                        )
+                    }
+                }
             }
         }
     }

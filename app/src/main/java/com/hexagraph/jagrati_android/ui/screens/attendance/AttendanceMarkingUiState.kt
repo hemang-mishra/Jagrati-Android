@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.ui.screens.attendance
 
 import com.hexagraph.jagrati_android.model.ProcessedImage
+import com.hexagraph.jagrati_android.model.RecognitionMode
 import com.hexagraph.jagrati_android.model.ResponseError
 
 data class AttendanceMarkingUiState(
@@ -13,7 +14,9 @@ data class AttendanceMarkingUiState(
     val isMarkingAttendance: Boolean = false,
     val selectedDateMillis: Long = System.currentTimeMillis(),
     val error: ResponseError? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val recognitionMode: RecognitionMode = RecognitionMode.INDIVIDUAL,
+    val groupRecognitionResults: List<FaceRecognitionGroup> = emptyList()
 )
 
 data class RecognizedPerson(

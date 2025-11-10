@@ -3,10 +3,10 @@ package com.hexagraph.jagrati_android.ui.screens.attendance
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.Paint
-import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ProcessedImage
+import com.hexagraph.jagrati_android.model.RecognitionMode
 import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.attendance.BulkAttendanceRequest
 import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
@@ -21,7 +21,6 @@ import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionSer
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.CrashlyticsHelper
-import com.hexagraph.jagrati_android.util.Utils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -61,6 +60,8 @@ class AttendanceMarkingViewModel(
     private val _showBottomSheet = MutableStateFlow(false)
     private val _isMarkingAttendance = MutableStateFlow(false)
     private val _selectedDateMillis = MutableStateFlow(defaultDateMillis)
+    private val _recognitionMode = MutableStateFlow(RecognitionMode.INDIVIDUAL)
+    private val _groupRecognitionResults = MutableStateFlow<List<FaceRecognitionGroup>>(emptyList())
     private var acceptingCaptureFromCamera = true
 
     private val semaphore = Semaphore(1)
@@ -78,23 +79,31 @@ class AttendanceMarkingViewModel(
 
     override fun createUiStateFlow(): StateFlow<AttendanceMarkingUiState> {
         return combine(
-            _isLoading,
-            _capturedImage,
-            _isCameraActive,
-            _recognizedFaces,
-            _liveRecognizedFaces
-        ) { isLoading, capturedImage, isCameraActive, recognizedFaces, liveRecognizedFaces ->
+            combine(
+                _isLoading,
+                _capturedImage,
+                _isCameraActive,
+                _recognizedFaces,
+                _liveRecognizedFaces
+            ) { isLoading, capturedImage, isCameraActive, recognizedFaces, liveRecognizedFaces ->
+                quintuple(isLoading, capturedImage, isCameraActive, recognizedFaces, liveRecognizedFaces)
+            },
+            _recognitionMode,
+            _groupRecognitionResults
+        ) { quintuple, recognitionMode, groupRecognitionResults ->
             AttendanceMarkingUiState(
-                isLoading = isLoading,
-                capturedImage = capturedImage,
-                isCameraActive = isCameraActive,
-                recognizedFaces = recognizedFaces,
-                liveRecognizedFaces = liveRecognizedFaces,
+                isLoading = quintuple.first,
+                capturedImage = quintuple.second,
+                isCameraActive = quintuple.third,
+                recognizedFaces = quintuple.fourth,
+                liveRecognizedFaces = quintuple.fifth,
                 selectedDateMillis = _selectedDateMillis.value,
                 showBottomSheet = _showBottomSheet.value,
                 isMarkingAttendance = _isMarkingAttendance.value,
                 error = errorFlow.value,
                 successMessage = successMsgFlow.value,
+                recognitionMode = recognitionMode,
+                groupRecognitionResults = groupRecognitionResults
             )
         }.stateIn(
             scope = viewModelScope,
@@ -104,6 +113,16 @@ class AttendanceMarkingViewModel(
             )
         )
     }
+
+    private data class Quintuple<A, B, C, D, E>(
+        val first: A,
+        val second: B,
+        val third: C,
+        val fourth: D,
+        val fifth: E
+    )
+
+    private fun <A, B, C, D, E> quintuple(a: A, b: B, c: C, d: D, e: E) = Quintuple(a, b, c, d, e)
 
     fun getImageAnalyzer(lensFacing: Int, paint: Paint, executor: Executor): ImageAnalysis.Analyzer {
         return omniScanRepository.imageAnalyzer(
@@ -174,6 +193,14 @@ class AttendanceMarkingViewModel(
     }
 
     fun captureFace() {
+        if (_recognitionMode.value == RecognitionMode.GROUP) {
+            captureGroupFaces()
+        } else {
+            captureIndividualFace()
+        }
+    }
+
+    private fun captureIndividualFace() {
         val capturedImage = _capturedImage.value
         acceptingCaptureFromCamera = false
         _isCameraActive.update { false }
@@ -233,6 +260,94 @@ class AttendanceMarkingViewModel(
                 CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Capture failed: ${e.message}")
                 emitError(ResponseError.UNKNOWN.apply {
                     actualResponse = e.message ?: "Failed to recognize face"
+                })
+                retakePhoto()
+            } finally {
+                _isLoading.update { false }
+            }
+        }
+    }
+
+    private fun captureGroupFaces() {
+        acceptingCaptureFromCamera = false
+        _isCameraActive.update { false }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                _isLoading.update { true }
+
+                val capturedImage = _capturedImage.value
+                if (capturedImage?.image == null) {
+                    emitError(ResponseError.BAD_REQUEST.apply {
+                        actualResponse = "No image captured. Please try again."
+                    })
+                    retakePhoto()
+                    return@launch
+                }
+
+                val paint = Paint()
+                val processedImagesResult = omniScanRepository.processImageFromBitmapGroupMode(
+                    capturedImage.image,
+                    paint
+                )
+
+                if (processedImagesResult.isFailure || processedImagesResult.getOrNull().isNullOrEmpty()) {
+                    emitError(ResponseError.BAD_REQUEST.apply {
+                        actualResponse = "No faces detected in the image."
+                    })
+                    retakePhoto()
+                    return@launch
+                }
+
+                val processedImages = processedImagesResult.getOrThrow()
+                val facePids = getFaceIds()
+
+                if (facePids.isEmpty()) {
+                    emitError(ResponseError.BAD_REQUEST.apply {
+                        actualResponse = "No registered faces found in the database."
+                    })
+                    retakePhoto()
+                    return@launch
+                }
+
+                val groupResults = mutableListOf<FaceRecognitionGroup>()
+
+                processedImages.forEach { processedImage ->
+                    if (processedImage.faceBitmap != null) {
+                        val results = faceRecognitionService.recognizeFace(
+                            processedImage,
+                            facePids,
+                            context
+                        )
+
+                        val recognizedPersons = results?.mapNotNull { result ->
+                            getPersonDetails(result.pid, result.similarity)
+                        }?.sortedByDescending { it.similarity } ?: emptyList()
+
+                        groupResults.add(
+                            FaceRecognitionGroup(
+                                processedImage = processedImage,
+                                matchedPersons = recognizedPersons
+                            )
+                        )
+                    }
+                }
+
+                if (groupResults.isEmpty()) {
+                    emitError(ResponseError.BAD_REQUEST.apply {
+                        actualResponse = "No valid faces detected."
+                    })
+                    retakePhoto()
+                    return@launch
+                }
+
+                _groupRecognitionResults.update { groupResults }
+                _showBottomSheet.update { true }
+
+            } catch (e: Exception) {
+                CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Group capture failed: ${e.message}")
+                emitError(ResponseError.UNKNOWN.apply {
+                    actualResponse = e.message ?: "Failed to recognize faces"
                 })
                 retakePhoto()
             } finally {
@@ -398,6 +513,7 @@ class AttendanceMarkingViewModel(
                             withContext(Dispatchers.Main) {
                                 onSuccess()
                             }
+                            if(uiState.value.recognitionMode == RecognitionMode.INDIVIDUAL)
                             dismissBottomSheetAndRetakePhoto()
                         } else if (response?.skippedExisting == 1) {
                             emitError(ResponseError.BAD_REQUEST.apply {
@@ -430,7 +546,22 @@ class AttendanceMarkingViewModel(
         _capturedImage.update { null }
         _recognizedFaces.update { emptyList() }
         _liveRecognizedFaces.update { emptyList() }
+        _groupRecognitionResults.update { emptyList() }
         _showBottomSheet.update { false }
+    }
+
+    fun toggleRecognitionMode() {
+        _recognitionMode.update { currentMode ->
+            if (currentMode == RecognitionMode.INDIVIDUAL) {
+                RecognitionMode.GROUP
+            } else {
+                RecognitionMode.INDIVIDUAL
+            }
+        }
+        // Clear any existing results when switching modes
+        _recognizedFaces.update { emptyList() }
+        _groupRecognitionResults.update { emptyList() }
+        _liveRecognizedFaces.update { emptyList() }
     }
 
     override fun onCleared() {
@@ -457,3 +588,9 @@ class AttendanceMarkingViewModel(
         _selectedDateMillis.update { millis }
     }
 }
+
+
+data class FaceRecognitionGroup(
+    val processedImage: ProcessedImage,
+    val matchedPersons: List<RecognizedPerson>
+)
