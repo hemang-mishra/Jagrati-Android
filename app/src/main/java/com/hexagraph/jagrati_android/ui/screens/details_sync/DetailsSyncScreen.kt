@@ -164,6 +164,7 @@ private fun LoadingContent() {
                 composition = composition,
                 iterations = LottieConstants.IterateForever,
                 reverseOnRepeat = true,
+                speed = 1.5f,
                 modifier = Modifier.size(200.dp)
             )
 

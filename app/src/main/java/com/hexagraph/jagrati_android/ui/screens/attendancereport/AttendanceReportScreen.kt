@@ -18,9 +18,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
@@ -140,6 +144,9 @@ fun AttendanceReportScreenLayout(
     snackbarHostState: SnackbarHostState
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
     val todayMillis = remember {
         Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 23)
@@ -228,6 +235,7 @@ fun AttendanceReportScreenLayout(
                 }
             } else {
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -256,7 +264,28 @@ fun AttendanceReportScreenLayout(
                         StatsSection(
                             studentsByVillageGender = uiState.reportData.studentsByVillageGender,
                             volunteersByBatch = uiState.reportData.volunteersByBatch,
-                            groupCounts = uiState.groupCounts
+                            groupCounts = uiState.groupCounts,
+                            onVolunteerBatchClick = { batch ->
+                                coroutineScope.launch {
+                                    onVolunteerBatchFilter(batch)
+                                    // Scroll to volunteers section (item index 4)
+                                    listState.animateScrollToItem(4)
+                                }
+                            },
+                            onVillageClick = { villageId ->
+                                coroutineScope.launch {
+                                    onStudentVillageFilter(villageId)
+                                    // Scroll to students section (item index 7 approximately)
+                                    listState.animateScrollToItem(7)
+                                }
+                            },
+                            onGroupClick = { groupId ->
+                                coroutineScope.launch {
+                                    onStudentGroupFilter(groupId)
+                                    // Scroll to students section
+                                    listState.animateScrollToItem(7)
+                                }
+                            }
                         )
                     }
 
@@ -644,7 +673,10 @@ fun SummaryCard(
 fun StatsSection(
     studentsByVillageGender: List<StudentVillageGenderCount>,
     volunteersByBatch: List<VolunteerBatchCount>,
-    groupCounts: Map<String, Int>
+    groupCounts: Map<Pair<Long, String>, Int>,
+    onVolunteerBatchClick: (String) -> Unit = {},
+    onVillageClick: (Long) -> Unit = {},
+    onGroupClick: (Long) -> Unit = {}
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -652,7 +684,10 @@ fun StatsSection(
     ) {
         // Students by Village & Gender - Tabular View
         if (studentsByVillageGender.isNotEmpty()) {
-            VillageGenderTableCard(studentsByVillageGender = studentsByVillageGender)
+            VillageGenderTableCard(
+                studentsByVillageGender = studentsByVillageGender,
+                onVillageClick = onVillageClick
+            )
         }
 
         // Volunteers by Batch
@@ -660,29 +695,54 @@ fun StatsSection(
             StatsCard(
                 title = "By Batch",
                 items = volunteersByBatch.map {
-                    (it.batch ?: "N/A") to it.count.toInt()
+                    StatsItem(
+                        label = it.batch ?: "N/A",
+                        count = it.count.toInt(),
+                        id = it.batch
+                    )
+                },
+                onItemClick = { batch ->
+                    batch?.let { onVolunteerBatchClick(it) }
                 }
             )
         }
 
         // Students by Group
         if (groupCounts.isNotEmpty()) {
+            val groupItems = groupCounts.map { (groupInfo, count) ->
+                val (groupId, groupName) = groupInfo
+                StatsItem(
+                    label = groupName,
+                    count = count,
+                    id = groupId.toString()
+                )
+            }
             StatsCard(
                 title = "By Group",
-                items = groupCounts.map { it.key to it.value }
+                items = groupItems,
+                onItemClick = { groupIdStr ->
+                    groupIdStr?.let {
+                        val groupId = it.toLongOrNull()
+                        groupId?.let { id -> onGroupClick(id) }
+                    }
+                }
             )
         }
     }
 }
 
 @Composable
-fun VillageGenderTableCard(studentsByVillageGender: List<StudentVillageGenderCount>) {
+fun VillageGenderTableCard(
+    studentsByVillageGender: List<StudentVillageGenderCount>,
+    onVillageClick: (Long) -> Unit = {}
+) {
     val villageData = studentsByVillageGender.groupBy { it.villageId to it.villageName }
         .map { (villageInfo, counts) ->
             val maleCount = counts.find { it.gender == Gender.MALE }?.count?.toInt() ?: 0
             val femaleCount = counts.find { it.gender == Gender.FEMALE }?.count?.toInt() ?: 0
             val otherCount = counts.find { it.gender == Gender.OTHER }?.count?.toInt() ?: 0
             VillageGenderData(
+                villageId = villageInfo.first,
                 villageName = villageInfo.second,
                 maleCount = maleCount,
                 femaleCount = femaleCount,
@@ -765,7 +825,10 @@ fun VillageGenderTableCard(studentsByVillageGender: List<StudentVillageGenderCou
 
                 // Table Rows
                 villageData.forEach { data ->
-                    VillageGenderRow(data = data)
+                    VillageGenderRow(
+                        data = data,
+                        onClick = { onVillageClick(data.villageId) }
+                    )
                 }
 
                 // Total Row
@@ -820,11 +883,15 @@ fun VillageGenderTableCard(studentsByVillageGender: List<StudentVillageGenderCou
 }
 
 @Composable
-fun VillageGenderRow(data: VillageGenderData) {
+fun VillageGenderRow(
+    data: VillageGenderData,
+    onClick: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -905,6 +972,7 @@ fun VillageGenderRow(data: VillageGenderData) {
 }
 
 data class VillageGenderData(
+    val villageId: Long,
     val villageName: String,
     val maleCount: Int,
     val femaleCount: Int,
@@ -912,11 +980,18 @@ data class VillageGenderData(
     val total: Int
 )
 
+data class StatsItem(
+    val label: String,
+    val count: Int,
+    val id: String?
+)
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StatsCard(
     title: String,
-    items: List<Pair<String, Int>>
+    items: List<StatsItem>,
+    onItemClick: (String?) -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -942,8 +1017,12 @@ fun StatsCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items.forEach { (label, count) ->
-                    StatChip(label = label, count = count)
+                items.forEach { item ->
+                    StatChip(
+                        label = item.label,
+                        count = item.count,
+                        onClick = { onItemClick(item.id) }
+                    )
                 }
             }
         }
@@ -953,12 +1032,14 @@ fun StatsCard(
 @Composable
 fun StatChip(
     label: String,
-    count: Int
+    count: Int,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
