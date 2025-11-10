@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.ImageKitResponse
-import com.hexagraph.jagrati_android.model.student.StudentGroupHistoryResponse
 import com.hexagraph.jagrati_android.model.student.StudentResponse
 import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
@@ -978,7 +977,7 @@ fun EditOptionsBottomSheet(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupHistoryBottomSheet(
-    groupHistory: List<StudentGroupHistoryResponse>?,
+    groupHistory: List<GroupHistoryWithVolunteerName>?,
     onDismiss: () -> Unit,
     onVolunteerClick: (String) -> Unit
 ) {
@@ -1046,7 +1045,7 @@ fun GroupHistoryBottomSheet(
 
 @Composable
 fun GroupHistoryItem(
-    history: StudentGroupHistoryResponse,
+    history: GroupHistoryWithVolunteerName,
     onVolunteerClick: (String) -> Unit
 ) {
     var isVisible by remember { mutableStateOf(false) }
@@ -1085,7 +1084,7 @@ fun GroupHistoryItem(
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary)
                     )
-                    if (history.oldGroupName != null) {
+                    if (history.history.oldGroupName != null) {
                         Box(
                             modifier = Modifier
                                 .width(2.dp)
@@ -1103,7 +1102,7 @@ fun GroupHistoryItem(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = AttendanceUtils.formatDateTime(history.assignedAt),
+                        text = AttendanceUtils.formatDateTime(history.history.assignedAt),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1112,13 +1111,13 @@ fun GroupHistoryItem(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (history.oldGroupName != null) {
+                        if (history.history.oldGroupName != null) {
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = MaterialTheme.colorScheme.errorContainer
                             ) {
                                 Text(
-                                    text = history.oldGroupName,
+                                    text = history.history.oldGroupName,
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onErrorContainer,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -1136,7 +1135,7 @@ fun GroupHistoryItem(
                             color = MaterialTheme.colorScheme.primaryContainer
                         ) {
                             Text(
-                                text = history.newGroupName,
+                                text = history.history.newGroupName,
                                 style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -1155,14 +1154,14 @@ fun GroupHistoryItem(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         TextButton(
-                            onClick = { onVolunteerClick(history.assignedByPid) },
+                            onClick = { onVolunteerClick(history.history.assignedByPid) },
                             contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
                             colors = ButtonDefaults.textButtonColors(
                                 contentColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
                             Text(
-                                text = history.assignedByPid,
+                                text = history.volunteerName,
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.SemiBold
                             )

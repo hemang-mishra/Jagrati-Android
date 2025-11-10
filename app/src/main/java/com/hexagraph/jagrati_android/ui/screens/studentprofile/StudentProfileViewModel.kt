@@ -11,6 +11,7 @@ import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.AttendanceUtils
 import com.hexagraph.jagrati_android.model.permission.AllPermissions
+import com.hexagraph.jagrati_android.model.dao.VolunteerDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +22,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+data class GroupHistoryWithVolunteerName(
+    val history: StudentGroupHistoryResponse,
+    val volunteerName: String
+)
+
 data class StudentProfileUiState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
@@ -29,7 +35,7 @@ data class StudentProfileUiState(
     val lastPresentDate: String? = null,
     val presentCountLastWeek: Int = 0,
     val presentCountLastMonth: Int = 0,
-    val groupHistory: List<StudentGroupHistoryResponse>? = null,
+    val groupHistory: List<GroupHistoryWithVolunteerName>? = null,
     val showGroupHistorySheet: Boolean = false,
     val showEditOptionsSheet: Boolean = false,
     val canEditProfile: Boolean = false,
@@ -41,7 +47,8 @@ class StudentProfileViewModel(
     private val pid: String,
     private val studentRepository: StudentRepository,
     private val attendanceRepository: AttendanceRepository,
-    private val appPreferences: AppPreferences
+    private val appPreferences: AppPreferences,
+    private val volunteerDao: VolunteerDao
 ) : BaseViewModel<StudentProfileUiState>() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -51,7 +58,7 @@ class StudentProfileViewModel(
     private val _lastPresentDate = MutableStateFlow<String?>(null)
     private val _presentCountLastWeek = MutableStateFlow(0)
     private val _presentCountLastMonth = MutableStateFlow(0)
-    private val _groupHistory = MutableStateFlow<List<StudentGroupHistoryResponse>>(emptyList())
+    private val _groupHistory = MutableStateFlow<List<GroupHistoryWithVolunteerName>?>(null)
     private val _showGroupHistorySheet = MutableStateFlow(false)
     private val _showEditOptionsSheet = MutableStateFlow(false)
     private val _canEditProfile = MutableStateFlow(false)
@@ -88,7 +95,7 @@ class StudentProfileViewModel(
                 lastPresentDate = flows[4] as String?,
                 presentCountLastWeek = flows[5] as Int,
                 presentCountLastMonth = flows[6] as Int,
-                groupHistory = flows[7] as List<StudentGroupHistoryResponse>,
+                groupHistory = flows[7] as List<GroupHistoryWithVolunteerName>?,
                 showGroupHistorySheet = flows[8] as Boolean,
                 showEditOptionsSheet = flows[9] as Boolean,
                 canEditProfile = flows[10] as Boolean,
@@ -167,7 +174,20 @@ class StudentProfileViewModel(
                 when {
                     resource.isSuccess -> {
                         resource.data?.let { historyResponse ->
-                            _groupHistory.update { historyResponse.history }
+                            // Fetch volunteer names for each history item
+                            val historyWithNames = historyResponse.history.map { history ->
+                                val volunteer = volunteerDao.getVolunteer(history.assignedByPid)
+                                val volunteerName = if (volunteer != null) {
+                                    "${volunteer.firstName} ${volunteer.lastName}"
+                                } else {
+                                    history.assignedByPid
+                                }
+                                GroupHistoryWithVolunteerName(
+                                    history = history,
+                                    volunteerName = volunteerName
+                                )
+                            }
+                            _groupHistory.update { historyWithNames }
                         }
                     }
                     resource.isFailed -> {

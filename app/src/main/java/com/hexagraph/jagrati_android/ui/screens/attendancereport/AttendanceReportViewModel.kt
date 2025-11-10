@@ -101,7 +101,8 @@ class AttendanceReportViewModel(
                 volunteerBatch == null || volunteer.batch == volunteerBatch
             } ?: emptyList()
 
-            val groupCounts = reportData?.presentStudents?.groupBy { it.groupName }
+            val groupCounts = reportData?.presentStudents
+                ?.groupBy { it.groupId to it.groupName }
                 ?.mapValues { it.value.size } ?: emptyMap()
 
             AttendanceReportUiState(

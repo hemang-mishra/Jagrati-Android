@@ -70,7 +70,7 @@ val viewModelModule = module {
     // Student management ViewModels
     factory { (pid: String?) -> StudentRegistrationViewModel(get(), get(), get(), get(), get(), pid) }
     factory { StudentListViewModel(get(), get(), get()) }
-    factory { (studentPid: String) -> StudentProfileViewModel(studentPid, get(), get(), get()) }
+    factory { (studentPid: String) -> StudentProfileViewModel(studentPid, get(), get(), get(), get()) }
 
     factory { (volunteerPid: String) ->
         VolunteerProfileViewModel(

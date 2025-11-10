@@ -51,7 +51,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -78,6 +77,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,6 +85,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -93,8 +94,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import android.content.res.Configuration
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.ProcessedImage
+import com.hexagraph.jagrati_android.model.RecognitionMode
 import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
 import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import kotlinx.coroutines.launch
@@ -138,6 +141,7 @@ fun AttendanceMarkingScreen(
         onPersonSelect = onPersonSelect,
         onUpdateDate = { millis -> viewModel.updateSelectedDateMillis(millis) },
         onDismissBottomSheet = { viewModel.dismissBottomSheetAndRetakePhoto() },
+        onToggleRecognitionMode = { viewModel.toggleRecognitionMode() },
         getImageAnalyzer = { lensFacing, paint, executor ->
             viewModel.getImageAnalyzer(lensFacing, paint, executor)
         },
@@ -146,7 +150,12 @@ fun AttendanceMarkingScreen(
                 bitmap, paint,
                 onNoFaceDetected = {
                     scope.launch {
-                        snackbarHostState.showSnackbar("No face detected in the selected image")
+                        val message = if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL) {
+                            "No face detected in the selected image"
+                        } else {
+                            "No faces detected in the selected image"
+                        }
+                        snackbarHostState.showSnackbar(message)
                     }
                 },
                 onSuccess = {}
@@ -177,6 +186,7 @@ fun AttendanceMarkingScreenLayout(
     onPersonSelect: (String, Boolean) -> Unit,
     onUpdateDate: (Long) -> Unit,
     onDismissBottomSheet: () -> Unit,
+    onToggleRecognitionMode: () -> Unit,
     getImageAnalyzer: (Int, Paint, java.util.concurrent.Executor) -> ImageAnalysis.Analyzer,
     onImageFromGallery: (Bitmap, Paint) -> Unit,
     onUpdateCapturedImage: (ProcessedImage) -> Unit,
@@ -185,8 +195,12 @@ fun AttendanceMarkingScreenLayout(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var lensFacing by remember { mutableIntStateOf(CameraSelector.LENS_FACING_FRONT) }
-    var hasCameraPermission by remember {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    // Use saveable state to survive configuration changes
+    var lensFacing by rememberSaveable { mutableIntStateOf(CameraSelector.LENS_FACING_BACK) }
+    var hasCameraPermission by rememberSaveable {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
                 context,
@@ -199,7 +213,7 @@ fun AttendanceMarkingScreenLayout(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Use date from UI state
-    var showDatePicker by remember { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
     val dateFormatter = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
     val selectedDateText = remember(uiState.selectedDateMillis) {
         dateFormatter.format(Date(uiState.selectedDateMillis))
@@ -259,73 +273,373 @@ fun AttendanceMarkingScreenLayout(
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            Column {
-                TopAppBar(
-                    title = {
-                        Text(
-                            text = if (isSearching) "Search" else "Mark Attendance",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+            // Only show full topbar in portrait mode
+            if (!isLandscape) {
+                Column {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                text = if (isSearching) "Search" else "Mark Attendance",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = onNavigateBack) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back"
+                                )
+                            }
+                        },
+                        actions = {
+                            IconButton(
+                                onClick = onTextSearchClick
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_search_with_t),
+                                    contentDescription = "Action button",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            titleContentColor = MaterialTheme.colorScheme.onSurface
                         )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = onTextSearchClick
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_search_with_t),
-                                contentDescription = "Action button",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
                     )
-                )
 
-                // Date Picker Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .clickable { showDatePicker = true }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = "Calendar",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = selectedDateText,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    // Date Picker Row
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                            .clickable { showDatePicker = true }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Calendar",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = selectedDateText,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    // Recognition Mode Toggle
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                            .clickable { onToggleRecognitionMode() }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL)
+                                    R.drawable.ic_person
+                                else
+                                    R.drawable.ic_group
+                            ),
+                            contentDescription = "Recognition Mode",
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL)
+                                "Individual Mode"
+                            else
+                                "Group Mode",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
             }
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
+        if (isLandscape) {
+            // Landscape layout - side by side
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                // Camera preview on left
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                ) {
+                    if (uiState.isCameraActive) {
+                        if (hasCameraPermission) {
+                            CameraPreview(
+                                lensFacing = lensFacing,
+                                lifecycleOwner = lifecycleOwner,
+                                getImageAnalyzer = { getImageAnalyzer(lensFacing, paint, cameraExecutor) },
+                                onProcessedImage = onUpdateCapturedImage
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Camera permission required",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    } else {
+                        uiState.capturedImage?.frame?.let { frame ->
+                            Image(
+                                bitmap = frame.asImageBitmap(),
+                                contentDescription = "Captured face",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                }
+
+                // Controls on right
+                Column(
+                    modifier = Modifier
+                        .width(280.dp)
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Top controls
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Back button
+                        IconButton(
+                            onClick = onNavigateBack,
+                            modifier = Modifier.align(Alignment.Start)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Date selector
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { showDatePicker = true },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = "Calendar",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = selectedDateText,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Recognition mode toggle
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onToggleRecognitionMode() },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(
+                                        if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL)
+                                            R.drawable.ic_person
+                                        else
+                                            R.drawable.ic_group
+                                    ),
+                                    contentDescription = "Recognition Mode",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL)
+                                        "Individual Mode"
+                                    else
+                                        "Group Mode",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+                        }
+                    }
+
+                    // Center status
+                    if (uiState.isLoading) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(48.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 4.dp
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "Recognizing...",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+
+                    // Bottom controls
+                    if (uiState.isCameraActive) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Ready to capture",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+
+                            // Camera controls
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        lensFacing = if (lensFacing == CameraSelector.LENS_FACING_FRONT) {
+                                            CameraSelector.LENS_FACING_BACK
+                                        } else {
+                                            CameraSelector.LENS_FACING_FRONT
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.secondaryContainer,
+                                            CircleShape
+                                        )
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_flip_camera),
+                                        contentDescription = "Flip Camera",
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary)
+                                        .clickable(onClick = onCapture)
+                                        .border(
+                                            width = 4.dp,
+                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                            shape = CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_camera),
+                                        contentDescription = "Capture",
+                                        tint = MaterialTheme.colorScheme.onPrimary,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = { imagePickerLauncher.launch("image/*") },
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.secondaryContainer,
+                                            CircleShape
+                                        )
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_gallery),
+                                        contentDescription = "Pick Image",
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.errorContainer)
+                                .clickable(onClick = onRetake),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Retake",
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            // Portrait layout - original stacked layout
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
             if (uiState.isCameraActive) {
                 if (hasCameraPermission) {
                     CameraPreview(
@@ -357,7 +671,9 @@ fun AttendanceMarkingScreenLayout(
             }
 
             AnimatedVisibility(
-                visible = uiState.liveRecognizedFaces.isNotEmpty() && uiState.isCameraActive,
+                visible = uiState.liveRecognizedFaces.isNotEmpty() &&
+                         uiState.isCameraActive &&
+                         uiState.recognitionMode == RecognitionMode.INDIVIDUAL,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                 exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
                 modifier = Modifier
@@ -423,6 +739,9 @@ fun AttendanceMarkingScreenLayout(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly,
+
+
+
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
@@ -504,6 +823,7 @@ fun AttendanceMarkingScreenLayout(
                             )
                         }
                     }
+                    }
                 }
             }
         }
@@ -515,11 +835,19 @@ fun AttendanceMarkingScreenLayout(
                 containerColor = MaterialTheme.colorScheme.surface,
                 dragHandle = { BottomSheetDefaults.DragHandle() }
             ) {
-                RecognizedFacesBottomSheet(
-                    recognizedFaces = uiState.recognizedFaces,
-                    isMarkingAttendance = uiState.isMarkingAttendance,
-                    onPersonSelect = onPersonSelect
-                )
+                if (uiState.recognitionMode == RecognitionMode.INDIVIDUAL) {
+                    RecognizedFacesBottomSheet(
+                        recognizedFaces = uiState.recognizedFaces,
+                        isMarkingAttendance = uiState.isMarkingAttendance,
+                        onPersonSelect = onPersonSelect
+                    )
+                } else {
+                    GroupRecognitionBottomSheet(
+                        groupResults = uiState.groupRecognitionResults,
+                        isMarkingAttendance = uiState.isMarkingAttendance,
+                        onPersonSelect = onPersonSelect
+                    )
+                }
             }
         }
         val selectableDates= object : SelectableDates {
@@ -571,8 +899,10 @@ fun CameraPreview(
     val context = LocalContext.current
     val previewView = remember { PreviewView(context) }
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    val configuration = LocalConfiguration.current
 
-    LaunchedEffect(lensFacing) {
+    // Recreate camera when lens facing or orientation changes
+    LaunchedEffect(lensFacing, configuration.orientation) {
         val cameraProvider = cameraProviderFuture.get()
         val preview = Preview.Builder().build().also {
             it.setSurfaceProvider(previewView.surfaceProvider)
@@ -600,6 +930,13 @@ fun CameraPreview(
             )
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    // Clean up when leaving composition
+    DisposableEffect(Unit) {
+        onDispose {
+            cameraProviderFuture.get().unbindAll()
         }
     }
 
@@ -776,6 +1113,169 @@ fun RecognizedPersonCard(
                     strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.primary
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupRecognitionBottomSheet(
+    groupResults: List<FaceRecognitionGroup>,
+    isMarkingAttendance: Boolean,
+    onPersonSelect: (String, Boolean) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        item {
+            Text(
+                text = "Group Recognition (${groupResults.size} face${if (groupResults.size != 1) "s" else ""} detected)",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        if (groupResults.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No faces detected",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
+        } else {
+            items(groupResults.size) { index ->
+                FaceGroupCard(
+                    faceGroup = groupResults[index],
+                    faceNumber = index + 1,
+                    isMarkingAttendance = isMarkingAttendance,
+                    onPersonSelect = onPersonSelect
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FaceGroupCard(
+    faceGroup: FaceRecognitionGroup,
+    faceNumber: Int,
+    isMarkingAttendance: Boolean,
+    onPersonSelect: (String, Boolean) -> Unit
+) {
+    var isViewAllMode by remember{
+        mutableStateOf(false)
+    }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Face header with thumbnail
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Face thumbnail
+                    faceGroup.processedImage.faceBitmap?.let { faceBitmap ->
+                        Image(
+                            bitmap = faceBitmap.asImageBitmap(),
+                            contentDescription = "Detected Face $faceNumber",
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(
+                                    width = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Face #$faceNumber",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Text(
+                    text = "${faceGroup.matchedPersons.size} match${if (faceGroup.matchedPersons.size != 1) "es" else ""}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
+            }
+
+            if (faceGroup.matchedPersons.isEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "No matching persons found",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(start = 76.dp)
+                )
+            } else {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // List of matched persons sorted by similarity
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Similar People:",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(start = 76.dp, bottom = 4.dp)
+                    )
+
+                    faceGroup.matchedPersons.take(if(isViewAllMode)5 else 1).forEach { person ->
+                        RecognizedPersonCard(
+                            person = person,
+                            isMarkingAttendance = isMarkingAttendance,
+                            onSelect = { onPersonSelect(person.pid, person.isStudent) }
+                        )
+                    }
+
+                    TextButton(onClick = {
+                        isViewAllMode = !isViewAllMode
+                    }) {
+                        Text(
+                            text = if(isViewAllMode) "Show Less" else "View All",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    if (faceGroup.matchedPersons.size > 5) {
+                        Text(
+                            text = "... and ${faceGroup.matchedPersons.size - 5} more",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            modifier = Modifier.padding(start = 76.dp, top = 4.dp)
+                        )
+                    }
+                }
             }
         }
     }

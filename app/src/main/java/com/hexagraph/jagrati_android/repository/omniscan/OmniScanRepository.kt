@@ -23,4 +23,9 @@ interface OmniScanRepository {
         bitmap: Bitmap,
         paint: Paint
     ): Result<ProcessedImage>
+
+    suspend fun processImageFromBitmapGroupMode(
+        bitmap: Bitmap,
+        paint: Paint
+    ): Result<List<ProcessedImage>>
 }
