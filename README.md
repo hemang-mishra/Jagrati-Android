@@ -1,84 +1,36 @@
-
 <img width="114" height="115" alt="JagratiAppLogo" src="https://github.com/user-attachments/assets/a472b331-ce73-4446-9f0a-ebfea0bfb012" />
 
 # Jagrati Android App
 
-## Introduction
+## About
 
-Jagrati is a non-profit student initiative at IIITDM Jabalpur, dedicated to educational and social welfare. It focuses on providing quality education to underprivileged children in the surrounding areas of the college. Volunteers from the college dedicate just one hour per week to teach these students, and the initiative has been running successfully for over a decade. 
+Jagrati is a student-run initiative at IIITDM Jabalpur providing free education to underprivileged children in nearby villages. Volunteers dedicate one hour per week to teach, and the initiative has been running for over a decade.
 
-This Android app is designed to streamline and organize the various processes associated with this initiative, making it easier for volunteers to manage their involvement and contribute effectively to the cause.
+This app helps volunteers manage attendance, track student progress, coordinate schedules, and handle administrative tasks efficiently.
 
-## Features
+## Key Features
 
-The Jagrati app is designed primarily for volunteers and encompasses a comprehensive set of features organized into nine main modules:
+- **User Management**: Role-based access control, volunteer registration, and approval workflows
+- **Student Profiles**: Comprehensive profiles with village/group organization and facial recognition data
+- **Smart Attendance**: Face recognition using TensorFlow Lite and FaceNet for automated attendance
 
-### 1. **User Management & Role System**
-- Role-based access control with different permission levels
-- User registration and authentication
-- Volunteer request management with approval workflows
-- Role transition requests (upgrade/downgrade)
-
-### 2. **Student & Volunteer Profiles**
-- Comprehensive student and volunteer profile management
-- Village and group organization
-- Facial recognition data storage for attendance
-- Student group assignment history tracking
-
-### 3. **Attendance Management**
-- **Automated Attendance**: Uses facial recognition to mark student attendance
-- **TensorFlow Lite Integration**: Efficient on-device machine learning for fast and secure processing
-- **Face Recognition with FaceNet**: Ensures accurate identification of students
-- **CameraX Support**: Provides seamless camera functionality
-- Volunteer attendance tracking with role-based marking
-
-### 4. **Syllabus Management**
-- Subject, topic, and subtopic organization
-- Class-wise curriculum management
-- Resource sharing by volunteers
-- Educational content management
-
-### 5. **Volunteer Scheduling**
-- Day-wise volunteer schedule management
-- Group and subject assignment
-- Schedule modification requests
-- Automated scheduling conflicts resolution
-
-### 6. **Classwork & Homework**
-- Class session management
-- Homework assignment and tracking
-- Student submission monitoring
-- Classwork documentation with image support
-- Progress scoring and feedback system
-
-### 7. **Student Progress & Remarks**
-- Individual student proficiency tracking
-- Topic-wise progress monitoring
-- Volunteer remarks and observations
-- Community-based remark validation system
-
-### 8. **Volunteer Ranking & Activities**
-- Point-based volunteer ranking system
-- Activity logging and recognition
-- Performance tracking across different engagement types
-- Leaderboard and achievement system
-
-### 9. **Posts & Social Features**
-- Community posts for achievements and events
-- Image sharing capabilities
-- Like and engagement system
-- Category-based content organization
+## Planned features
+- **Syllabus Management**: Class-wise curriculum, topics, and resource sharing
+- **Scheduling**: Volunteer schedule management with conflict resolution
+- **Classwork & Homework**: Assignment tracking, submissions, and progress scoring
+- **Progress Tracking**: Student proficiency monitoring and volunteer remarks
+- **Volunteer Ranking**: Point-based system with leaderboards
+- **Community Posts**: Share achievements, events, and updates
 
 ## Tech Stack
 
-- **Android (Jetpack Compose)** – Modern UI development with declarative UI
-- **Koin** – Dependency injection framework
-- **Ktor HTTP Client** – Network communication
-- **Navigation Component 3** – Latest navigation architecture
-- **TensorFlow Lite** – Machine learning model for facial recognition
-- **FaceNet** – Facial feature extraction
-- **CameraX** – Camera API for capturing student images
-- **Spring Boot Backend** – RESTful API server ([Backend Repository](https://github.com/hemang-mishra/Jagrati-backend/tree/master))
+- **Kotlin** with **Jetpack Compose** for modern UI
+- **Koin** for dependency injection
+- **Ktor** for HTTP networking
+- **Navigation Component 3** for app navigation
+- **TensorFlow Lite** + **FaceNet** for facial recognition
+- **CameraX** for camera functionality
+- **Spring Boot** backend ([Backend Repository](https://github.com/hemang-mishra/Jagrati-backend/tree/master))
 
 ## Screenshots
 
@@ -94,78 +46,16 @@ The Jagrati app is designed primarily for volunteers and encompasses a comprehen
 
 ## Architecture
 
-The app follows modern Android development practices with:
-- **MVVM Architecture** with Jetpack Compose
-- **Repository Pattern** for data management
-- **Dependency Injection** using Koin
-- **Reactive Programming** with Kotlin Coroutines and Flow
-- **Type-safe Navigation** with Navigation Compose
-- **RESTful API Integration** with Ktor client
+The app follows MVVM architecture with:
+- Repository pattern for data management
+- Dependency injection with Koin
+- Kotlin Coroutines and Flow for reactive programming
+- Type-safe navigation with Navigation Compose
+- RESTful API integration with Ktor
 
 ## Getting Started
 
-### Prerequisites
-- Android Studio Arctic Fox or later
-- Kotlin 1.8+
-- Android SDK 24 (minimum) / SDK 34 (target)
-- Backend server running ([Setup Instructions](https://github.com/hemang-mishra/Jagrati-backend/tree/master))
-
-### Installation
-1. Clone the repository
-```bash
-git clone [repository-url]
-cd jagrati-android-app
-```
-
-2. Open the project in Android Studio
-
-3. Sync the project with Gradle files
-
-4. Configure the backend API endpoint in the app configuration
-
-5. Build and run the application
-
-## Contributing Guidelines
-
-We welcome contributions from the community! Please follow these guidelines:
-
-### How to Contribute
-
-1. **Fork the repository** and create your feature branch from `main`
-2. **Create a new branch** for your feature: `git checkout -b feature/your-feature-name`
-3. **Make your changes** following the coding standards below
-4. **Test your changes** thoroughly
-5. **Commit your changes** with descriptive commit messages
-6. **Push to your fork** and create a Pull Request
-
-### Coding Standards
-
-- Follow **Kotlin coding conventions**
-- Use **meaningful variable and function names**
-- Add **comments for complex logic**
-- Ensure **proper error handling**
-- Write **unit tests** for new features
-- Follow **MVVM architecture patterns**
-- Use **Jetpack Compose best practices**
-
-### Pull Request Process
-
-1. Ensure your code builds without warnings
-2. Update documentation if needed
-3. Add screenshots for UI changes
-4. Reference any related issues in your PR description
-5. Request review from maintainers
-
-### Code Review
-
-All submissions require review. We use GitHub pull requests for this purpose. Please be patient during the review process and be open to feedback.
-
-### Issues and Bug Reports
-
-- Use the **GitHub Issues** tab to report bugs
-- Provide **detailed reproduction steps**
-- Include **device information** and **Android version**
-- Add **screenshots or videos** if applicable
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and development guidelines.
 
 ## License
 
@@ -173,12 +63,13 @@ This project is developed for educational and social welfare purposes as part of
 
 ## Acknowledgments
 
-- **IIITDM Jabalpur** for supporting the Jagrati initiative
-- **Jagrati volunteers** who have contributed to this cause for over a decade
-- **Open source community** for the amazing tools and libraries
+- IIITDM Jabalpur for supporting the Jagrati initiative
+- Ovee Chachad for logo design and branding
+- All volunteers who have contributed to this cause
 
 ---
 
-**Built with ❤️ by [Hemang Mishra](https://github.com/hemang-mishra)**
+**Developed by [Hemang Mishra](https://github.com/hemang-mishra)**
 
-For backend API documentation and setup, visit: [Jagrati Backend Repository](https://github.com/hemang-mishra/Jagrati-backend/tree/master)
+Backend: [Jagrati Backend Repository](https://github.com/hemang-mishra/Jagrati-backend/tree/master)
+
