@@ -191,7 +191,20 @@ class MyProfileViewModel(
     fun refresh() {
         viewModelScope.launch(Dispatchers.IO) {
             _isRefreshing.update { true }
-            loadUserData()
+
+            val user = appPreferences.userDetails.getFlow().firstOrNull()
+            val userRoles = appPreferences.userRoles.get()
+            _currentUser.update { user }
+
+            user?.let { userData ->
+                _userRoles.update { userRoles.map { it.name } }
+
+                user.pid.let { pid ->
+                    loadVolunteerProfile(pid)
+                    loadAttendanceData(pid)
+                }
+            }
+
             _isRefreshing.update { false }
         }
     }

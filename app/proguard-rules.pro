@@ -24,6 +24,9 @@
 # SLF4J binding may be optional in some transitive deps; prevent R8 errors
 -dontwarn org.slf4j.impl.**
 -keep class org.slf4j.impl.** { *; }
-# TensorFlow Lite GPU optional classes — suppress warnings and keep GPU delegate classes used at runtime
+# LiteRT GPU optional classes — suppress warnings and keep GPU delegate classes used at runtime
+-dontwarn com.google.ai.edge.litert.gpu.**
+-keep class com.google.ai.edge.litert.gpu.** { *; }
+
 -dontwarn org.tensorflow.lite.gpu.**
 -keep class org.tensorflow.lite.gpu.** { *; }

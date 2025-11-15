@@ -2,13 +2,13 @@ package com.hexagraph.jagrati_android.util
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.sqrt
 import androidx.core.graphics.scale
 import androidx.core.graphics.get
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.InterpreterApi
 import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
@@ -27,6 +27,7 @@ object AIIntegration {
     var isRunning = false
 
     private fun getInterceptor(path: String, context: Context): Interpreter {
+
         val fileDescriptor = context.assets.openFd(path)
         val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
         val fileChannel = inputStream.channel
