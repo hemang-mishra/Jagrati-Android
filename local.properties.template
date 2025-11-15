@@ -1,0 +1,29 @@
+## Local Properties Template
+## Copy this file to local.properties and fill in your values
+## DO NOT commit local.properties to version control
+
+# Android SDK location (required)
+sdk.dir=/path/to/your/Android/Sdk
+
+# Backend Configuration
+BASE_URL=https://jagratiapp.vps.webdock.cloud/staging
+
+# ImageKit Configuration (contact maintainers for keys)
+IMAGE_KIT_URL_ENDPOINT=https://ik.imagekit.io/jagrati
+IMAGE_KIT_PUBLIC_KEY=your_imagekit_public_key
+
+# Google Sign-In (contact maintainers for client ID)
+WEB_CLIENT_ID=your_google_web_client_id
+
+# Release signing configuration (only needed for release builds)
+# RELEASE_STORE_FILE=/path/to/keystore.jks
+# RELEASE_STORE_PASSWORD=your_store_password
+# RELEASE_KEY_ALIAS=your_key_alias
+# RELEASE_KEY_PASSWORD=your_key_password
+
+# Production configuration (only needed by maintainers)
+# PROD_BASE_URL=https://jagratiapp.vps.webdock.cloud
+# PROD_IMAGE_KIT_URL_ENDPOINT=https://ik.imagekit.io/jagratiproduction
+# PROD_IMAGE_KIT_PUBLIC_KEY=your_prod_imagekit_public_key
+# PROD_WEB_CLIENT_ID=your_prod_google_web_client_id
+

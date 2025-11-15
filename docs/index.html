@@ -12,111 +12,127 @@
         }
 
         body {
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.8;
-            color: #1a1a1a;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Georgia, 'Times New Roman', serif;
+            line-height: 1.65;
+            color: #202122;
+            background: #f8f9fa;
             min-height: 100vh;
-            padding: 20px;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1000px;
             margin: 0 auto;
             background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
+            border: 1px solid #a7d7f9;
+            border-top: none;
         }
 
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
+            background: #ffffff;
+            color: #202122;
+            padding: 20px 30px;
+            border-bottom: 1px solid #a2a9b1;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            font-weight: 700;
-            margin-bottom: 12px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            font-family: 'Linux Libertine', Georgia, Times, serif;
+            font-size: 2.2em;
+            font-weight: normal;
+            margin-bottom: 4px;
+            line-height: 1.3;
+            border-bottom: none;
         }
 
         .header .subtitle {
-            font-size: 1.1em;
-            opacity: 0.95;
+            font-family: sans-serif;
+            font-size: 0.85em;
+            color: #54595d;
             margin-bottom: 8px;
         }
 
         .header .meta {
-            font-size: 0.95em;
-            opacity: 0.85;
+            font-family: sans-serif;
+            font-size: 0.75em;
+            color: #54595d;
+            padding-top: 8px;
+            border-top: 1px solid #eaecf0;
+            margin-top: 8px;
         }
 
         .content {
-            padding: 50px 40px;
+            padding: 20px 30px 30px;
+            font-size: 0.95em;
         }
 
         .intro {
-            background: #f8f9ff;
-            padding: 30px;
-            border-radius: 12px;
-            border-left: 4px solid #667eea;
-            margin-bottom: 40px;
-            font-size: 1.05em;
-            color: #333;
+            background: #f8f9fa;
+            padding: 12px 16px;
+            border: 1px solid #eaecf0;
+            margin-bottom: 24px;
+            font-family: sans-serif;
+            font-size: 0.92em;
+        }
+
+        .intro p {
+            margin-bottom: 8px;
+        }
+
+        .intro p:last-child {
+            margin-bottom: 0;
         }
 
         h2 {
-            color: #667eea;
-            font-size: 1.8em;
-            font-weight: 600;
-            margin: 40px 0 20px 0;
-            padding-bottom: 12px;
-            border-bottom: 3px solid #667eea;
+            font-family: 'Linux Libertine', Georgia, Times, serif;
+            color: #202122;
+            font-size: 1.6em;
+            font-weight: normal;
+            margin: 32px 0 12px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #a2a9b1;
+            line-height: 1.3;
         }
 
         h2:first-of-type {
-            margin-top: 0;
+            margin-top: 8px;
         }
 
         h3 {
-            color: #764ba2;
-            font-size: 1.3em;
+            font-family: 'Linux Libertine', Georgia, Times, serif;
+            color: #202122;
+            font-size: 1.25em;
             font-weight: 600;
-            margin: 30px 0 15px 0;
+            margin: 20px 0 8px 0;
+            line-height: 1.3;
         }
 
         p {
-            margin-bottom: 16px;
-            color: #444;
+            margin-bottom: 12px;
+            color: #202122;
         }
 
         ul {
-            margin: 20px 0 20px 30px;
+            margin: 8px 0 16px 24px;
+            padding-left: 0;
         }
 
         li {
-            margin-bottom: 12px;
-            color: #444;
-            line-height: 1.7;
+            margin-bottom: 6px;
+            color: #202122;
+            line-height: 1.65;
         }
 
         .data-section {
-            background: #f8f9ff;
-            padding: 25px;
-            border-radius: 12px;
-            margin: 20px 0;
-            border-left: 4px solid #764ba2;
+            background: #f8f9fa;
+            padding: 16px;
+            border: 1px solid #eaecf0;
+            margin: 16px 0;
         }
 
         .data-item {
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 1px solid #eaecf0;
         }
 
         .data-item:last-child {
@@ -124,90 +140,164 @@
         }
 
         .data-item strong {
-            color: #667eea;
-            font-size: 1.1em;
+            color: #202122;
+            font-size: 1em;
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            font-family: sans-serif;
         }
 
-        .highlight-box {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .highlight-box strong {
-            color: #856404;
-        }
-
-        a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s ease;
-        }
-
-        a:hover {
-            color: #764ba2;
-            text-decoration: underline;
-        }
-
-        .contact-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-            margin-top: 40px;
-            border-radius: 12px;
-        }
-
-        .contact-section h2 {
-            color: white;
-            border-bottom: 3px solid rgba(255, 255, 255, 0.3);
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        .contact-section a {
-            color: #fff;
-            font-weight: 600;
-            font-size: 1.2em;
-            text-decoration: underline;
-        }
-
-        .footer {
-            background: #f8f9ff;
-            padding: 30px;
-            text-align: center;
-            color: #666;
+        .data-item p {
             font-size: 0.95em;
         }
 
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
+        .highlight-box {
+            background: #fef6e7;
+            border: 1px solid #fc3;
+            border-left: 4px solid #fc3;
+            padding: 12px 14px;
+            margin: 16px 0;
+            font-family: sans-serif;
+            font-size: 0.92em;
+        }
 
+        .highlight-box strong {
+            color: #202122;
+        }
+
+        a {
+            color: #0645ad;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        a:visited {
+            color: #0b0080;
+        }
+
+        .contact-section {
+            background: #f8f9fa;
+            color: #202122;
+            padding: 20px 30px;
+            border-top: 1px solid #a2a9b1;
+            margin-top: 32px;
+        }
+
+        .contact-section h2 {
+            color: #202122;
+            border-bottom: 1px solid #a2a9b1;
+            padding-bottom: 4px;
+            margin-bottom: 12px;
+        }
+
+        .contact-section p {
+            font-family: sans-serif;
+            font-size: 0.92em;
+        }
+
+        .contact-section a {
+            color: #0645ad;
+            font-weight: normal;
+        }
+
+        .footer {
+            background: #eaecf0;
+            padding: 16px 30px;
+            text-align: center;
+            color: #54595d;
+            font-size: 0.85em;
+            border-top: 1px solid #a2a9b1;
+            font-family: sans-serif;
+        }
+
+        .footer p {
+            margin-bottom: 4px;
+        }
+
+        strong {
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
             .header {
-                padding: 30px 20px;
+                padding: 15px 20px;
             }
 
             .header h1 {
-                font-size: 2em;
+                font-size: 1.8em;
+            }
+
+            .header .subtitle {
+                font-size: 0.8em;
+            }
+
+            .header .meta {
+                font-size: 0.7em;
             }
 
             .content {
-                padding: 30px 20px;
+                padding: 15px 20px 20px;
             }
 
             h2 {
-                font-size: 1.5em;
+                font-size: 1.4em;
+            }
+
+            h3 {
+                font-size: 1.15em;
+            }
+
+            .intro {
+                padding: 10px 12px;
+            }
+
+            .data-section {
+                padding: 12px;
+            }
+
+            .data-item {
+                padding: 10px;
             }
 
             .contact-section {
-                padding: 30px 20px;
+                padding: 15px 20px;
+            }
+
+            .footer {
+                padding: 12px 20px;
+            }
+
+            ul {
+                margin-left: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 12px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .content {
+                padding: 12px 15px 15px;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+
+            h3 {
+                font-size: 1.1em;
+            }
+
+            ul {
+                margin-left: 18px;
             }
         }
     </style>
@@ -216,9 +306,9 @@
 
 <div class="container">
     <div class="header">
-        <h1>🌟 Jagrati</h1>
+        <h1>Jagrati</h1>
         <div class="subtitle">Privacy Policy</div>
-        <div class="meta">Last Updated: October 31, 2025 | Published by: Hemang Mishra</div>
+        <div class="meta">Last Updated: November 15, 2025 | Published by: Hemang Mishra</div>
     </div>
 
     <div class="content">
@@ -232,7 +322,7 @@
 
         <div class="data-section">
             <div class="data-item">
-                <strong>📸 Profile Photos & Facial Recognition Data</strong>
+                <strong>Profile Photos & Facial Recognition Data</strong>
                 <p><strong>What we collect:</strong> Profile photos captured through your device camera, along with facial recognition data used for attendance tracking.</p>
                 <p><strong>How we store it:</strong> Images are securely stored on ImageKit's cloud infrastructure with enterprise-grade security. Facial data is processed and stored in our secure backend servers.</p>
                 <p><strong>Why we collect it:</strong> To enable automated attendance marking, display your profile within the app, and facilitate student/volunteer identification.</p>
@@ -240,7 +330,7 @@
             </div>
 
             <div class="data-item">
-                <strong>🔐 Google Account Information</strong>
+                <strong>Google Account Information</strong>
                 <p><strong>What we collect:</strong> Your name, email address, and profile picture from your Google account when you sign in using Google Sign-In.</p>
                 <p><strong>Why we collect it:</strong> For secure authentication and to create your user profile in the app.</p>
                 <p><strong>How we use it:</strong> This information is used solely for account verification and login purposes. We do not access any other Google account data.</p>
@@ -248,7 +338,7 @@
             </div>
 
             <div class="data-item">
-                <strong>📱 Device & Technical Information</strong>
+                <strong>Device & Technical Information</strong>
                 <p><strong>What we collect:</strong></p>
                 <ul>
                     <li>Device model, manufacturer, and operating system version</li>
@@ -261,7 +351,7 @@
             </div>
 
             <div class="data-item">
-                <strong>👤 Personal & Registration Information</strong>
+                <strong>Personal & Registration Information</strong>
                 <p><strong>What we collect:</strong></p>
                 <ul>
                     <li>Full name, date of birth, gender</li>
@@ -275,14 +365,14 @@
             </div>
 
             <div class="data-item">
-                <strong>📊 Attendance Records</strong>
+                <strong>Attendance Records</strong>
                 <p><strong>What we collect:</strong> Date, time, and location of attendance marking; associated photos from attendance sessions.</p>
                 <p><strong>Why we collect it:</strong> To maintain accurate attendance records, generate reports, and provide historical data for analysis.</p>
                 <p><strong>Retention period:</strong> Attendance records are retained for administrative and reporting purposes. When you delete your account, all associated attendance data is permanently deleted.</p>
             </div>
 
             <div class="data-item">
-                <strong>💾 Draft Data</strong>
+                <strong>Draft Data</strong>
                 <p><strong>What we collect:</strong> Form data that you haven't submitted yet (stored locally on your device using DataStore preferences).</p>
                 <p><strong>Why we collect it:</strong> To allow you to continue where you left off if you exit a registration form before completing it.</p>
                 <p><strong>Storage:</strong> Draft data is stored locally on your device and is automatically deleted once you successfully submit the form.</p>
@@ -303,27 +393,27 @@
         <h2>3. Permissions We Require</h2>
         <div class="data-section">
             <div class="data-item">
-                <strong>📷 Camera Permission</strong>
+                <strong>Camera Permission</strong>
                 <p>Required for capturing profile photos, taking attendance photos, and facial recognition.</p>
                 <p><strong>When it's used:</strong> Only when you explicitly tap the camera button to take a photo. The camera is never accessed in the background.</p>
                 <p><strong>You can revoke:</strong> This permission can be revoked anytime through your device settings.</p>
             </div>
 
             <div class="data-item">
-                <strong>🔔 Notification Permission</strong>
+                <strong>Notification Permission</strong>
                 <p>Required to send you push notifications about attendance, events, and important updates.</p>
                 <p><strong>You can control:</strong> You can disable notifications anytime through app settings or device settings.</p>
             </div>
 
             <div class="data-item">
-                <strong>📂 Storage Permission (if applicable)</strong>
+                <strong>Storage Permission (if applicable)</strong>
                 <p>May be required on older Android versions to save photos and reports.</p>
                 <p><strong>How it's used:</strong> Only to save files you explicitly choose to download or export.</p>
             </div>
         </div>
 
         <div class="highlight-box">
-            <strong>⚠️ Important:</strong> All permissions are requested only when needed and with clear context. You can manage permissions through your device settings at any time. Denying permissions may limit some app functionality.
+            <strong>Important:</strong> All permissions are requested only when needed and with clear context. You can manage permissions through your device settings at any time. Denying permissions may limit some app functionality.
         </div>
 
         <h2>4. Data Sharing & Third-Party Services</h2>
@@ -387,7 +477,7 @@
         </ul>
 
         <div class="highlight-box">
-            <strong>⚠️ Account Deletion is Permanent:</strong> Once you delete your account, you will not be able to login again, and all your data will be permanently removed from our databases. This action cannot be undone.
+            <strong>Account Deletion is Permanent:</strong> Once you delete your account, you will not be able to login again, and all your data will be permanently removed from our databases. This action cannot be undone.
         </div>
 
         <h2>7. Data Retention</h2>
@@ -399,7 +489,7 @@
         </ul>
 
         <h2>8. Children's Privacy</h2>
-        <p>The Jagrati app is designed for use by students and volunteers of all ages. If you are under 18, please ensure you have parental consent before using the app. We do not knowingly collect personal information from children under 13 without parental consent.</p>
+        <p>The Jagrati app is designed for use by students (in future) and volunteers of all ages. If you are under 18, please ensure you have parental consent before using the app. We do not knowingly collect personal information from children under 13 without parental consent.</p>
         <p>Parents/guardians can review their child's information and request deletion by contacting us.</p>
 
         <h2>9. Changes to This Policy</h2>
@@ -417,19 +507,16 @@
         <h2>11. Cookies & Tracking</h2>
         <p>The Jagrati app does not use cookies or tracking technologies. We do not track your browsing activity or collect data from other apps or websites.</p>
 
-        <div class="contact-section">
-            <h2>📧 Contact Us</h2>
-            <p>If you have any questions, concerns, or requests regarding this Privacy Policy or your data, please don't hesitate to reach out:</p>
-            <p><strong>Email:</strong> <a href="mailto:devs.jagrati@gmail.com">devs.jagrati@gmail.com</a></p>
-            <p style="margin-top: 20px;">We strive to respond to all inquiries within 48 hours.</p>
-        </div>
+        <h2>Contact Information</h2>
+        <p>If you have any questions, concerns, or requests regarding this Privacy Policy or your data, please contact us:</p>
+        <p><strong>Email:</strong> <a href="mailto:devs.jagrati@gmail.com">devs.jagrati@gmail.com</a></p>
+        <p>We strive to respond to all inquiries within 48 hours.</p>
 
-        <div class="footer">
-            <p><strong>Jagrati Android App</strong></p>
-            <p>Published by Hemang Mishra</p>
-            <p style="margin-top: 15px;">© 2025 Jagrati. All rights reserved.</p>
-            <p style="margin-top: 10px; font-size: 0.9em;">This privacy policy is effective as of October 31, 2025.</p>
-        </div>
+    </div>
+
+    <div class="footer">
+        <p>This privacy policy is effective as of October 31, 2025.</p>
+        <p>Published by Hemang Mishra | © 2025 Jagrati</p>
     </div>
 </div>
 

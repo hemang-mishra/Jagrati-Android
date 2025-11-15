@@ -31,8 +31,8 @@ android {
         applicationId = "com.hexagraph.jagrati_android"
         minSdk = 26
         targetSdk = 36
-        versionCode = 7
-        versionName = "1.2.0"
+        versionCode = 9
+        versionName = "1.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -174,9 +174,8 @@ dependencies {
     implementation(libs.androidx.camera.mlkit.vision)
     implementation(libs.androidx.camera.extensions)
 
-
-    implementation(libs.tensorflow.lite.gpu)
-    implementation(libs.tensorflow.lite)
+    implementation(libs.litert)
+    implementation(libs.litert.api)
 
     implementation(libs.face.detection)
     implementation(libs.play.services.mlkit.face.detection)

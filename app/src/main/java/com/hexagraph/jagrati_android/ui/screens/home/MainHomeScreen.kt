@@ -363,18 +363,20 @@ fun BottomNavigationBar(
             }, label = { Text("Attendance") }, alwaysShowLabel = showLabels
         )
 
-        NavigationBarItem(
-            selected = selectedItem == 2, onClick = { onItemSelected(2) }, icon = {
-                Icon(
-                    painter = painterResource(
-                        id = if (selectedItem == 2) R.drawable.ic_syllabus_filled
-                        else R.drawable.ic_syllabus_outlined
-                    ),
-                    modifier = Modifier.size(20.dp),
-                    contentDescription = "Syllabus"
-                )
-            }, label = { Text("Syllabus") }, alwaysShowLabel = showLabels
-        )
+        //Hiding for now as syllabus screen is not ready
+
+//        NavigationBarItem(
+//            selected = selectedItem == 2, onClick = { onItemSelected(2) }, icon = {
+//                Icon(
+//                    painter = painterResource(
+//                        id = if (selectedItem == 2) R.drawable.ic_syllabus_filled
+//                        else R.drawable.ic_syllabus_outlined
+//                    ),
+//                    modifier = Modifier.size(20.dp),
+//                    contentDescription = "Syllabus"
+//                )
+//            }, label = { Text("Syllabus") }, alwaysShowLabel = showLabels
+//        )
 
         NavigationBarItem(
             selected = selectedItem == 3, onClick = { onItemSelected(3) }, icon = {

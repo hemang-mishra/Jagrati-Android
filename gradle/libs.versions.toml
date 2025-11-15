@@ -23,11 +23,13 @@ lifecycleRuntimeKtx = "2.9.2"
 activityCompose = "1.10.1"
 composeBom = "2025.07.00"
 ksp = "2.1.10-1.0.31"
+
+litert = "1.4.1"
+litertApi = "1.4.1"
+
 navigationCompose = "2.9.3"
 playServicesMlkitFaceDetection = "17.1.0"
 roomRuntime = "2.7.2"
-tensorflowLite = "2.17.0"
-tensorflowLiteGpu = "2.17.0"
 googleGmsGoogleServices = "4.4.3"
 credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
@@ -92,9 +94,10 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorVersion" }
 ktor-client-serialization-jvm = { module = "io.ktor:ktor-client-serialization-jvm", version.ref = "ktorVersion" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
+litert = { module = "com.google.ai.edge.litert:litert", version.ref = "litert" }
+litert-api = { module = "com.google.ai.edge.litert:litert-api", version.ref = "litertApi" }
 play-services-mlkit-face-detection = { module = "com.google.android.gms:play-services-mlkit-face-detection", version.ref = "playServicesMlkitFaceDetection" }
-tensorflow-lite = { module = "org.tensorflow:tensorflow-lite", version.ref = "tensorflowLite" }
-tensorflow-lite-gpu = { module = "org.tensorflow:tensorflow-lite-gpu", version.ref = "tensorflowLiteGpu" }
+
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentialsPlayServicesAuth" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
