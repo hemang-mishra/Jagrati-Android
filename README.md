@@ -35,13 +35,11 @@ This app helps volunteers manage attendance, track student progress, coordinate 
 ## Screenshots
 
 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-<img width="200" height="400" alt="Login Screen" src="https://github.com/user-attachments/assets/e1ace246-1022-4703-802d-d10d4bb3af77" />
-<img width="200" height="400" alt="Dashboard" src="https://github.com/user-attachments/assets/f44cb7a9-4bea-4144-8cbf-6fb41be2d5cc" />
-<img width="200" height="400" alt="Student List" src="https://github.com/user-attachments/assets/9e1907b4-068a-4103-9060-900ee1f3a664" />
-<img width="200" height="400" alt="Attendance Marking" src="https://github.com/user-attachments/assets/adcfca40-2e25-410f-a0b1-b1d43ba7b0cf" />
-<img width="200" height="400" alt="Profile Management" src="https://github.com/user-attachments/assets/dfe9d43f-da5a-4d8f-9d87-28ea0746e6eb" />
-<img width="200" height="400" alt="Schedule View" src="https://github.com/user-attachments/assets/040398d1-a8f2-484e-a9c1-3fb64bc63cd2" />
-<img width="200" height="400" alt="Progress Tracking" src="https://github.com/user-attachments/assets/7a786bee-514f-484d-9026-10872fd30747" />
+<img width="200" height="500" alt="Login Screen" src="https://github.com/user-attachments/assets/547559be-6a4e-49fb-bb25-10bd42c41de2" />
+<img width="200" height="500" alt="Dashboard" src="https://github.com/user-attachments/assets/598cc082-65a8-4134-9a22-369db9789969" />
+<img width="200" height="500" alt="Student Profile" src="https://github.com/user-attachments/assets/b0ab89bf-531a-4a1a-9ef9-026c63c67e88" />
+<img width="200" height="500" alt="Attendance Marking" src="https://github.com/user-attachments/assets/256df1b7-360a-4a63-beec-a28628859856" />
+<img width="200" height="500" alt="Volunteer profile" src="https://github.com/user-attachments/assets/022736a3-d14a-498c-b1c1-0d172ff4e48f" />
 </div>
 
 ## Architecture
