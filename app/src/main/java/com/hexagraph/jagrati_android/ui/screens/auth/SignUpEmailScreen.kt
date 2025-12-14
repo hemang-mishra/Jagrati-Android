@@ -287,6 +287,7 @@ private fun validateAndNavigate(
         coroutineScope.launch {
             snackbarHostState.showSnackbar("Please use your college email ID to sign up")
         }
+        return
     }
 
     navigateToSignUpDetails(email)
