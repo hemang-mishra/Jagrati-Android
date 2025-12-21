@@ -203,5 +203,5 @@ dependencies {
     implementation(libs.lottie.compose)
     implementation(libs.app.update.ktx)
 
-    implementation(projects.shared)
+    implementation(projects.multiplatform)
 }

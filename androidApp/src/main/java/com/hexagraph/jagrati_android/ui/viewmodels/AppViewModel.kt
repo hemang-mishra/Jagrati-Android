@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
-import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.CrashlyticsHelper
 import kotlinx.coroutines.flow.MutableStateFlow

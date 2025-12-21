@@ -359,7 +359,7 @@ fun EnhancedPermissionCard(
                     if (!permission.description.isNullOrEmpty()) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = permission.description,
+                            text = permission.description.toString(),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 2,

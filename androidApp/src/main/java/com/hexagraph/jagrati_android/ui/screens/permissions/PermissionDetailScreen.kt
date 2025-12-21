@@ -39,7 +39,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -57,14 +56,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.permission.PermissionResponse
 import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
@@ -378,7 +374,7 @@ fun EnhancedPermissionDetailsCard(permission: PermissionResponse) {
                     PermissionDetailRow(
                         icon = R.drawable.ic_description,
                         label = "Description",
-                        value = permission.description,
+                        value = permission.description.toString(),
                         isMultiline = true
                     )
                 }
@@ -579,7 +575,7 @@ fun EnhancedRoleItem(
 
                 if (!role.description.isNullOrBlank()) {
                     Text(
-                        text = role.description,
+                        text = role.description.toString(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -742,7 +738,7 @@ fun EnhancedRoleSelectionDialog(
                                     )
                                     if (!role.description.isNullOrBlank()) {
                                         Text(
-                                            text = role.description,
+                                            text = role.description.toString(),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                         )

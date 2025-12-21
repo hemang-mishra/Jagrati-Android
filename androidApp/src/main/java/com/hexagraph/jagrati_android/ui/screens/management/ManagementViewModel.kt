@@ -3,7 +3,6 @@ package com.hexagraph.jagrati_android.ui.screens.management
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ManagementScreen
 import com.hexagraph.jagrati_android.model.ResponseError
-import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
 import kotlinx.coroutines.Dispatchers

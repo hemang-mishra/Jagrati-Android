@@ -1,6 +1,5 @@
 package com.hexagraph.jagrati_android.usecases.sync
 
-import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
 import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.permission.AllPermissions

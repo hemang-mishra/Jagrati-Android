@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.model.attendance.AttendanceRecordResponse
-import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
 import com.hexagraph.jagrati_android.model.toEntity
 import com.hexagraph.jagrati_android.model.toUpdateVolunteerRequest
 import com.hexagraph.jagrati_android.model.user.VolunteerDTO
