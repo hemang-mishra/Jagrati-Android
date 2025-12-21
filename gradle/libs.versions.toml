@@ -9,9 +9,9 @@ faceDetection = "16.1.7"
 gson = "2.13.1"
 guava = "33.4.8-android"
 koinAndroid = "4.1.0"
-koinAndroidxCompose = "4.1.0"
+koinAndroidxCompose = "4.1.1"
 koinAndroidxWorkmanager = "4.1.1"
-koinCore = "4.1.0"
+koin = "4.1.1"
 kotlin = "2.1.10"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -29,7 +29,7 @@ litertApi = "1.4.1"
 
 navigationCompose = "2.9.3"
 playServicesMlkitFaceDetection = "17.1.0"
-roomRuntime = "2.7.2"
+roomRuntime = "2.8.4"
 googleGmsGoogleServices = "4.4.3"
 credentials = "1.5.0"
 credentialsPlayServicesAuth = "1.5.0"
@@ -49,6 +49,7 @@ kotlinStdlib = "2.1.10"
 kotlinTest = "2.1.10"
 runner = "1.7.0"
 core = "1.7.0"
+androidx-sqlite = "2.6.2"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
@@ -85,10 +86,12 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 koin-androidx-workmanager = { module = "io.insert-koin:koin-androidx-workmanager", version.ref = "koinAndroidxWorkmanager" }
-koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorVersion" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktorVersion" }
@@ -121,6 +124,7 @@ kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", versio
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlinTest" }
 androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
 androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
+androidx-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "androidx-sqlite" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -133,3 +137,4 @@ firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
+androidx-room = { id = "androidx.room", version.ref = "roomRuntime" }

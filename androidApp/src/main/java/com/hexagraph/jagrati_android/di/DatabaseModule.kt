@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.di
 
 import androidx.room.Room
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.hexagraph.jagrati_android.model.databases.PrimaryDatabase
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -12,7 +13,9 @@ val databaseModule = module {
             androidContext(),
             PrimaryDatabase::class.java,
             "primary_db"
-        ).build()
+        )
+            .setDriver(BundledSQLiteDriver())
+            .build()
     }
 
     single {

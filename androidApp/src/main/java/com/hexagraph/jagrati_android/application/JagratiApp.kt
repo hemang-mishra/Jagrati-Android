@@ -14,6 +14,10 @@ import com.hexagraph.jagrati_android.di.repositoryModule
 import com.hexagraph.jagrati_android.di.serviceModule
 import com.hexagraph.jagrati_android.di.useCaseModule
 import com.hexagraph.jagrati_android.di.viewModelModule
+import com.hexagraph.jagrati_android.model.di.sharedDBModule
+import com.hexagraph.jagrati_android.model.di.sharedNetworkModule
+import com.hexagraph.jagrati_android.model.di.sharedRepositoryModule
+import com.hexagraph.jagrati_android.model.di.sharedServicesModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -34,7 +38,12 @@ class JagratiApp : Application() {
                 preferencesModule,
                 repositoryModule,
                 serviceModule,
-                useCaseModule
+                useCaseModule,
+                //Shared modules
+                sharedNetworkModule,
+                sharedDBModule,
+                sharedRepositoryModule,
+                sharedServicesModule
             )
         }
     }
