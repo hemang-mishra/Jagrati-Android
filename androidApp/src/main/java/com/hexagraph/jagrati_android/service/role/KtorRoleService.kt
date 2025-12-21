@@ -1,7 +1,6 @@
 package com.hexagraph.jagrati_android.service.role
 
 import com.hexagraph.jagrati_android.model.role.CreateRoleRequest
-import com.hexagraph.jagrati_android.model.role.DeactivateRoleRequest
 import com.hexagraph.jagrati_android.model.role.RoleListResponse
 import com.hexagraph.jagrati_android.model.role.RoleResponse
 import com.hexagraph.jagrati_android.model.role.UpdateRoleRequest

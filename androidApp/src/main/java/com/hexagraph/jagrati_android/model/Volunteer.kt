@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
 import com.hexagraph.jagrati_android.model.user.VolunteerDTO
-import com.hexagraph.jagrati_android.model.Gender
 import com.hexagraph.jagrati_android.model.volunteer.UpdateVolunteerRequest
 
 @Entity(tableName = "volunteer")

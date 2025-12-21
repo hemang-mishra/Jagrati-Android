@@ -1,6 +1,5 @@
 package com.hexagraph.jagrati_android.model.volunteer
 
-import com.hexagraph.jagrati_android.model.ImageKitResponse
 import com.hexagraph.jagrati_android.util.LocalDateSerializer
 import com.hexagraph.jagrati_android.util.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable

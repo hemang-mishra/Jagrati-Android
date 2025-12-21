@@ -616,7 +616,7 @@ fun EnhancedRoleCard(
                 )
                 if (!role.description.isNullOrBlank()) {
                     Text(
-                        text = role.description,
+                        text = role.description.toString(),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -752,7 +752,7 @@ fun EnhancedRoleSelectionDialog(
                                         )
                                         if (!role.description.isNullOrBlank()) {
                                             Text(
-                                                text = role.description,
+                                                text = role.description.toString(),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = colorScheme.onSurfaceVariant
                                             )

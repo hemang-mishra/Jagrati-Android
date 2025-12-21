@@ -2,9 +2,6 @@ package com.hexagraph.jagrati_android.model.user
 
 import com.hexagraph.jagrati_android.model.Gender
 import com.hexagraph.jagrati_android.model.Student
-import com.google.gson.Gson
-import com.google.mlkit.vision.face.FaceLandmark
-import com.hexagraph.jagrati_android.model.FaceInfo
 import com.hexagraph.jagrati_android.model.ImageKitResponse
 import kotlinx.serialization.Serializable
 

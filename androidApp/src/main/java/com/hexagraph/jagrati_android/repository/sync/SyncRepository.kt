@@ -2,7 +2,6 @@ package com.hexagraph.jagrati_android.repository.sync
 
 import android.content.Context
 import android.graphics.Paint
-import android.util.Log
 import com.hexagraph.jagrati_android.model.dao.StudentDao
 import com.hexagraph.jagrati_android.model.dao.VolunteerDao
 import com.hexagraph.jagrati_android.model.dao.VillageDao

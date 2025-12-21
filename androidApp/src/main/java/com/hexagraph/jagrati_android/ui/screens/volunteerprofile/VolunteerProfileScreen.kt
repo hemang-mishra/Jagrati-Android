@@ -1,7 +1,6 @@
 package com.hexagraph.jagrati_android.ui.screens.volunteerprofile
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke

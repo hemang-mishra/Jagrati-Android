@@ -32,7 +32,7 @@ class AttendanceReportViewModel(
     private val _isLoading = MutableStateFlow(false)
     private val _isRefreshing = MutableStateFlow(false)
     private val _selectedDateMillis = MutableStateFlow(System.currentTimeMillis())
-    private val _reportData = MutableStateFlow<com.hexagraph.jagrati_android.model.attendance.AttendanceReportResponse?>(null)
+    private val _reportData = MutableStateFlow<AttendanceReportResponse?>(null)
     private val _selectedStudentVillage = MutableStateFlow<Long?>(null)
     private val _selectedStudentGender = MutableStateFlow<Gender?>(null)
     private val _selectedStudentGroup = MutableStateFlow<Long?>(null)
@@ -79,7 +79,7 @@ class AttendanceReportViewModel(
             val isLoading = flows[0] as Boolean
             val isRefreshing = flows[1] as Boolean
             val dateMillis = flows[2] as Long
-            val reportData = flows[3] as? com.hexagraph.jagrati_android.model.attendance.AttendanceReportResponse
+            val reportData = flows[3] as? AttendanceReportResponse
             val studentVillage = flows[4] as? Long
             val studentGender = flows[5] as? Gender
             val studentGroup = flows[6] as? Long

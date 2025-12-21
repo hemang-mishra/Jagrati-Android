@@ -748,7 +748,7 @@ fun AttendanceDateCard(
                 )
                 if (record.remarks?.isNotBlank() == true) {
                     Text(
-                        text = record.remarks,
+                        text = record.remarks.toString(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                     )

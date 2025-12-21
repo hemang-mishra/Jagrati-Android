@@ -2,7 +2,6 @@ package com.hexagraph.jagrati_android.api
 
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.firebase.messaging.FirebaseMessagingService
 import com.hexagraph.jagrati_android.model.auth.RefreshRequest
 import com.hexagraph.jagrati_android.model.auth.TokenPair
 import com.hexagraph.jagrati_android.util.AppPreferences
@@ -15,7 +14,6 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.encodedPath
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 

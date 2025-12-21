@@ -4,8 +4,6 @@ import com.hexagraph.jagrati_android.model.Gender
 import com.hexagraph.jagrati_android.model.attendance.AttendanceReportResponse
 import com.hexagraph.jagrati_android.model.attendance.PresentStudent
 import com.hexagraph.jagrati_android.model.attendance.PresentVolunteer
-import com.hexagraph.jagrati_android.model.attendance.StudentVillageGenderCount
-import com.hexagraph.jagrati_android.model.attendance.VolunteerBatchCount
 
 data class AttendanceReportUiState(
     val isLoading: Boolean = false,
