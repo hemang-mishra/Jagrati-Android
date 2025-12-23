@@ -1,7 +1,6 @@
 package com.hexagraph.jagrati_android.model.user
 
 import com.hexagraph.jagrati_android.model.Gender
-import com.hexagraph.jagrati_android.model.Student
 import com.hexagraph.jagrati_android.model.ImageKitResponse
 import kotlinx.serialization.Serializable
 
@@ -65,20 +64,5 @@ data class GroupDTO(
 )
 
 
-fun StudentDTO.toEntity(): Student = Student(
-    pid = pid,
-    firstName = firstName,
-    lastName = lastName,
-    yearOfBirth = yearOfBirth,
-    gender = gender.name,
-    profilePic = profilePic,
-    schoolClass = schoolClass,
-    villageId = villageId,
-    groupId = groupId,
-    primaryContactNo = primaryContactNo,
-    secondaryContactNo = secondaryContactNo,
-    fathersName = fathersName,
-    mothersName = mothersName,
-    isActive = isActive
-)
+
 

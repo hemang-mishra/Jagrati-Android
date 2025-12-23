@@ -201,4 +201,7 @@ dependencies {
     implementation(libs.app.update.ktx)
 
     implementation(projects.multiplatform)
+
+    //Kotlin date time
+    implementation(libs.kotlinx.datetime)
 }

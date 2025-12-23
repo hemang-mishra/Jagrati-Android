@@ -285,7 +285,7 @@ fun ProfilePhotoSection(
                 ) {
                     ProfileAvatar(
                         userName = "${volunteer.firstName} ${volunteer.lastName}",
-                        profileImageUrl = volunteer.profilePic.url,
+                        profileImageUrl = volunteer.profilePic!!.url,
                         size = 140.dp
                     )
                 }
@@ -452,14 +452,14 @@ fun PrimaryDetailsSection(
                 InfoChip(
                     icon = painterResource(id = R.drawable.ic_category),
                     label = "Programme",
-                    value = volunteer.programme,
+                    value = volunteer.programme!!,
                     containerColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
                 InfoChip(
                     icon = painterResource(id = R.drawable.ic_category),
                     label = "Branch",
-                    value = volunteer.branch,
+                    value = volunteer.branch!!,
                     containerColor = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.weight(1f)
                 )

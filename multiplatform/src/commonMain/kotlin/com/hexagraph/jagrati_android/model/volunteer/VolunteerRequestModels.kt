@@ -2,9 +2,9 @@ package com.hexagraph.jagrati_android.model.volunteer
 
 import com.hexagraph.jagrati_android.util.LocalDateSerializer
 import com.hexagraph.jagrati_android.util.LocalDateTimeSerializer
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
-import java.time.LocalDateTime
 
 /**
  * Response model for volunteer request action outcomes

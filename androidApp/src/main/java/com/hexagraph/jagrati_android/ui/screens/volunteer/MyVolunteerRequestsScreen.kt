@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,24 +33,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -60,7 +55,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -75,8 +69,15 @@ import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.volunteer.MyVolunteerRequestResponse
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import com.hexagraph.jagrati_android.util.DateTimeFormatter.formatDateTime
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atTime
+import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.toString
 
 @Composable
 fun MyVolunteerRequestsScreen(
@@ -344,7 +345,7 @@ fun RequestCard(
                         if (request.reviewedAt != null) {
                             DateInfoItem(
                                 title = "Reviewed",
-                                date = request.reviewedAt,
+                                date = request.reviewedAt!!,
                                 icon = R.drawable.baseline_touch_app_24,
                                 accentColor = cardColor,
                                 isCompact = true
@@ -366,7 +367,7 @@ fun RequestCard(
                         if (request.reviewedAt != null) {
                             DateInfoItem(
                                 title = "Reviewed on",
-                                date = request.reviewedAt,
+                                date = request.reviewedAt!!,
                                 icon = R.drawable.baseline_touch_app_24,
                                 accentColor = cardColor
                             )
@@ -402,7 +403,7 @@ fun RequestCard(
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = request.message,
+                                    text = request.message!!,
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onErrorContainer
                                 )
@@ -736,36 +737,39 @@ fun EmptyRequestsState(
 // Helper data class for tuple
 data class Tuple4<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
 
-// Helper function to format DateTime
-private fun formatDateTime(dateTime: LocalDateTime): String {
-    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")
-    return dateTime.format(formatter)
-}
 
+@OptIn(ExperimentalTime::class)
 @Preview(showBackground = true)
 @Composable
 fun MyVolunteerRequestsPreview() {
     JagratiAndroidTheme {
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+
         val requests = listOf(
             MyVolunteerRequestResponse(
                 id = 1001,
                 status = "PENDING",
-                createdAt = LocalDateTime.now().minusDays(2),
+                createdAt = now.date.minus(2, kotlinx.datetime.DateTimeUnit.DAY)
+                    .atTime(now.hour, now.minute),
                 reviewedAt = null,
                 message = null
             ),
             MyVolunteerRequestResponse(
                 id = 1002,
                 status = "APPROVED",
-                createdAt = LocalDateTime.now().minusDays(10),
-                reviewedAt = LocalDateTime.now().minusDays(8),
+                createdAt = now.date.minus(10, kotlinx.datetime.DateTimeUnit.DAY)
+                    .atTime(now.hour, now.minute),
+                reviewedAt = now.date.minus(8, kotlinx.datetime.DateTimeUnit.DAY)
+                    .atTime(now.hour, now.minute),
                 message = null
             ),
             MyVolunteerRequestResponse(
                 id = 1003,
                 status = "REJECTED",
-                createdAt = LocalDateTime.now().minusDays(15),
-                reviewedAt = LocalDateTime.now().minusDays(13),
+                createdAt = now.date.minus(15, kotlinx.datetime.DateTimeUnit.DAY)
+                    .atTime(now.hour, now.minute),
+                reviewedAt = now.date.minus(13, kotlinx.datetime.DateTimeUnit.DAY)
+                    .atTime(now.hour, now.minute),
                 message = "Your profile doesn't meet the current requirements for this volunteer position."
             )
         )

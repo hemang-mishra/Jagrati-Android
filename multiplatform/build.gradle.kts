@@ -94,6 +94,9 @@ kotlin {
 
                 //Koin
                 implementation(libs.koin.core)
+
+                //Kotlin date time
+                implementation(libs.kotlinx.datetime)
             }
         }
 

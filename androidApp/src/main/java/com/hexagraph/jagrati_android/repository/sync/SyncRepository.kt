@@ -8,13 +8,13 @@ import com.hexagraph.jagrati_android.model.dao.VillageDao
 import com.hexagraph.jagrati_android.model.dao.GroupsDao
 import com.hexagraph.jagrati_android.model.toEntity
 import com.hexagraph.jagrati_android.model.user.UserDetailsWithRolesAndPermissions
-import com.hexagraph.jagrati_android.model.user.toEntity
 import com.hexagraph.jagrati_android.notifications.NotificationChannels
 import com.hexagraph.jagrati_android.notifications.NotificationHelper
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.CrashlyticsHelper
 import com.hexagraph.jagrati_android.util.Utils
+import com.hexagraph.jagrati_android.util.toEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,7 +61,7 @@ class SyncRepository(
             CrashlyticsHelper.log("SyncRepository", "Starting face data sync...")
             data.students.forEach { studentDto ->
                 if (studentDto.profilePic != null) {
-                    val bitamp = Utils.getBitmapFromURL(context, studentDto.profilePic.url)
+                    val bitamp = Utils.getBitmapFromURL(context, studentDto.profilePic!!.url)
                     if (bitamp == null) {
                         CrashlyticsHelper.log(
                             "SyncRepository",
@@ -84,7 +84,7 @@ class SyncRepository(
             // Sync volunteers
             data.volunteers.forEach { volunteerDto ->
                 if (volunteerDto.profilePic != null) {
-                    val bitamp = Utils.getBitmapFromURL(context, volunteerDto.profilePic.url)
+                    val bitamp = Utils.getBitmapFromURL(context, volunteerDto.profilePic!!.url)
                     if (bitamp == null) {
                         CrashlyticsHelper.log(
                             "SyncRepository",
@@ -109,7 +109,7 @@ class SyncRepository(
                 if (user?.pid == volunteerDto.pid && volunteerDto.profilePic != null) {
                     appPreferences.userDetails.set(
                         user.copy(
-                            photoUrl = volunteerDto.profilePic.url
+                            photoUrl = volunteerDto.profilePic!!.url
                         )
                     )
                 }

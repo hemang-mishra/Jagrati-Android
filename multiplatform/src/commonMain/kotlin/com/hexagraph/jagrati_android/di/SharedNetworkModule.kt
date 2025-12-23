@@ -1,4 +1,4 @@
-package com.hexagraph.jagrati_android.model.di
+package com.hexagraph.jagrati_android.di
 
 import org.koin.dsl.module
 

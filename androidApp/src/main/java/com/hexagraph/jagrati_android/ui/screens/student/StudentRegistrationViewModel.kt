@@ -9,12 +9,12 @@ import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.model.student.StudentRequest
 import com.hexagraph.jagrati_android.model.student.StudentResponse
 import com.hexagraph.jagrati_android.model.student.UpdateStudentRequest
-import com.hexagraph.jagrati_android.model.student.toStudent
 import com.hexagraph.jagrati_android.repository.auth.StudentRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.StudentRegistrationDraft
 import com.hexagraph.jagrati_android.util.Utils
+import com.hexagraph.jagrati_android.util.toStudent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

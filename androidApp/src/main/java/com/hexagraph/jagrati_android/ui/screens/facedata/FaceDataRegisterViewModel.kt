@@ -13,7 +13,6 @@ import com.hexagraph.jagrati_android.model.Student
 import com.hexagraph.jagrati_android.model.Volunteer
 import com.hexagraph.jagrati_android.model.dao.StudentDao
 import com.hexagraph.jagrati_android.model.dao.VolunteerDao
-import com.hexagraph.jagrati_android.model.student.toUpdateStudentRequest
 import com.hexagraph.jagrati_android.model.toUpdateVolunteerRequest
 import com.hexagraph.jagrati_android.repository.auth.StudentRepository
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
@@ -22,6 +21,7 @@ import com.hexagraph.jagrati_android.service.image_service.ImageKitService
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Utils
+import com.hexagraph.jagrati_android.util.toUpdateStudentRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

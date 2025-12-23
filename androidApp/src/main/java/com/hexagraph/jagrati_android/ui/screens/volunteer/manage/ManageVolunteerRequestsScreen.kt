@@ -68,10 +68,18 @@ import com.hexagraph.jagrati_android.model.volunteer.AddressDTO
 import com.hexagraph.jagrati_android.model.volunteer.DetailedVolunteerRequestResponse
 import com.hexagraph.jagrati_android.model.volunteer.UserSummaryDTO
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
+import com.hexagraph.jagrati_android.util.DateTimeFormatter.formatDate
+import com.hexagraph.jagrati_android.util.DateTimeFormatter.formatDateTime
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atTime
+import kotlinx.datetime.minus
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @Composable
 fun ManageVolunteerRequestsScreen(
@@ -866,13 +874,13 @@ fun VolunteerDetailDialog(
                 // Address Information
                 if (request.address != null) {
                     DetailSection(title = "Address") {
-                        DetailRow(label = "Street", value = request.address.streetAddress1 ?: "Not provided")
-                        if (!request.address.streetAddress2.isNullOrBlank()) {
-                            DetailRow(label = "Street 2", value = request.address.streetAddress2)
+                        DetailRow(label = "Street", value = request.address!!.streetAddress1 ?: "Not provided")
+                        if (!request.address!!.streetAddress2.isNullOrBlank()) {
+                            DetailRow(label = "Street 2", value = request.address!!.streetAddress2!!)
                         }
-                        DetailRow(label = "City", value = request.address.city ?: "Not provided")
-                        DetailRow(label = "State", value = request.address.state ?: "Not provided")
-                        DetailRow(label = "Pincode", value = request.address.pincode ?: "Not provided")
+                        DetailRow(label = "City", value = request.address!!.city ?: "Not provided")
+                        DetailRow(label = "State", value = request.address!!.state ?: "Not provided")
+                        DetailRow(label = "Pincode", value = request.address!!.pincode ?: "Not provided")
                     }
                 }
 
@@ -882,8 +890,8 @@ fun VolunteerDetailDialog(
                     DetailRow(label = "Submitted On", value = formatDateTime(request.createdAt))
 
                     if (request.reviewedAt != null && request.reviewedByUser != null) {
-                        DetailRow(label = "Reviewed By", value = request.reviewedByUser.firstName + " " + request.reviewedByUser.lastName)
-                        DetailRow(label = "Reviewed On", value = formatDateTime(request.reviewedAt))
+                        DetailRow(label = "Reviewed By", value = request.reviewedByUser!!.firstName + " " + request.reviewedByUser!!.lastName)
+                        DetailRow(label = "Reviewed On", value = formatDateTime(request.reviewedAt!!))
                     }
                 }
 
@@ -953,16 +961,6 @@ fun DetailRow(
     }
 }
 
-// Helper functions for date formatting
-private fun formatDate(date: LocalDateTime): String {
-    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy")
-    return date.format(formatter)
-}
-
-private fun formatDateTime(dateTime: LocalDateTime): String {
-    val formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")
-    return dateTime.format(formatter)
-}
 
 @Preview(showBackground = true)
 @Composable
@@ -1039,6 +1037,7 @@ fun EmptyStatePreview() {
 }
 
 // Helper function to create mock data for previews
+@OptIn(ExperimentalTime::class)
 private fun createMockRequest(
     id: Long,
     firstName: String,
@@ -1057,7 +1056,7 @@ private fun createMockRequest(
         alternateEmail = "$firstName.${lastName.lowercase()}@example.com",
         batch = "2023",
         programme = programme,
-        dateOfBirth = LocalDate.of(2000, 1, 1),
+        dateOfBirth = LocalDate(2000, 1, 1),
         contactNumber = "9876543210",
         college = "IIITDM Jabalpur",
         branch = branch,
@@ -1070,7 +1069,10 @@ private fun createMockRequest(
             state = "Madhya Pradesh"
         ),
         status = status,
-        createdAt = LocalDateTime.now().minusDays(5),
+        createdAt = Clock.System.now()
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .date.minus(5, DateTimeUnit.DAY)
+            .atTime(12, 0),
         requestedByUser = UserSummaryDTO(
             pid = "user123",
             firstName = firstName,
@@ -1083,6 +1085,11 @@ private fun createMockRequest(
             lastName = "User",
             email = "admin@example.com"
         ) else null,
-        reviewedAt = if (status != "PENDING") LocalDateTime.now().minusDays(1) else null
+        reviewedAt = if (status != "PENDING")
+            Clock.System.now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date.minus(1, DateTimeUnit.DAY)
+                .atTime(14, 30)
+        else null
     )
 }
