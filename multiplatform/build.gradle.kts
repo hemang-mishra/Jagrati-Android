@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.dependencies
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.kotlin.multiplatform.library)
@@ -64,6 +66,7 @@ kotlin {
     }
 
     dependencies {
+        add("kspCommonMainMetadata", libs.androidx.room.compiler)
         add("kspAndroid", libs.androidx.room.compiler)
         add("kspIosSimulatorArm64", libs.androidx.room.compiler)
         add("kspIosX64", libs.androidx.room.compiler)
@@ -89,10 +92,6 @@ kotlin {
                 implementation(libs.ktor.client.logging)
                 implementation(libs.ktor.client.auth)
 
-                // Room
-                implementation(libs.androidx.room.runtime)
-                implementation(libs.androidx.sqlite.bundled)
-
                 //Koin
                 implementation(libs.koin.core)
             }
@@ -105,7 +104,18 @@ kotlin {
             }
         }
 
+        val mobileMain by creating {
+            dependsOn(commonMain.get())
+            dependencies {
+                // Room
+                implementation(libs.androidx.room.runtime)
+                implementation(libs.androidx.sqlite.bundled)
+
+            }
+        }
+
         androidMain {
+            dependsOn(mobileMain)
             dependencies {
                 implementation(libs.koin.android)
                 implementation(libs.koin.androidx.compose)
@@ -121,6 +131,7 @@ kotlin {
         }
 
         iosMain {
+            dependsOn(mobileMain)
             dependencies {
                 // Add iOS-specific dependencies here. This a source set created by Kotlin Gradle
                 // Plugin (KGP) that each specific iOS target (e.g., iosX64) depends on as
