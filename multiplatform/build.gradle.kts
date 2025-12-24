@@ -1,5 +1,7 @@
 import org.gradle.kotlin.dsl.dependencies
 import com.codingfeline.buildkonfig.compiler.FieldSpec
+import java.io.FileInputStream
+import java.util.Properties
 
 
 plugins {
@@ -12,6 +14,15 @@ plugins {
     alias(libs.plugins.codingfelines.buildkonfig)
 }
 
+// Load properties from local.properties file
+val localPropertiesFile = rootProject.file("local.properties")
+val localProperties = Properties()
+    .takeIf { localPropertiesFile.exists() }
+    ?.apply { load(FileInputStream(localPropertiesFile)) }
+
+fun propOrEnv(name: String, default: String = ""): String =
+    localProperties?.getProperty(name) ?: System.getenv(name) ?: default
+
 room {
     schemaDirectory("$projectDir/schemas")
 }
@@ -21,14 +32,26 @@ buildkonfig {
 
     defaultConfigs {
         buildConfigField(FieldSpec.Type.BOOLEAN, "DEBUG", "false")
+        buildConfigField(FieldSpec.Type.STRING, "WEB_CLIENT_ID", propOrEnv("WEB_CLIENT_ID"))
+        buildConfigField(FieldSpec.Type.STRING, "BASE_URL", propOrEnv("BASE_URL"))
+        buildConfigField(FieldSpec.Type.STRING, "IMAGE_KIT_URL_ENDPOINT", propOrEnv("IMAGE_KIT_URL_ENDPOINT"))
+        buildConfigField(FieldSpec.Type.STRING, "IMAGE_KIT_PUBLIC_KEY", propOrEnv("IMAGE_KIT_PUBLIC_KEY"))
     }
 
     defaultConfigs("debug") {
         buildConfigField(FieldSpec.Type.BOOLEAN, "DEBUG", "true")
+        buildConfigField(FieldSpec.Type.STRING, "WEB_CLIENT_ID", propOrEnv("WEB_CLIENT_ID"))
+        buildConfigField(FieldSpec.Type.STRING, "BASE_URL", propOrEnv("BASE_URL"))
+        buildConfigField(FieldSpec.Type.STRING, "IMAGE_KIT_URL_ENDPOINT", propOrEnv("IMAGE_KIT_URL_ENDPOINT"))
+        buildConfigField(FieldSpec.Type.STRING, "IMAGE_KIT_PUBLIC_KEY", propOrEnv("IMAGE_KIT_PUBLIC_KEY"))
     }
 
     defaultConfigs("release") {
         buildConfigField(FieldSpec.Type.BOOLEAN, "DEBUG", "false")
+        buildConfigField(FieldSpec.Type.STRING, "WEB_CLIENT_ID", propOrEnv("PROD_WEB_CLIENT_ID"))
+        buildConfigField(FieldSpec.Type.STRING, "BASE_URL", propOrEnv("PROD_BASE_URL"))
+        buildConfigField(FieldSpec.Type.STRING, "IMAGE_KIT_URL_ENDPOINT", propOrEnv("PROD_IMAGE_KIT_URL_ENDPOINT"))
+        buildConfigField(FieldSpec.Type.STRING, "IMAGE_KIT_PUBLIC_KEY", propOrEnv("PROD_IMAGE_KIT_PUBLIC_KEY"))
     }
 }
 
