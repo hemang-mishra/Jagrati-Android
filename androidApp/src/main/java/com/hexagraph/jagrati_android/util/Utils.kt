@@ -217,7 +217,7 @@ object Utils {
      */
     fun logException(e: Exception) {
         e.printStackTrace()
-        CrashlyticsHelper.logException(
+        LogHelper.logException(
             tag = "SafeApiCall",
             exception = e
         )
@@ -243,7 +243,7 @@ object Utils {
 
     suspend fun getBitmapFromURL(context: Context, url: String): Bitmap? {
         try {
-            CrashlyticsHelper.log("Utils", "Attempting to load image from: $url")
+            LogHelper.log("Utils", "Attempting to load image from: $url")
             val loader = ImageLoader.Builder(context).components {
                 add(OkHttpNetworkFetcherFactory())
             }
@@ -256,14 +256,14 @@ object Utils {
 
             val result = loader.execute(request)
             return if (result is SuccessResult) {
-                CrashlyticsHelper.log("Utils", "Image loaded successfully from: $url")
+                LogHelper.log("Utils", "Image loaded successfully from: $url")
                 result.image.toBitmap()
             } else {
-                CrashlyticsHelper.log("Utils", "Failed to load image: $result")
+                LogHelper.log("Utils", "Failed to load image: $result")
                 null
             }
         } catch (e: Exception) {
-            CrashlyticsHelper.log("Utils", "Exception loading image: ${e.javaClass.name}: ${e.message}")
+            LogHelper.log("Utils", "Exception loading image: ${e.javaClass.name}: ${e.message}")
             e.printStackTrace()
             return null
         }
@@ -326,7 +326,7 @@ object Utils {
                     // Found acceptable size, write to file and return
                     val file = File(context.cacheDir, fileName)
                     file.outputStream().use { out -> out.write(compressed) }
-                    CrashlyticsHelper.log("BitmapCompress", "Compressed to ${compressed.size} bytes (target: $targetBytes)")
+                    LogHelper.log("BitmapCompress", "Compressed to ${compressed.size} bytes (target: $targetBytes)")
                     return@withContext file
                 }
                 quality -= stepSize
@@ -357,10 +357,10 @@ object Utils {
             val finalBytes = bestBytes ?: compressToQuality(working, minQuality)
             val file = File(context.cacheDir, fileName)
             file.outputStream().use { out -> out.write(finalBytes) }
-            CrashlyticsHelper.log("BitmapCompress", "Final size ${finalBytes.size} bytes exceeds target $targetBytes")
+            LogHelper.log("BitmapCompress", "Final size ${finalBytes.size} bytes exceeds target $targetBytes")
             file
         } catch (e: Exception) {
-            CrashlyticsHelper.log("BitmapCompress", "Final compression failed: ${e.message}")
+            LogHelper.log("BitmapCompress", "Final compression failed: ${e.message}")
             null
         }
     }

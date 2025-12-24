@@ -4,7 +4,7 @@ cameraCore = "1.5.1"
 coil= "3.3.0"
 coilNetworkOkhttp = "3.3.0"
 converterGson = "2.11.0"
-datastorePreferences = "1.1.7"
+datastorePreferences = "1.3.0-alpha03"
 faceDetection = "16.1.7"
 gson = "2.13.1"
 guava = "33.4.8-android"
@@ -28,6 +28,7 @@ ksp = "2.1.10-1.0.31"
 litert = "1.4.1"
 litertApi = "1.4.1"
 
+napier = "2.7.1"
 navigationCompose = "2.9.3"
 playServicesMlkitFaceDetection = "17.1.0"
 roomRuntime = "2.8.4"
@@ -51,6 +52,7 @@ kotlinTest = "2.1.10"
 runner = "1.7.0"
 core = "1.7.0"
 androidx-sqlite = "2.6.2"
+buildKonfig = "0.17.1"
 
 [libraries]
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
@@ -61,6 +63,7 @@ androidx-camera-mlkit-vision = { module = "androidx.camera:camera-mlkit-vision",
 androidx-camera-video = { module = "androidx.camera:camera-video", version.ref = "cameraCore" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "cameraCore" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreferences" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
@@ -105,6 +108,7 @@ ktor-client-serialization-jvm = { module = "io.ktor:ktor-client-serialization-jv
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
 litert = { module = "com.google.ai.edge.litert:litert", version.ref = "litert" }
 litert-api = { module = "com.google.ai.edge.litert:litert-api", version.ref = "litertApi" }
+napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 play-services-mlkit-face-detection = { module = "com.google.android.gms:play-services-mlkit-face-detection", version.ref = "playServicesMlkitFaceDetection" }
 
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
@@ -140,3 +144,4 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
 androidx-room = { id = "androidx.room", version.ref = "roomRuntime" }
+codingfelines-buildkonfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }

@@ -1,6 +1,5 @@
 package com.hexagraph.jagrati_android.notifications
 
-import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase

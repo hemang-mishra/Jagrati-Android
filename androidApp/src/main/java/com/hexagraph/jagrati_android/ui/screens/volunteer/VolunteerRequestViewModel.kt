@@ -7,6 +7,7 @@ import com.hexagraph.jagrati_android.model.volunteer.MyVolunteerRequestResponse
 import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRequestRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.VolunteerRegistrationDraft
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -209,7 +210,7 @@ class VolunteerRequestViewModel(
         _hasVolunteerRole.value = roles.any { it.name == "VOLUNTEER" }
     }
 
-    private fun loadDraftData(draft: com.hexagraph.jagrati_android.util.VolunteerRegistrationDraft) {
+    private fun loadDraftData(draft: VolunteerRegistrationDraft) {
         _firstName.update { draft.firstName }
         _lastName.update { draft.lastName }
         _alternateEmail.update { draft.email }
@@ -229,7 +230,7 @@ class VolunteerRequestViewModel(
 
     private suspend fun saveDraft() {
         try {
-            val draft = com.hexagraph.jagrati_android.util.VolunteerRegistrationDraft(
+            val draft = VolunteerRegistrationDraft(
                 firstName = _firstName.value,
                 lastName = _lastName.value,
                 email = _alternateEmail.value,

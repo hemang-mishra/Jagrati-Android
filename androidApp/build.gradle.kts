@@ -117,7 +117,6 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
     implementation(libs.firebase.messaging)
-    implementation(libs.firebase.crashlytics)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -179,8 +178,6 @@ dependencies {
 
     implementation(libs.guava)
 
-    implementation(libs.androidx.datastore.preferences)
-
     //Navigation 3 API
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)
@@ -204,4 +201,6 @@ dependencies {
 
     //Kotlin date time
     implementation(libs.kotlinx.datetime)
+
+    implementation(libs.firebase.crashlytics)
 }

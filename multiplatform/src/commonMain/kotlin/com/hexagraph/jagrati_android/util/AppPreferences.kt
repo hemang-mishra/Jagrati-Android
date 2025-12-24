@@ -1,7 +1,5 @@
 package com.hexagraph.jagrati_android.util
 
-import android.content.Context
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences
@@ -9,9 +7,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -21,16 +16,22 @@ import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
 import com.hexagraph.jagrati_android.model.user.UserSummaryDTO
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 /**
  * A centralized class to manage DataStore preferences throughout the app using type-safe DataStorePreference pattern.
  */
-class AppPreferences(private val context: Context) {
+class AppPreferences(
+    val dataStore: DataStore<Preferences>
+) {
 
-    private val gson = Gson()
+    private val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+    }
 
     companion object {
-        private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "jagrati_prefs")
 
         // Auth related keys
         private val ACCESS_TOKEN = stringPreferencesKey("access_token")
@@ -54,13 +55,13 @@ class AppPreferences(private val context: Context) {
 
     val lastSyncTime: DataStorePreference<Long> = object : DataStorePreference<Long> {
         override fun getFlow(): Flow<Long> =
-            context.dataStore.data
+            dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[LAST_SYNC_TIME] ?: 0L }
                 .distinctUntilChanged()
 
         override suspend fun set(value: Long) {
-            context.dataStore.edit { preferences ->
+            dataStore.edit { preferences ->
                 preferences[LAST_SYNC_TIME] = value
             }
         }
@@ -68,13 +69,13 @@ class AppPreferences(private val context: Context) {
 
     val lastUsedTime: DataStorePreference<Long> = object : DataStorePreference<Long> {
         override fun getFlow(): Flow<Long> =
-            context.dataStore.data
+            dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[LAST_USED_TIME] ?: 0L }
                 .distinctUntilChanged()
 
         override suspend fun set(value: Long) {
-            context.dataStore.edit { preferences ->
+             dataStore.edit { preferences ->
                 preferences[LAST_USED_TIME] = value
             }
         }
@@ -82,13 +83,13 @@ class AppPreferences(private val context: Context) {
 
     val isVolunteer: DataStorePreference<Boolean> = object : DataStorePreference<Boolean> {
         override fun getFlow(): Flow<Boolean> =
-            context.dataStore.data
+             dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[IS_VOLUNTEER]?.toBoolean() ?: false }
                 .distinctUntilChanged()
 
         override suspend fun set(value: Boolean) {
-            context.dataStore.edit { preferences ->
+             dataStore.edit { preferences ->
                 preferences[IS_VOLUNTEER] = value.toString()
             }
         }
@@ -97,13 +98,13 @@ class AppPreferences(private val context: Context) {
     // Token Management
     val accessToken: DataStorePreference<String?> = object : DataStorePreference<String?> {
         override fun getFlow(): Flow<String?> =
-            context.dataStore.data
+             dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[ACCESS_TOKEN] }
                 .distinctUntilChanged()
 
         override suspend fun set(value: String?) {
-            context.dataStore.edit { preferences ->
+             dataStore.edit { preferences ->
                 if (value == null) {
                     preferences.remove(ACCESS_TOKEN)
                 } else {
@@ -115,13 +116,13 @@ class AppPreferences(private val context: Context) {
 
     val refreshToken: DataStorePreference<String?> = object : DataStorePreference<String?> {
         override fun getFlow(): Flow<String?> =
-            context.dataStore.data
+             dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[REFRESH_TOKEN] }
                 .distinctUntilChanged()
 
         override suspend fun set(value: String?) {
-            context.dataStore.edit { preferences ->
+             dataStore.edit { preferences ->
                 if (value == null) {
                     preferences.remove(REFRESH_TOKEN)
                 } else {
@@ -134,13 +135,13 @@ class AppPreferences(private val context: Context) {
 
     val fcmToken: DataStorePreference<String?> = object : DataStorePreference<String?> {
         override fun getFlow(): Flow<String?> =
-            context.dataStore.data
+             dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[FCM_TOKEN] }
                 .distinctUntilChanged()
 
         override suspend fun set(value: String?) {
-            context.dataStore.edit { preferences ->
+             dataStore.edit { preferences ->
                 if (value == null) {
                     preferences.remove(FCM_TOKEN)
                 } else {
@@ -152,14 +153,14 @@ class AppPreferences(private val context: Context) {
 
 
     suspend fun saveTokens(accessToken: String, refreshToken: String) {
-        context.dataStore.edit { preferences ->
+         dataStore.edit { preferences ->
             preferences[ACCESS_TOKEN] = accessToken
             preferences[REFRESH_TOKEN] = refreshToken
         }
     }
 
     suspend fun clearTokens() {
-        context.dataStore.edit { preferences ->
+         dataStore.edit { preferences ->
             preferences.remove(ACCESS_TOKEN)
             preferences.remove(REFRESH_TOKEN)
         }
@@ -168,7 +169,7 @@ class AppPreferences(private val context: Context) {
     // Check if user is authenticated
     val isAuthenticated: DataStorePreference<Boolean> = object : DataStorePreference<Boolean> {
         override fun getFlow(): Flow<Boolean> =
-            context.dataStore.data
+             dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[ACCESS_TOKEN] != null }
                 .distinctUntilChanged()
@@ -182,13 +183,13 @@ class AppPreferences(private val context: Context) {
     // Permissions Management
     val userPermissions: DataStorePreference<Set<String>> = object : DataStorePreference<Set<String>> {
         override fun getFlow(): Flow<Set<String>> =
-            context.dataStore.data
+             dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[USER_PERMISSIONS] ?: emptySet() }
                 .distinctUntilChanged()
 
         override suspend fun set(value: Set<String>) {
-            context.dataStore.edit { preferences ->
+             dataStore.edit { preferences ->
                 preferences[USER_PERMISSIONS] = value
             }
         }
@@ -211,12 +212,12 @@ class AppPreferences(private val context: Context) {
     // User Details Management
     val userDetails: DataStorePreference<User?> = object : DataStorePreference<User?> {
         override fun getFlow(): Flow<User?> =
-            context.dataStore.data
+             dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { preferences ->
                     val userDetailsJson = preferences[USER_DETAILS] ?: return@map null
                     try {
-                        gson.fromJson(userDetailsJson, User::class.java)
+                        json.decodeFromString<User>(userDetailsJson)
                     } catch (e: Exception) {
                         null
                     }
@@ -224,20 +225,20 @@ class AppPreferences(private val context: Context) {
                 .distinctUntilChanged()
 
         override suspend fun set(value: User?) {
-            context.dataStore.edit { preferences ->
-                preferences[USER_DETAILS] = gson.toJson(value)
+             dataStore.edit { preferences ->
+                preferences[USER_DETAILS] = json.encodeToString(value)
             }
         }
     }
 
     suspend fun saveUserDetails(userDetails: UserSummaryDTO) {
-        context.dataStore.edit { preferences ->
-            preferences[USER_DETAILS] = gson.toJson(userDetails.toUser())
+         dataStore.edit { preferences ->
+            preferences[USER_DETAILS] = json.encodeToString(userDetails.toUser())
         }
     }
 
     suspend fun clearUserDetails() {
-        context.dataStore.edit { preferences ->
+         dataStore.edit { preferences ->
             preferences.remove(USER_DETAILS)
         }
     }
@@ -245,13 +246,12 @@ class AppPreferences(private val context: Context) {
     // User Roles Management
     val userRoles: DataStorePreference<List<RoleSummaryResponse>> = object : DataStorePreference<List<RoleSummaryResponse>> {
         override fun getFlow(): Flow<List<RoleSummaryResponse>> =
-            context.dataStore.data
+             dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { preferences ->
                     val userRolesJson = preferences[USER_ROLES] ?: return@map emptyList()
                     try {
-                        val type = object : TypeToken<List<RoleSummaryResponse>>() {}.type
-                        gson.fromJson<List<RoleSummaryResponse>>(userRolesJson, type)
+                        json.decodeFromString<List<RoleSummaryResponse>>(userRolesJson)
                     } catch (e: Exception) {
                         emptyList()
                     }
@@ -259,8 +259,8 @@ class AppPreferences(private val context: Context) {
                 .distinctUntilChanged()
 
         override suspend fun set(value: List<RoleSummaryResponse>) {
-            context.dataStore.edit { preferences ->
-                preferences[USER_ROLES] = gson.toJson(value)
+             dataStore.edit { preferences ->
+                preferences[USER_ROLES] = json.encodeToString(value)
             }
         }
     }
@@ -282,70 +282,71 @@ class AppPreferences(private val context: Context) {
 
     // Student Registration Draft
     suspend fun saveStudentRegistrationDraft(draft: StudentRegistrationDraft) {
-        context.dataStore.edit { preferences ->
-            preferences[STUDENT_REGISTRATION_DRAFT] = gson.toJson(draft)
+         dataStore.edit { preferences ->
+            preferences[STUDENT_REGISTRATION_DRAFT] = json.encodeToString(draft)
         }
     }
 
     suspend fun getStudentRegistrationDraft(): StudentRegistrationDraft? {
         return try {
-            val json = context.dataStore.data
+            val jsonData =  dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[STUDENT_REGISTRATION_DRAFT] }
                 .distinctUntilChanged()
                 .first()
-            if (json != null) {
-                gson.fromJson(json, StudentRegistrationDraft::class.java)
+            if (jsonData != null) {
+                json.decodeFromString<StudentRegistrationDraft>(jsonData)
             } else null
         } catch (e: Exception) {
-            Log.e("AppPreferences", "Error getting student draft", e)
+            LogHelper.logError("AppPreferences", "Error getting student draft: ${e.message}", e)
             null
         }
     }
 
     suspend fun clearStudentRegistrationDraft() {
-        context.dataStore.edit { preferences ->
+         dataStore.edit { preferences ->
             preferences.remove(STUDENT_REGISTRATION_DRAFT)
         }
     }
 
     // Volunteer Registration Draft
     suspend fun saveVolunteerRegistrationDraft(draft: VolunteerRegistrationDraft) {
-        context.dataStore.edit { preferences ->
-            preferences[VOLUNTEER_REGISTRATION_DRAFT] = gson.toJson(draft)
+         dataStore.edit { preferences ->
+            preferences[VOLUNTEER_REGISTRATION_DRAFT] = json.encodeToString(draft)
         }
     }
 
     suspend fun getVolunteerRegistrationDraft(): VolunteerRegistrationDraft? {
         return try {
-            val json = context.dataStore.data
+            val jsonData =  dataStore.data
                 .catch { emit(emptyPreferences()) }
                 .map { it[VOLUNTEER_REGISTRATION_DRAFT] }
                 .distinctUntilChanged()
                 .first()
-            if (json != null) {
-                gson.fromJson(json, VolunteerRegistrationDraft::class.java)
+            if (jsonData != null) {
+                json.decodeFromString<VolunteerRegistrationDraft>(jsonData)
             } else null
         } catch (e: Exception) {
-            Log.e("AppPreferences", "Error getting volunteer draft", e)
+            LogHelper.log("AppPreferences", "Error getting volunteer draft: ${e.message}")
             null
         }
     }
 
     suspend fun clearVolunteerRegistrationDraft() {
-        context.dataStore.edit { preferences ->
+         dataStore.edit { preferences ->
             preferences.remove(VOLUNTEER_REGISTRATION_DRAFT)
         }
     }
 
     suspend fun clearAll() {
-        context.dataStore.edit { preferences ->
+         dataStore.edit { preferences ->
             preferences.clear()
         }
     }
 }
 
 // Draft data classes
+@Serializable
 data class StudentRegistrationDraft(
     val firstName: String = "",
     val lastName: String = "",
@@ -360,6 +361,7 @@ data class StudentRegistrationDraft(
     val selectedGroupId: Long? = null
 )
 
+@Serializable
 data class VolunteerRegistrationDraft(
     val firstName: String = "",
     val lastName: String = "",

@@ -53,7 +53,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,6 +64,7 @@ import com.hexagraph.jagrati_android.util.AppUpdateHelper
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import androidx.core.net.toUri
+import com.hexagraph.jagrati_android.util.LogHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -308,7 +308,7 @@ fun SettingsScreen(
                             description = "Force a test crash (Debug only)",
                             isLoading = false,
                             onClick = {
-                                com.hexagraph.jagrati_android.util.CrashlyticsHelper.testCrash()
+                                LogHelper.testCrash()
                             },
                             iconTint = MaterialTheme.colorScheme.error
                         )

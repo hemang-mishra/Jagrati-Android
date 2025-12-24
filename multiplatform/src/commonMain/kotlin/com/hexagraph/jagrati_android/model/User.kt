@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.model
 
 import com.hexagraph.jagrati_android.model.user.UserSummaryDTO
+import kotlinx.serialization.Serializable
 
 /**
  * Data class representing a user in the application.
@@ -12,6 +13,7 @@ import com.hexagraph.jagrati_android.model.user.UserSummaryDTO
  * @property isEmailVerified Whether the user's email is verified
  * @property photoUrl URL to the user's profile photo
  */
+@Serializable
 data class User(
     val pid: String = "",
     val email: String = "",

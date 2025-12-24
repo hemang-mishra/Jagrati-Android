@@ -4,9 +4,9 @@ import android.app.Application
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.hexagraph.jagrati_android.BuildConfig
+import com.hexagraph.jagrati_android.di.androidMainModule
 import com.hexagraph.jagrati_android.di.databaseModule
 import com.hexagraph.jagrati_android.di.networkModule
-import com.hexagraph.jagrati_android.di.preferencesModule
 import com.hexagraph.jagrati_android.di.repositoryModule
 import com.hexagraph.jagrati_android.di.serviceModule
 import com.hexagraph.jagrati_android.di.useCaseModule
@@ -31,7 +31,6 @@ class JagratiApp : Application() {
             modules(viewModelModule,
                 databaseModule,
                 networkModule,
-                preferencesModule,
                 repositoryModule,
                 serviceModule,
                 useCaseModule,
@@ -39,7 +38,9 @@ class JagratiApp : Application() {
                 sharedNetworkModule,
                 sharedDBModule,
                 sharedRepositoryModule,
-                sharedServicesModule
+                sharedServicesModule,
+                //Android main module
+                androidMainModule
             )
         }
     }

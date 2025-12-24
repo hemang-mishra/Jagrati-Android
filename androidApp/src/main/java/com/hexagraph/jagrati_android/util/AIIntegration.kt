@@ -8,7 +8,6 @@ import kotlin.math.sqrt
 import androidx.core.graphics.scale
 import androidx.core.graphics.get
 import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.InterpreterApi
 import java.io.FileInputStream
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
@@ -64,7 +63,7 @@ object AIIntegration {
         }
         inputBuffer
     }.onFailure {
-        CrashlyticsHelper.logError("AIIntegration", it.message?:"Error while preprocessing bitmap for MobileFaceNet")
+        LogHelper.logError("AIIntegration", it.message?:"Error while preprocessing bitmap for MobileFaceNet")
     }
 
     // Calculate the cosine similarity between two embeddings
@@ -86,7 +85,7 @@ object AIIntegration {
 
         dotProduct / (norm2 * norm1)
     }.onFailure {
-        CrashlyticsHelper.logError("AIIntegration", it.message?:"Error while calculating cosine similarity")
+        LogHelper.logError("AIIntegration", it.message?:"Error while calculating cosine similarity")
     }
 
     fun calculateDistanceBtwEmbeddings(embeddingBuffer1: ByteBuffer, embeddingBuffer2: ByteBuffer): Result<Float> = runCatching {
@@ -97,6 +96,6 @@ object AIIntegration {
         }
         sqrt(sum.toDouble()).toFloat()
     }.onFailure {
-        CrashlyticsHelper.logError("AIIntegration", it.message?:"Error while calculating distance between embeddings")
+        LogHelper.logError("AIIntegration", it.message?:"Error while calculating distance between embeddings")
     }
 }

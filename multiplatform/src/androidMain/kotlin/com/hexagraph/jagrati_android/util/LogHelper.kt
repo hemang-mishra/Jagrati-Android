@@ -2,25 +2,27 @@ package com.hexagraph.jagrati_android.util
 
 import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.hexagraph.jagrati_android.BuildConfig
+import com.hexagraph.jagrati_android.BuildKonfig
 
 /**
  * Helper class for Firebase Crashlytics operations
  * Provides convenient methods for logging and reporting crashes
  */
-object CrashlyticsHelper {
+actual object LogHelper {
 
     private val crashlytics: FirebaseCrashlytics by lazy {
         FirebaseCrashlytics.getInstance()
     }
 
+    private val isDebug: Boolean = BuildKonfig.DEBUG
+
     /**
      * Log a non-fatal exception to Crashlytics
      */
-    fun logException(exception: Throwable, tag:String = "Crashlytics") {
+    actual fun logException(exception: Throwable, tag:String) {
         try {
             crashlytics.recordException(exception)
-            if (BuildConfig.DEBUG) {
+            if (isDebug) {
                 Log.e(tag, "Exception logged", exception)
             }
         } catch (e: Exception) {
@@ -31,10 +33,10 @@ object CrashlyticsHelper {
     /**
      * Log a message to Crashlytics
      */
-    fun log(tag: String = "Crashlytics", message: String) {
+    actual fun log(tag: String, message: String) {
         try {
             crashlytics.log(message)
-            if (BuildConfig.DEBUG) {
+            if (isDebug) {
                 Log.d(tag, message)
             }
         } catch (e: Exception) {
@@ -45,10 +47,10 @@ object CrashlyticsHelper {
     /**
      * Set user identifier for crash reports
      */
-    fun setUserId(userId: String) {
+    actual fun setUserId(userId: String) {
         try {
             crashlytics.setUserId(userId)
-            if (BuildConfig.DEBUG) {
+            if (isDebug) {
                 Log.d("Crashlytics", "User ID set: $userId")
             }
         } catch (e: Exception) {
@@ -59,10 +61,10 @@ object CrashlyticsHelper {
     /**
      * Set custom key-value pair for crash reports
      */
-    fun setCustomKey(key: String, value: String) {
+    actual fun setCustomKey(key: String, value: String) {
         try {
             crashlytics.setCustomKey(key, value)
-            if (BuildConfig.DEBUG) {
+            if (isDebug) {
                 Log.d("Crashlytics", "Custom key set: $key = $value")
             }
         } catch (e: Exception) {
@@ -73,10 +75,10 @@ object CrashlyticsHelper {
     /**
      * Set custom key-value pair for crash reports (Int value)
      */
-    fun setCustomKey(key: String, value: Int) {
+    actual fun setCustomKey(key: String, value: Int) {
         try {
             crashlytics.setCustomKey(key, value)
-            if (BuildConfig.DEBUG) {
+            if (isDebug) {
                 Log.d("Crashlytics", "Custom key set: $key = $value")
             }
         } catch (e: Exception) {
@@ -87,10 +89,10 @@ object CrashlyticsHelper {
     /**
      * Set custom key-value pair for crash reports (Boolean value)
      */
-    fun setCustomKey(key: String, value: Boolean) {
+    actual fun setCustomKey(key: String, value: Boolean) {
         try {
             crashlytics.setCustomKey(key, value)
-            if (BuildConfig.DEBUG) {
+            if (isDebug) {
                 Log.d("Crashlytics", "Custom key set: $key = $value")
             }
         } catch (e: Exception) {
@@ -101,10 +103,10 @@ object CrashlyticsHelper {
     /**
      * Clear user identifier when user logs out
      */
-    fun clearUserId() {
+    actual fun clearUserId() {
         try {
             crashlytics.setUserId("")
-            if (BuildConfig.DEBUG) {
+            if (isDebug) {
                 Log.d("Crashlytics", "User ID cleared")
             }
         } catch (e: Exception) {
@@ -116,8 +118,8 @@ object CrashlyticsHelper {
      * Force a test crash (for testing purposes only)
      * Should only be used in debug builds
      */
-    fun testCrash() {
-        if (BuildConfig.DEBUG) {
+    actual fun testCrash() {
+        if (isDebug) {
             throw RuntimeException("This is a test crash from Crashlytics")
         } else {
             Log.w("CrashlyticsHelper", "Test crash is only available in debug builds")
@@ -127,7 +129,7 @@ object CrashlyticsHelper {
     /**
      * Send a non-fatal error with additional context
      */
-    fun logError(tag: String, message: String, throwable: Throwable? = null) {
+    actual fun logError(tag: String, message: String, throwable: Throwable?) {
         try {
             val errorMessage = "[$tag] $message"
             crashlytics.log(errorMessage)
@@ -136,7 +138,7 @@ object CrashlyticsHelper {
                 crashlytics.recordException(throwable)
             }
 
-            if (BuildConfig.DEBUG) {
+            if (isDebug) {
                 if (throwable != null) {
                     Log.e(tag, message, throwable)
                 } else {
@@ -148,4 +150,3 @@ object CrashlyticsHelper {
         }
     }
 }
-

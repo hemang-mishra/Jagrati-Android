@@ -1,4 +1,6 @@
 import org.gradle.kotlin.dsl.dependencies
+import com.codingfeline.buildkonfig.compiler.FieldSpec
+
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -7,11 +9,29 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room)
+    alias(libs.plugins.codingfelines.buildkonfig)
 }
 
 room {
     schemaDirectory("$projectDir/schemas")
 }
+
+buildkonfig {
+    packageName = "com.hexagraph.jagrati_android"
+
+    defaultConfigs {
+        buildConfigField(FieldSpec.Type.BOOLEAN, "DEBUG", "false")
+    }
+
+    defaultConfigs("debug") {
+        buildConfigField(FieldSpec.Type.BOOLEAN, "DEBUG", "true")
+    }
+
+    defaultConfigs("release") {
+        buildConfigField(FieldSpec.Type.BOOLEAN, "DEBUG", "false")
+    }
+}
+
 
 kotlin {
 
@@ -97,6 +117,15 @@ kotlin {
 
                 //Kotlin date time
                 implementation(libs.kotlinx.datetime)
+
+
+                // DataStore library
+                implementation(libs.androidx.datastore)
+                // The Preferences DataStore library
+                implementation(libs.androidx.datastore.preferences)
+                //Logging
+                implementation(libs.napier)
+
             }
         }
 
@@ -122,6 +151,9 @@ kotlin {
             dependencies {
                 implementation(libs.koin.android)
                 implementation(libs.koin.androidx.compose)
+
+                //Crashlytics
+                implementation(libs.firebase.crashlytics)
             }
         }
 
@@ -145,7 +177,7 @@ kotlin {
         }
 
         jsMain {
-            dependencies{
+            dependencies {
 
             }
         }

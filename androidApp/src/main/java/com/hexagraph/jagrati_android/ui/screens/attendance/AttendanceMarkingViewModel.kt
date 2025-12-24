@@ -20,7 +20,7 @@ import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
-import com.hexagraph.jagrati_android.util.CrashlyticsHelper
+import com.hexagraph.jagrati_android.util.LogHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -152,7 +152,7 @@ class AttendanceMarkingViewModel(
                                 recognizeFacesLive(processedImage)
                             }
                         } catch (e: Exception) {
-                            CrashlyticsHelper.logError(
+                            LogHelper.logError(
                                 "AttendanceMarkingViewModel",
                                 "Live recognition failed: ${e.message}"
                             )
@@ -164,7 +164,7 @@ class AttendanceMarkingViewModel(
 
 
                 }.onFailure {
-                    CrashlyticsHelper.logError(
+                    LogHelper.logError(
                         "AttendanceMarkingViewModel",
                         "Face detection failed: ${it.message}"
                     )
@@ -188,7 +188,7 @@ class AttendanceMarkingViewModel(
                     context
                 )
 
-                CrashlyticsHelper.log(
+                LogHelper.log(
                     "AttendanceMarkingViewModel",
                     "Live recognition results: $results"
                 )
@@ -203,7 +203,7 @@ class AttendanceMarkingViewModel(
                     _liveRecognizedFaces.update { emptyList() }
                 }
             } catch (e: Exception) {
-                CrashlyticsHelper.logError(
+                LogHelper.logError(
                     "AttendanceMarkingViewModel",
                     "Face recognition failed: ${e.message}"
                 )
@@ -279,7 +279,7 @@ class AttendanceMarkingViewModel(
                 _showBottomSheet.update { true }
 
             } catch (e: Exception) {
-                CrashlyticsHelper.logError(
+                LogHelper.logError(
                     "AttendanceMarkingViewModel",
                     "Capture failed: ${e.message}"
                 )
@@ -372,7 +372,7 @@ class AttendanceMarkingViewModel(
                 _showBottomSheet.update { true }
 
             } catch (e: Exception) {
-                CrashlyticsHelper.logError(
+                LogHelper.logError(
                     "AttendanceMarkingViewModel",
                     "Group capture failed: ${e.message}"
                 )
@@ -473,7 +473,7 @@ class AttendanceMarkingViewModel(
                     retakePhoto()
                 }
             } catch (e: Exception) {
-                CrashlyticsHelper.logError(
+                LogHelper.logError(
                     "AttendanceMarkingViewModel",
                     "Gallery image processing failed: ${e.message}"
                 )
@@ -563,7 +563,7 @@ class AttendanceMarkingViewModel(
                     onSuccess()
                 }
             } catch (e: Exception) {
-                CrashlyticsHelper.logError(
+                LogHelper.logError(
                     "AttendanceMarkingViewModel",
                     "Gallery group image processing failed: ${e.message}"
                 )
@@ -610,7 +610,7 @@ class AttendanceMarkingViewModel(
 
                 null
             } catch (e: Exception) {
-                CrashlyticsHelper.logError(
+                LogHelper.logError(
                     "AttendanceMarkingViewModel",
                     "Failed to get person details: ${e.message}"
                 )
@@ -671,7 +671,7 @@ class AttendanceMarkingViewModel(
                     }
                 }
             } catch (e: Exception) {
-                CrashlyticsHelper.logError(
+                LogHelper.logError(
                     "AttendanceMarkingViewModel",
                     "Failed to mark attendance: ${e.message}"
                 )
