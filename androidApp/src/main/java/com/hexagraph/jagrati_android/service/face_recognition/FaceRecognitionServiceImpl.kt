@@ -36,7 +36,7 @@ class FaceRecognitionServiceImpl @Inject constructor(val faceEmbeddingsDAO: Embe
     FaceRecognitionService {
     override fun mobileNet(face: ProcessedImage, context: Context): Result<Float> = runCatching {
         val referenceInput = face.faceBitmap?.let { bitmap ->
-            AIIntegration.preprocessBitmapForMobileFaceNet(
+            preprocessBitmapForMobileFaceNet(
                 bitmap,
                 AIIntegration.MOBILE_NET_IMAGE_SIZE
             )

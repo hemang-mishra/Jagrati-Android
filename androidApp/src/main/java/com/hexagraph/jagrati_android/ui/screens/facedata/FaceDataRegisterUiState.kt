@@ -1,6 +1,5 @@
 package com.hexagraph.jagrati_android.ui.screens.facedata
 
-import com.hexagraph.jagrati_android.model.FaceInfo
 import com.hexagraph.jagrati_android.model.ProcessedImage
 import com.hexagraph.jagrati_android.model.ResponseError
 

@@ -2,7 +2,7 @@ package com.hexagraph.jagrati_android.notifications
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase
+import com.hexagraph.jagrati_android.sync.DataSyncUseCase
 import com.hexagraph.jagrati_android.util.AppPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

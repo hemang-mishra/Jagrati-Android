@@ -52,10 +52,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9EDCE5B42EF7EDD4007B7DB3 /* Build configuration list for PBXNativeTarget "iosApp" */;
 			buildPhases = (
+				9EDCE5B72EF7EE11007B7DB3 /* ShellScript */,
 				9EDCE5A52EF7EDD3007B7DB3 /* Sources */,
 				9EDCE5A62EF7EDD3007B7DB3 /* Frameworks */,
 				9EDCE5A72EF7EDD3007B7DB3 /* Resources */,
-				9EDCE5B72EF7EE11007B7DB3 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -131,7 +131,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n    exit 0\nfi\n\n\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n    exit 0\nfi\n\n\ncd \"$SRCROOT/..\"\n./gradlew :multiplatform:embedAndSignAppleFrameworkForXcode\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

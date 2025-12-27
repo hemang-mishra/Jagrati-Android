@@ -1,16 +1,11 @@
 package com.hexagraph.jagrati_android.model
 
-import androidx.compose.runtime.Stable
-import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
-import com.google.gson.reflect.TypeToken
 import com.hexagraph.jagrati_android.util.Resource
-
 
 /** These exceptions need to be handled in view-model, shown via UI and not just thrown.
  * @param genericToast Generic message for the error.
  * @param actualResponse Actual response given by the server.*/
-@Stable
+
 enum class ResponseError(val genericToast: String, var actualResponse: String? = null) {
 
     DOES_NOT_EXIST(genericToast = "Error! Object not found."),
@@ -42,7 +37,7 @@ enum class ResponseError(val genericToast: String, var actualResponse: String? =
     /** Simple function that returns the most suitable message to show the user.*/
     val toast get() =  actualResponse ?: genericToast
 
-    /** Wrap this [ResponseError] in [Resource] with an optional parameter to add the actual response.*/
+    /** Wrap this [ResponseError] in [com.hexagraph.jagrati_android.util.Resource] with an optional parameter to add the actual response.*/
     fun <T> asResource(actualResponse: String? = null): Resource<T> =
         Resource.failure(error = this.apply { this@ResponseError.actualResponse = actualResponse })
 

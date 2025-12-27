@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NotificationDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun insert(notification: NotificationMessage)
 
     @Query("SELECT * FROM notifications ORDER BY timestamp DESC")
@@ -36,4 +36,3 @@ interface NotificationDao {
     @Query("SELECT * FROM notifications WHERE id = :id")
     suspend fun getNotificationById(id: Int): NotificationMessage?
 }
-

@@ -141,6 +141,9 @@ kotlin {
                 //Kotlin date time
                 implementation(libs.kotlinx.datetime)
 
+                // UUID
+                implementation(libs.uuid)
+
 
                 // DataStore library
                 implementation(libs.androidx.datastore)
@@ -177,6 +180,10 @@ kotlin {
 
                 //Crashlytics
                 implementation(libs.firebase.crashlytics)
+
+                // ML Kit Face Detection
+                implementation(libs.face.detection)
+                implementation(libs.play.services.mlkit.face.detection)
             }
         }
 

@@ -2,7 +2,7 @@ package com.hexagraph.jagrati_android.ui.screens.details_sync
 
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
-import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase
+import com.hexagraph.jagrati_android.sync.DataSyncUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

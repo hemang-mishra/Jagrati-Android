@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.ui.viewmodels.auth
 
 import com.hexagraph.jagrati_android.model.AuthResult
+import com.hexagraph.jagrati_android.model.ResponseError
 
 /**
  * Data class representing the UI state for the forgot password screen.
@@ -13,6 +14,6 @@ import com.hexagraph.jagrati_android.model.AuthResult
 data class ForgotPasswordUiState(
     val email: String = "",
     val resetPasswordState: AuthResult = AuthResult.Initial,
-    val error: com.hexagraph.jagrati_android.model.ResponseError? = null,
+    val error: ResponseError? = null,
     val successMsg: String? = null
 )

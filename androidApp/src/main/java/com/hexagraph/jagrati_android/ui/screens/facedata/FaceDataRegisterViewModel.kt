@@ -21,6 +21,7 @@ import com.hexagraph.jagrati_android.service.image_service.ImageKitService
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Utils
+import com.hexagraph.jagrati_android.util.compressBitmapToFile
 import com.hexagraph.jagrati_android.util.toUpdateStudentRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.Executor
 
 
@@ -301,7 +303,7 @@ class FaceDataRegisterViewModel(
             val imageResponse = processedImage.image?.let { bitmap ->
                 // Compress bitmap to target size (50 KB) and get file directly
                 val targetBytes = 25 * 1024L
-                val imageFile = Utils.compressBitmapToFile(
+                val imageFile = compressBitmapToFile(
                     context = context,
                     bitmap = bitmap,
                     fileName = processedImage.faceInfo.imageFileName,

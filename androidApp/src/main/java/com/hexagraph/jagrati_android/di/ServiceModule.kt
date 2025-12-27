@@ -3,6 +3,7 @@ package com.hexagraph.jagrati_android.di
 import android.content.Context
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.hexagraph.jagrati_android.BuildConfig
+import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.notifications.NotificationHelper
 import com.hexagraph.jagrati_android.notifications.NotificationHelperImpl
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
@@ -56,6 +57,6 @@ val serviceModule = module{
             }
         }
 
-        KtorImageKitService(client,get(), androidApplication().getString(com.hexagraph.jagrati_android.R.string.BASE_URL))
+        KtorImageKitService(client,get(), androidApplication().getString(R.string.BASE_URL))
     }
 }

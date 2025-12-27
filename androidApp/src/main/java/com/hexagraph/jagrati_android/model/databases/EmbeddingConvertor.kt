@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.model.databases
 
 import androidx.room.TypeConverter
+import kotlin.jvm.JvmStatic
 
 object EmbeddingConvertor {
 

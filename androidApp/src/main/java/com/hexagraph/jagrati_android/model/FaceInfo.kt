@@ -28,7 +28,6 @@ data class FaceInfo(
     val smilingProbability: Float = 0f,
     val leftEyeOpenProbability: Float = 0f,
     val rightEyeOpenProbability: Float = 0f,
-    val timestamp: String = Utils.timestamp(),
     val time: Long = System.currentTimeMillis(),
 ) {
     val pattern get(): String = getPattern(pid)

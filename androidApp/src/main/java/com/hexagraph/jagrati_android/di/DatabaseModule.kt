@@ -15,6 +15,7 @@ val databaseModule = module {
             "primary_db"
         )
             .setDriver(BundledSQLiteDriver())
+            .fallbackToDestructiveMigration(true)
             .build()
     }
 

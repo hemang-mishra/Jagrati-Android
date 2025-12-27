@@ -1,6 +1,5 @@
 package com.hexagraph.jagrati_android.di
 
-import android.app.Application
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
 import com.hexagraph.jagrati_android.repository.auth.KtorAuthRepository
 import com.hexagraph.jagrati_android.repository.auth.StudentRepository
@@ -24,7 +23,7 @@ import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRequestReposi
 import com.hexagraph.jagrati_android.repository.volunteer.KtorVolunteerRepository
 import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRepository
 import com.hexagraph.jagrati_android.repository.sync.SyncRepository
-import com.hexagraph.jagrati_android.model.repository.NotificationRepository
+import com.hexagraph.jagrati_android.repository.NotificationRepository
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
 

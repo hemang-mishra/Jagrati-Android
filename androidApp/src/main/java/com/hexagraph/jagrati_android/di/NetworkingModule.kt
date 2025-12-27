@@ -6,6 +6,8 @@ import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.hexagraph.jagrati_android.BuildConfig
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.api.AuthProvider
+import com.hexagraph.jagrati_android.service.auth.AuthEvents
+import com.hexagraph.jagrati_android.service.auth.AuthEventsImpl
 import com.hexagraph.jagrati_android.service.auth.KtorAuthService
 import com.hexagraph.jagrati_android.service.auth.KtorStudentService
 import com.hexagraph.jagrati_android.service.auth.KtorAttendanceService
@@ -17,7 +19,6 @@ import com.hexagraph.jagrati_android.service.user.KtorUserService
 import com.hexagraph.jagrati_android.service.volunteer.KtorVolunteerRequestService
 import com.hexagraph.jagrati_android.service.volunteer.KtorVolunteerService
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.engine.okhttp.OkHttpConfig
 import io.ktor.client.plugins.HttpTimeout
@@ -35,18 +36,20 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.koin.androidApplication
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.math.exp
 
 private val BASE_URL = R.string.BASE_URL
 private const val TIMEOUT = 15000L
 
 val networkModule = module {
 
-    factory { AuthProvider(get(), androidApplication().getString(BASE_URL)) }
+    factory { AuthProvider(get(), androidApplication().getString(BASE_URL), get()) }
+
+    single<AuthEvents> { AuthEventsImpl(get(), get()) }
 
     single {
         val authProvider = get<AuthProvider>()

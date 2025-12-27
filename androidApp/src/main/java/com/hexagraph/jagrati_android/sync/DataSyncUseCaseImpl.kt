@@ -1,4 +1,4 @@
-package com.hexagraph.jagrati_android.usecases.sync
+package com.hexagraph.jagrati_android.sync
 
 import com.google.firebase.messaging.FirebaseMessaging
 import com.hexagraph.jagrati_android.model.ResponseError
@@ -15,14 +15,14 @@ import kotlinx.coroutines.launch
 
 
 const val syncTopic = "realtime-data-sync"
-class DataSyncUseCase(
+class DataSyncUseCaseImpl(
     private val userRepository: UserRepository,
     private val appPreferences: AppPreferences,
     private val syncRepository: SyncRepository
-) {
+): DataSyncUseCase {
     private val TAG = "DataSyncUseCase"
 
-    fun syncDataInBackgroundAfterFCM(){
+    override fun syncDataInBackgroundAfterFCM(){
         LogHelper.log(TAG, "FCM received for data sync, starting background sync")
         CoroutineScope(Dispatchers.IO).launch {
             val lastUsedTime = appPreferences.lastUsedTime.get()
@@ -41,7 +41,7 @@ class DataSyncUseCase(
         }
     }
 
-    fun subscribeToSyncTopic(){
+    override fun subscribeToSyncTopic(){
         FirebaseMessaging.getInstance()
             .subscribeToTopic(syncTopic)
             .addOnSuccessListener {
@@ -52,7 +52,7 @@ class DataSyncUseCase(
             }
     }
 
-    fun unsubscribeFromSyncTopic(){
+    override fun unsubscribeFromSyncTopic(){
         FirebaseMessaging.getInstance()
             .unsubscribeFromTopic(syncTopic)
             .addOnSuccessListener {
@@ -62,7 +62,7 @@ class DataSyncUseCase(
                 LogHelper.log(TAG, "Failed to unsubscribe from $syncTopic topic")
             }
     }
-    suspend fun fetchUserDetails(
+    override suspend fun fetchUserDetails(
         onSuccessfulFetch: (UserDetailsWithRolesAndPermissions) -> Unit,
         onError: (ResponseError) -> Unit
     ){
@@ -71,8 +71,8 @@ class DataSyncUseCase(
             when (result.status){
                 Resource.Status.SUCCESS -> {
                     if(result.data != null){
-                        processUserData(result.data)
-                        onSuccessfulFetch(result.data)
+                        processUserData(result.data!!)
+                        onSuccessfulFetch(result.data!!)
                     }
                     else{
                         onError(ResponseError.UNKNOWN.apply {  actualResponse="Received empty user data from server"})

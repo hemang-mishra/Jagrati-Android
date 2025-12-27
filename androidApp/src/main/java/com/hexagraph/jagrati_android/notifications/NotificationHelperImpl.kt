@@ -17,7 +17,7 @@ import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.ui.screens.main.MainActivity
 import com.hexagraph.jagrati_android.model.NotificationMessage
 import com.hexagraph.jagrati_android.model.NotificationType
-import com.hexagraph.jagrati_android.model.repository.NotificationRepository
+import com.hexagraph.jagrati_android.repository.NotificationRepository
 import com.hexagraph.jagrati_android.worker.SaveNotificationWorker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

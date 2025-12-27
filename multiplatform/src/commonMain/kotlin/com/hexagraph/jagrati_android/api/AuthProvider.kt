@@ -1,10 +1,10 @@
 package com.hexagraph.jagrati_android.api
 
-import android.util.Log
-import com.google.firebase.messaging.FirebaseMessaging
 import com.hexagraph.jagrati_android.model.auth.RefreshRequest
 import com.hexagraph.jagrati_android.model.auth.TokenPair
+import com.hexagraph.jagrati_android.service.auth.AuthEvents
 import com.hexagraph.jagrati_android.util.AppPreferences
+import com.hexagraph.jagrati_android.util.LogHelper
 import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
@@ -15,7 +15,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.encodedPath
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.tasks.await
 
 /**
  * Authentication provider for Ktor client.
@@ -23,7 +22,8 @@ import kotlinx.coroutines.tasks.await
  */
 class AuthProvider(
     private val appPreferences: AppPreferences,
-    private val baseUrl: String
+    private val baseUrl: String,
+    private val authEvents: AuthEvents
 ) {
     /**
      * Configure bearer authentication for a HttpClient
@@ -43,7 +43,7 @@ class AuthProvider(
                 runBlocking {
                     val accessToken = appPreferences.accessToken.get()
                     val refreshToken = appPreferences.refreshToken.get()
-                    Log.d(
+                    LogHelper.log(
                         "AuthProvider",
                         "Loaded tokens: accessToken=$accessToken, refreshToken=$refreshToken"
                     )
@@ -58,13 +58,14 @@ class AuthProvider(
             // Handle 401 Unauthorized responses
             refreshTokens {
                 val oldRefreshToken = runBlocking { appPreferences.refreshToken.get() } ?: ""
-                Log.d("AuthProvider", "Token refresh triggered")
+                LogHelper.log("AuthProvider", "Token refresh triggered")
 
                 try {
                     val savedDeviceToken =
                         runBlocking {
-                        appPreferences.fcmToken.get()
-                            ?: FirebaseMessaging.getInstance().token.await()
+                            authEvents.getDeviceId()
+//                        appPreferences.fcmToken.get()
+//                            ?: FirebaseMessaging.getInstance().token.await()
                     }
 
                     val tokenResponse = client.post("$baseUrl/api/auth/refresh") {
@@ -87,7 +88,7 @@ class AuthProvider(
                     )
                 } catch (e: Exception) {
                     // If refresh fails, clear tokens and return null to force re-login
-                    Log.e("AuthProvider", "Failed to refresh token", e)
+                    LogHelper.logError("AuthProvider", "Failed to refresh token", e)
                     runBlocking {
                         appPreferences.clearTokens()
                     }

@@ -3,7 +3,7 @@ package com.hexagraph.jagrati_android.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.NotificationMessage
-import com.hexagraph.jagrati_android.model.repository.NotificationRepository
+import com.hexagraph.jagrati_android.repository.NotificationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

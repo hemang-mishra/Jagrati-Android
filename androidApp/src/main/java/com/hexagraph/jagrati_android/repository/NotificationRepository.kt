@@ -1,4 +1,4 @@
-package com.hexagraph.jagrati_android.model.repository
+package com.hexagraph.jagrati_android.repository
 
 import com.hexagraph.jagrati_android.model.NotificationMessage
 import com.hexagraph.jagrati_android.model.NotificationType
@@ -43,7 +43,7 @@ class NotificationRepository(private val notificationDao: NotificationDao) {
         return notificationDao.getNotificationById(id)
     }
 
-    private fun updateNotificationType(notification: NotificationMessage): NotificationMessage{
+    private fun updateNotificationType(notification: NotificationMessage): NotificationMessage {
         return if(notification.title.contains("you are now a volunteer") ||
             notification.title.contains("Request Rejected")){
             notification.copy(type = NotificationType.MY_VOLUNTEER_REQUEST_UPDATE)
@@ -59,4 +59,3 @@ class NotificationRepository(private val notificationDao: NotificationDao) {
         }
     }
 }
-

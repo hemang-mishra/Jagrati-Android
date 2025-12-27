@@ -14,6 +14,7 @@ import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.LogHelper
 import com.hexagraph.jagrati_android.util.Utils
+import com.hexagraph.jagrati_android.util.getBitmapFromURL
 import com.hexagraph.jagrati_android.util.toEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,7 +62,7 @@ class SyncRepository(
             LogHelper.log("SyncRepository", "Starting face data sync...")
             data.students.forEach { studentDto ->
                 if (studentDto.profilePic != null) {
-                    val bitamp = Utils.getBitmapFromURL(context, studentDto.profilePic!!.url)
+                    val bitamp = getBitmapFromURL(context, studentDto.profilePic!!.url)
                     if (bitamp == null) {
                         LogHelper.log(
                             "SyncRepository",
@@ -84,7 +85,7 @@ class SyncRepository(
             // Sync volunteers
             data.volunteers.forEach { volunteerDto ->
                 if (volunteerDto.profilePic != null) {
-                    val bitamp = Utils.getBitmapFromURL(context, volunteerDto.profilePic!!.url)
+                    val bitamp = getBitmapFromURL(context, volunteerDto.profilePic!!.url)
                     if (bitamp == null) {
                         LogHelper.log(
                             "SyncRepository",
