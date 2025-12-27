@@ -1,7 +1,6 @@
 package com.hexagraph.jagrati_android.ui.screens.volunteerprofile
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -286,7 +285,7 @@ fun ProfilePhotoSection(
                 ) {
                     ProfileAvatar(
                         userName = "${volunteer.firstName} ${volunteer.lastName}",
-                        profileImageUrl = volunteer.profilePic.url,
+                        profileImageUrl = volunteer.profilePic!!.url,
                         size = 140.dp
                     )
                 }
@@ -453,14 +452,14 @@ fun PrimaryDetailsSection(
                 InfoChip(
                     icon = painterResource(id = R.drawable.ic_category),
                     label = "Programme",
-                    value = volunteer.programme,
+                    value = volunteer.programme!!,
                     containerColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
                 InfoChip(
                     icon = painterResource(id = R.drawable.ic_category),
                     label = "Branch",
-                    value = volunteer.branch,
+                    value = volunteer.branch!!,
                     containerColor = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.weight(1f)
                 )

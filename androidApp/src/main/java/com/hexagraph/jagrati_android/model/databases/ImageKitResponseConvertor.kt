@@ -1,7 +1,6 @@
 package com.hexagraph.jagrati_android.model.databases
 
 import androidx.room.TypeConverter
-import com.google.gson.Gson
 import com.hexagraph.jagrati_android.model.ImageKitResponse
 import kotlinx.serialization.json.Json
 

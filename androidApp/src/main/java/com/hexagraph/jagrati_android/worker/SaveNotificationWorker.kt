@@ -6,7 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.hexagraph.jagrati_android.model.NotificationMessage
 import com.hexagraph.jagrati_android.model.NotificationType
-import com.hexagraph.jagrati_android.model.repository.NotificationRepository
+import com.hexagraph.jagrati_android.repository.NotificationRepository
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

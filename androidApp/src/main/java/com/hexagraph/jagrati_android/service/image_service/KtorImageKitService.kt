@@ -1,19 +1,18 @@
 package com.hexagraph.jagrati_android.service.image_service
 
 import android.content.Context
-import android.util.Log
 import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.ImageKitCredentials
 import com.hexagraph.jagrati_android.model.ImageKitResponse
+import com.hexagraph.jagrati_android.util.LogHelper
 import com.hexagraph.jagrati_android.util.Utils
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.get
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
+import io.ktor.client.request.get
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
 import java.io.File
 
 /**
@@ -38,7 +37,7 @@ class KtorImageKitService(
             val response = serverClient.get("$baseUrl/api/image-kit").body<ImageKitCredentials>()
             Result.success(response)
         } catch (e: Exception) {
-            Log.e(TAG, "Error fetching ImageKit credentials: ${e.message}")
+            LogHelper.logError(TAG, "Error fetching ImageKit credentials: ${e.message}")
             Result.failure(e)
         }
     }
@@ -85,14 +84,14 @@ class KtorImageKitService(
 
             if (apiResponse.isSuccess) {
                 val response = apiResponse.data ?: ImageKitResponse()
-                Log.d(TAG, "Image uploaded successfully: ${response.url}")
+                LogHelper.log(TAG, "Image uploaded successfully: ${response.url}")
                 Result.success(response)
             } else {
-                Log.e(TAG, "Error uploading image: ${apiResponse.error?.actualResponse}")
+                LogHelper.logError(TAG, "Error uploading image: ${apiResponse.error?.actualResponse}")
                 Result.failure(Exception(apiResponse.error?.actualResponse))
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Exception during image upload: ${e.message}")
+            LogHelper.logError(TAG, "Exception during image upload: ${e.message}")
             Result.failure(e)
         }
     }

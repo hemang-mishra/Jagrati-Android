@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Jagrati-Android"
 include(":androidApp")
-include(":shared")
+include(":multiplatform")

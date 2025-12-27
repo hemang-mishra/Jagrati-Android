@@ -12,7 +12,7 @@ import com.hexagraph.jagrati_android.model.dao.StudentDao
 import com.hexagraph.jagrati_android.model.dao.VillageDao
 import com.hexagraph.jagrati_android.model.dao.VolunteerDao
 import com.hexagraph.jagrati_android.repository.auth.AttendanceRepository
-import com.hexagraph.jagrati_android.util.CrashlyticsHelper
+import com.hexagraph.jagrati_android.util.LogHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -179,7 +179,7 @@ class UnifiedSearchViewModel(
                     }
                 }
             } catch (e: Exception) {
-                CrashlyticsHelper.logError("AttendanceMarkingViewModel", "Failed to mark attendance: ${e.message}")
+                LogHelper.logError("AttendanceMarkingViewModel", "Failed to mark attendance: ${e.message}")
                 _uiState.update {
                     it.copy(errorMessage = "Failed to mark attendance")
                 }

@@ -2,10 +2,7 @@ package com.hexagraph.jagrati_android.ui.screens.permissions
 
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ResponseError
-import com.hexagraph.jagrati_android.model.permission.PermissionResponse
-import com.hexagraph.jagrati_android.model.permission.PermissionWithRolesListResponse
 import com.hexagraph.jagrati_android.model.permission.PermissionWithRolesResponse
-import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
 import com.hexagraph.jagrati_android.repository.permission.PermissionRepository
 import com.hexagraph.jagrati_android.repository.role.RoleRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel

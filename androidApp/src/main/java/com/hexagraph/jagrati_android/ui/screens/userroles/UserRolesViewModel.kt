@@ -2,7 +2,6 @@ package com.hexagraph.jagrati_android.ui.screens.userroles
 
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ResponseError
-import com.hexagraph.jagrati_android.model.user.UserWithRolesListResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesResponse
 import com.hexagraph.jagrati_android.repository.user.UserRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel

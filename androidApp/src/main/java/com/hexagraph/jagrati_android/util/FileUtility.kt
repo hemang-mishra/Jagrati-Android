@@ -24,7 +24,7 @@ object FileUtility {
         Log.i("FileUtility", "Successfully written $fileName")
         return@runCatching file.exists()
     }.onFailure {
-        CrashlyticsHelper.logError("FileUtility", it.message?:"Error while writing bitmap into file")
+        LogHelper.logError("FileUtility", it.message?:"Error while writing bitmap into file")
     }
 
 
@@ -36,7 +36,7 @@ object FileUtility {
         inputStream.close()
         return@runCatching bitmap
     }.onFailure {
-        CrashlyticsHelper.logError("FileUtility", it.message?:"Error while reading bitmap from file")
+        LogHelper.logError("FileUtility", it.message?:"Error while reading bitmap from file")
     }
 
     fun deleteFile(context: Context, fileName: String): Boolean {
@@ -44,7 +44,7 @@ object FileUtility {
         return if (file.exists()) {
             file.delete()
         } else {
-            CrashlyticsHelper.logError("FileUtility", "File $fileName does not exist")
+            LogHelper.logError("FileUtility", "File $fileName does not exist")
             false
         }
     }

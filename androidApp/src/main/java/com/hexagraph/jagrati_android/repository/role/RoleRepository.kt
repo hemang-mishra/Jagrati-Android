@@ -1,9 +1,7 @@
 package com.hexagraph.jagrati_android.repository.role
 
-import com.hexagraph.jagrati_android.model.role.CreateRoleRequest
 import com.hexagraph.jagrati_android.model.role.RoleListResponse
 import com.hexagraph.jagrati_android.model.role.RoleResponse
-import com.hexagraph.jagrati_android.model.role.UpdateRoleRequest
 import com.hexagraph.jagrati_android.util.Resource
 import kotlinx.coroutines.flow.Flow
 

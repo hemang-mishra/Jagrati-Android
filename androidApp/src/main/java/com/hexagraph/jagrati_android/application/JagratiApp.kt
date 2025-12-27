@@ -2,20 +2,20 @@ package com.hexagraph.jagrati_android.application
 
 import android.app.Application
 import android.util.Log
-import coil3.ImageLoader
-import coil3.network.okhttp.OkHttpNetworkFetcherFactory
-import coil3.util.CoilUtils
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.hexagraph.jagrati_android.BuildConfig
+import com.hexagraph.jagrati_android.di.androidMainModule
 import com.hexagraph.jagrati_android.di.databaseModule
 import com.hexagraph.jagrati_android.di.networkModule
-import com.hexagraph.jagrati_android.di.preferencesModule
 import com.hexagraph.jagrati_android.di.repositoryModule
 import com.hexagraph.jagrati_android.di.serviceModule
 import com.hexagraph.jagrati_android.di.useCaseModule
 import com.hexagraph.jagrati_android.di.viewModelModule
+import com.hexagraph.jagrati_android.di.sharedDBModule
+import com.hexagraph.jagrati_android.di.sharedNetworkModule
+import com.hexagraph.jagrati_android.di.sharedRepositoryModule
+import com.hexagraph.jagrati_android.di.sharedServicesModule
 import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 
 
@@ -31,10 +31,16 @@ class JagratiApp : Application() {
             modules(viewModelModule,
                 databaseModule,
                 networkModule,
-                preferencesModule,
                 repositoryModule,
                 serviceModule,
-                useCaseModule
+                useCaseModule,
+                //Shared modules
+                sharedNetworkModule,
+                sharedDBModule,
+                sharedRepositoryModule,
+                sharedServicesModule,
+                //Android main module
+                androidMainModule
             )
         }
     }

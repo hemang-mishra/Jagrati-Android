@@ -9,7 +9,6 @@ import com.hexagraph.jagrati_android.model.village.LongStringResponse
 import com.hexagraph.jagrati_android.model.village.StringRequest
 import com.hexagraph.jagrati_android.repository.auth.VillageRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
-import com.hexagraph.jagrati_android.util.AppPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

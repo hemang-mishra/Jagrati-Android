@@ -411,7 +411,7 @@ fun EnhancedRoleCard(
 
                     if (!role.description.isNullOrEmpty()) {
                         Text(
-                            text = role.description,
+                            text = role.description.toString(),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 2,

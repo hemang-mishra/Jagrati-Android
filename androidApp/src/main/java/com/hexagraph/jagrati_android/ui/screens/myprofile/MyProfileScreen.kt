@@ -1,7 +1,6 @@
 package com.hexagraph.jagrati_android.ui.screens.myprofile
 
 import android.content.Intent
-import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -18,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
@@ -32,7 +30,6 @@ import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.Gender
 import com.hexagraph.jagrati_android.model.ImageKitResponse
 import com.hexagraph.jagrati_android.model.User
-import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
 import com.hexagraph.jagrati_android.model.user.VolunteerDTO
 import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
@@ -438,14 +435,14 @@ fun PrimaryDetailsSection(
                 InfoChip(
                     icon = painterResource(id = R.drawable.ic_category),
                     label = "Programme",
-                    value = volunteer.programme,
+                    value = volunteer.programme!!,
                     containerColor = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
                 InfoChip(
                     icon = painterResource(id = R.drawable.ic_category),
                     label = "Branch",
-                    value = volunteer.branch,
+                    value = volunteer.branch!!,
                     containerColor = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.weight(1f)
                 )

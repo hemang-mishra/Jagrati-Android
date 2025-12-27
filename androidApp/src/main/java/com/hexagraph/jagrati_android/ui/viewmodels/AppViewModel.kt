@@ -5,9 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.permission.AllPermissions
 import com.hexagraph.jagrati_android.repository.auth.AuthRepository
-import com.hexagraph.jagrati_android.usecases.sync.DataSyncUseCase
 import com.hexagraph.jagrati_android.util.AppPreferences
-import com.hexagraph.jagrati_android.util.CrashlyticsHelper
+import com.hexagraph.jagrati_android.util.LogHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,9 +36,9 @@ class AppViewModel(
 
                 // Set Crashlytics user identifier
                 if (userDetails != null) {
-                    CrashlyticsHelper.setUserId(userDetails.pid)
-                    CrashlyticsHelper.setCustomKey("user_email", userDetails.email ?: "")
-                    CrashlyticsHelper.setCustomKey("user_name", "${userDetails.firstName} ${userDetails.lastName}")
+                    LogHelper.setUserId(userDetails.pid)
+                    LogHelper.setCustomKey("user_email", userDetails.email ?: "")
+                    LogHelper.setCustomKey("user_name", "${userDetails.firstName} ${userDetails.lastName}")
                     Log.d("AppViewModel", "Crashlytics user ID set: ${userDetails.pid}")
                 }
             }
@@ -90,7 +89,7 @@ class AppViewModel(
         viewModelScope.launch {
             Log.d("AppViewModel", "Manual logout triggered")
             // Clear Crashlytics user identifier on logout
-            CrashlyticsHelper.clearUserId()
+            LogHelper.clearUserId()
             appPreferences.clearAll()
             _shouldLogout.value = true
         }

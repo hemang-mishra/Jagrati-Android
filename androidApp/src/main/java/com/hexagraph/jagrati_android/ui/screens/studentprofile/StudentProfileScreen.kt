@@ -317,7 +317,7 @@ fun ProfilePhotoSection(
                 ) {
                     ProfileAvatar(
                         userName = "${student.firstName} ${student.lastName}",
-                        profileImageUrl = student.profilePic.url,
+                        profileImageUrl = student.profilePic!!.url,
                         size = 140.dp
                     )
                 }
@@ -1117,7 +1117,7 @@ fun GroupHistoryItem(
                                 color = MaterialTheme.colorScheme.errorContainer
                             ) {
                                 Text(
-                                    text = history.history.oldGroupName,
+                                    text = history.history.oldGroupName!!,
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onErrorContainer,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

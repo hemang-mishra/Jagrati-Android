@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import sharedKit
+import multiplatform_kit
 
 struct ContentView: View {
     var body: some View {

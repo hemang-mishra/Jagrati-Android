@@ -22,7 +22,6 @@ data class ProcessedImage(
     val faceBitmap: Bitmap? = null,
     val faceSignature: ByteBuffer? = null,
     var landmarks: List<FaceLandmark> = listOf(),
-    val timestamp: String = Utils.timestamp(),
     val time: Long = System.currentTimeMillis(),
 ) {
     val matchesCriteria get():Boolean = (similarity ?: 0F) > DEFAULT_SIMILARITY

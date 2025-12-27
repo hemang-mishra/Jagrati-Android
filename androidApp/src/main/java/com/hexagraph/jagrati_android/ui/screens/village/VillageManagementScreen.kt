@@ -50,15 +50,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.hexagraph.jagrati_android.R
 import com.hexagraph.jagrati_android.model.village.LongStringResponse
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
-import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

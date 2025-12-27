@@ -6,9 +6,14 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.google.mlkit.vision.face.FaceLandmark
 import com.hexagraph.jagrati_android.model.FaceInfo
+import kotlinx.serialization.json.Json
 
 
 class FaceInfoListConvertor {
+    private val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+    }
     private val stringListType = object : TypeToken<List<String>>() {}.type
     private val faceLandmarkListType = object : TypeToken<List<FaceLandmark>>() {}.type
     private val faceInfoListType = object : TypeToken<List<FaceInfo>>() {}.type
@@ -18,7 +23,7 @@ class FaceInfoListConvertor {
 
     @TypeConverter
     fun toStringList(value: String): List<String> = try {
-        Gson().fromJson(value, stringListType)
+        json.decodeFromString(value)
     } catch (e: Exception) {
         listOf()
     }

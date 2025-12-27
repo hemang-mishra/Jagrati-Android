@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.ui.viewmodels.auth
 
 import com.hexagraph.jagrati_android.model.AuthResult
+import com.hexagraph.jagrati_android.model.ResponseError
 
 /**
  * Data class representing the UI state for the login screen.
@@ -19,6 +20,6 @@ data class LoginUiState(
     val isPasswordVisible: Boolean = false,
     val loginState: AuthResult = AuthResult.Initial,
     val googleSignInState: AuthResult = AuthResult.Initial,
-    val error: com.hexagraph.jagrati_android.model.ResponseError? = null,
+    val error: ResponseError? = null,
     val successMsg: String? = null
 )

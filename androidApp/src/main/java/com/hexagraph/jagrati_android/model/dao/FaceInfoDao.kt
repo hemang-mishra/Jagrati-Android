@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.hexagraph.jagrati_android.model.FaceInfo
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FaceInfoDao {
@@ -15,7 +14,7 @@ interface FaceInfoDao {
     @Query("DELETE FROM FaceInfo WHERE pid = :id")
     suspend fun delete(id: String)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     suspend fun insert(data: FaceInfo)
 
     @Query("SELECT pid FROM FaceInfo ")

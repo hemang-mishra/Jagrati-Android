@@ -1,6 +1,5 @@
 package com.hexagraph.jagrati_android.repository.permission
 
-import com.hexagraph.jagrati_android.model.permission.AssignRoleToPermissionRequest
 import com.hexagraph.jagrati_android.model.permission.PermissionListResponse
 import com.hexagraph.jagrati_android.model.permission.PermissionResponse
 import com.hexagraph.jagrati_android.model.permission.PermissionRoleAssignmentResponse

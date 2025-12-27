@@ -91,11 +91,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "21"
     }
     buildFeatures {
         compose = true
@@ -117,7 +117,6 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
     implementation(libs.firebase.messaging)
-    implementation(libs.firebase.crashlytics)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -128,11 +127,8 @@ dependencies {
 
     //Room dependencies
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.sqlite.bundled)
     ksp(libs.androidx.room.compiler)
-    annotationProcessor(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.ktx)
-    testImplementation(libs.androidx.room.testing)
-
 
     //Coil
     implementation(libs.coil.compose)
@@ -182,8 +178,6 @@ dependencies {
 
     implementation(libs.guava)
 
-    implementation(libs.androidx.datastore.preferences)
-
     //Navigation 3 API
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.navigation3.runtime)
@@ -203,5 +197,10 @@ dependencies {
     implementation(libs.lottie.compose)
     implementation(libs.app.update.ktx)
 
-    implementation(projects.shared)
+    implementation(projects.multiplatform)
+
+    //Kotlin date time
+    implementation(libs.kotlinx.datetime)
+
+    implementation(libs.firebase.crashlytics)
 }

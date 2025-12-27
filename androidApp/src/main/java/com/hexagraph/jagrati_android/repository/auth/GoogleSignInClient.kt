@@ -1,8 +1,6 @@
 package com.hexagraph.jagrati_android.repository.auth
 
-
 import android.content.Context
-import android.util.Log
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
@@ -10,6 +8,7 @@ import androidx.credentials.GetCredentialResponse
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.hexagraph.jagrati_android.R
+import com.hexagraph.jagrati_android.util.LogHelper
 
 class GoogleSignInClient(
     private val context: Context
@@ -21,7 +20,7 @@ class GoogleSignInClient(
             val response = getCredentialResponse()
             return handleSignIn(result = response)
         } catch (e: Exception) {
-            Log.i("GoogleSignInClient", "Error during Google sign-in: ${e.message}")
+            LogHelper.log("GoogleSignInClient", "Error during Google sign-in: ${e.message}")
             null
         }
         return null

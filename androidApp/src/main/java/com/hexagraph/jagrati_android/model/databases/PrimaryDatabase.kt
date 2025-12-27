@@ -19,7 +19,7 @@ import com.hexagraph.jagrati_android.model.dao.VillageDao
 import com.hexagraph.jagrati_android.model.dao.VolunteerDao
 
 
-@Database(entities = [FaceInfo::class, Student::class, FaceEmbeddingsCacheEntity::class, Village::class, Groups::class, Volunteer::class, NotificationMessage::class], version = 2, exportSchema = false)
+@Database(entities = [FaceInfo::class, Student::class, FaceEmbeddingsCacheEntity::class, Village::class, Groups::class, Volunteer::class, NotificationMessage::class], version = 3, exportSchema = false)
 @TypeConverters(FaceInfoListConvertor::class, EmbeddingConvertor::class, ImageKitResponseConvertor::class, NotificationTypeConvertor::class)
 abstract class PrimaryDatabase: RoomDatabase() {
     abstract fun faceInfoDao(): FaceInfoDao

@@ -27,7 +27,7 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.hexagraph.jagrati_android.model.dao.EmbeddingsDAO
 import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
-import com.hexagraph.jagrati_android.util.CrashlyticsHelper
+import com.hexagraph.jagrati_android.util.LogHelper
 import com.hexagraph.jagrati_android.util.FileUtility.writeBitmapIntoFile
 import com.hexagraph.jagrati_android.util.MediaUtils.bitmap
 import kotlinx.coroutines.sync.Semaphore
@@ -69,7 +69,7 @@ class OmniScanImplementation @Inject constructor(
         image.image?.let { application.writeBitmapIntoFile(info.imageFileName, it).getOrNull() }
         faceInfoDao.insert(info.copy(isStudent = isStudent))
     }.onFailure {
-        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while saving face")
+        LogHelper.logError("MediaUtils", it.message ?: "Error while saving face")
     }
 
     override suspend fun deleteFaceIfExists(pid: String): Result<Unit> {
@@ -87,7 +87,7 @@ class OmniScanImplementation @Inject constructor(
         application.deleteFile(face.imageFileName)
         faceEmbeddingsDAO.deleteEmbeddingsByPid(pid)
     }.onFailure {
-        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while deleting face")
+        LogHelper.logError("MediaUtils", it.message ?: "Error while deleting face")
     }
 
 //    fun imageAnalysis(lensFacing: Int, paint: Paint, onData: (Result<ProcessedImage>) -> Unit): ImageAnalysis {
@@ -121,7 +121,7 @@ class OmniScanImplementation @Inject constructor(
                             )
                         }
                         .addOnFailureListener(cameraExecutor) {
-                            CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image")
+                            LogHelper.logError("MediaUtils", it.message ?: "Error while processing image")
                         }
                         .addOnCompleteListener {
                             imageProxy.close()
@@ -129,7 +129,7 @@ class OmniScanImplementation @Inject constructor(
                         }
                 }
             }.onFailure {
-                CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image")
+                LogHelper.logError("MediaUtils", it.message ?: "Error while processing image")
             }
         }
 
@@ -154,7 +154,7 @@ class OmniScanImplementation @Inject constructor(
         faceBitmap = faceBitmap?.let { alignBitmapByLandmarks(bitmap = it, face?.allLandmarks ?: listOf()).getOrNull() }
         return@runCatching ProcessedImage(image = bitmap, frame = frame, face = face, trackingId = face?.trackingId, faceBitmap = faceBitmap)
     }.onFailure {
-        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image")
+        LogHelper.logError("MediaUtils", it.message ?: "Error while processing image")
     }
 
     override suspend fun processImageFromBitmap(
@@ -165,7 +165,7 @@ class OmniScanImplementation @Inject constructor(
         val faces = Tasks.await(faceDetector.process(image))
         processImage(CameraSelector.LENS_FACING_BACK, faces, bitmap, paint).getOrThrow()
     }.onFailure {
-        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image from bitmap")
+        LogHelper.logError("MediaUtils", it.message ?: "Error while processing image from bitmap")
     }
 
     override suspend fun processImageFromBitmapGroupMode(
@@ -176,7 +176,7 @@ class OmniScanImplementation @Inject constructor(
         val faces = Tasks.await(faceDetector.process(image))
         processAllFaces(CameraSelector.LENS_FACING_BACK, faces, bitmap, paint)
     }.onFailure {
-        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while processing image from bitmap in group mode")
+        LogHelper.logError("MediaUtils", it.message ?: "Error while processing image from bitmap in group mode")
     }
 
     private fun processAllFaces(
@@ -212,7 +212,7 @@ class OmniScanImplementation @Inject constructor(
 
                 processedImages.add(processedImage)
             } catch (e: Exception) {
-                CrashlyticsHelper.logError("MediaUtils", "Error processing face: ${e.message}")
+                LogHelper.logError("MediaUtils", "Error processing face: ${e.message}")
             }
         }
 
@@ -265,7 +265,7 @@ class OmniScanImplementation @Inject constructor(
         // Apply the transformation matrix to the bitmap
         Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }.onFailure {
-        CrashlyticsHelper.logError("MediaUtils", it.message ?: "Error while aligning bitmap by landmarks")
+        LogHelper.logError("MediaUtils", it.message ?: "Error while aligning bitmap by landmarks")
     }
 
 }

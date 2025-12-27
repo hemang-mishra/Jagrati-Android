@@ -2,31 +2,27 @@ package com.hexagraph.jagrati_android.ui.screens.facedata
 
 import android.app.Application
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Paint
 import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.lifecycle.viewModelScope
-import com.hexagraph.jagrati_android.model.FaceInfo
 import com.hexagraph.jagrati_android.model.ImageKitResponse
 import com.hexagraph.jagrati_android.model.ProcessedImage
 import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.Student
 import com.hexagraph.jagrati_android.model.Volunteer
-import com.hexagraph.jagrati_android.model.dao.FaceInfoDao
 import com.hexagraph.jagrati_android.model.dao.StudentDao
 import com.hexagraph.jagrati_android.model.dao.VolunteerDao
-import com.hexagraph.jagrati_android.model.student.toUpdateStudentRequest
 import com.hexagraph.jagrati_android.model.toUpdateVolunteerRequest
 import com.hexagraph.jagrati_android.repository.auth.StudentRepository
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRepository
-import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionService
 import com.hexagraph.jagrati_android.service.image_service.ImageKitService
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
 import com.hexagraph.jagrati_android.util.AppPreferences
 import com.hexagraph.jagrati_android.util.Utils
-import com.hexagraph.jagrati_android.util.Utils.bitmapToFile
+import com.hexagraph.jagrati_android.util.compressBitmapToFile
+import com.hexagraph.jagrati_android.util.toUpdateStudentRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,6 +31,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.Executor
 
 
@@ -306,7 +303,7 @@ class FaceDataRegisterViewModel(
             val imageResponse = processedImage.image?.let { bitmap ->
                 // Compress bitmap to target size (50 KB) and get file directly
                 val targetBytes = 25 * 1024L
-                val imageFile = Utils.compressBitmapToFile(
+                val imageFile = compressBitmapToFile(
                     context = context,
                     bitmap = bitmap,
                     fileName = processedImage.faceInfo.imageFileName,

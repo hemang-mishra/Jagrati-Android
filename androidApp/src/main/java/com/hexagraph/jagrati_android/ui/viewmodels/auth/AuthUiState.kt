@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.ui.viewmodels.auth
 
 import com.hexagraph.jagrati_android.model.AuthResult
+import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.User
 
 /**
@@ -16,6 +17,6 @@ data class AuthUiState(
     val currentUser: User? = null,
     val isAuthenticated: Boolean = false,
     val emailVerificationState: AuthResult = AuthResult.Initial,
-    val error: com.hexagraph.jagrati_android.model.ResponseError? = null,
+    val error: ResponseError? = null,
     val successMsg: String? = null
 )

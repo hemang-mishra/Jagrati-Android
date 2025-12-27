@@ -2,20 +2,20 @@ package com.hexagraph.jagrati_android.repository.sync
 
 import android.content.Context
 import android.graphics.Paint
-import android.util.Log
 import com.hexagraph.jagrati_android.model.dao.StudentDao
 import com.hexagraph.jagrati_android.model.dao.VolunteerDao
 import com.hexagraph.jagrati_android.model.dao.VillageDao
 import com.hexagraph.jagrati_android.model.dao.GroupsDao
 import com.hexagraph.jagrati_android.model.toEntity
 import com.hexagraph.jagrati_android.model.user.UserDetailsWithRolesAndPermissions
-import com.hexagraph.jagrati_android.model.user.toEntity
 import com.hexagraph.jagrati_android.notifications.NotificationChannels
 import com.hexagraph.jagrati_android.notifications.NotificationHelper
 import com.hexagraph.jagrati_android.repository.omniscan.OmniScanRepository
 import com.hexagraph.jagrati_android.util.AppPreferences
-import com.hexagraph.jagrati_android.util.CrashlyticsHelper
+import com.hexagraph.jagrati_android.util.LogHelper
 import com.hexagraph.jagrati_android.util.Utils
+import com.hexagraph.jagrati_android.util.getBitmapFromURL
+import com.hexagraph.jagrati_android.util.toEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,7 +49,7 @@ class SyncRepository(
         data.groups.forEach { groupDto ->
             groupsDao.upsertGroup(groupDto.toEntity())
         }
-        CrashlyticsHelper.log("SyncRepository", "Basic details synced to local DB.")
+        LogHelper.log("SyncRepository", "Basic details synced to local DB.")
         //Launching face data sync in background
         CoroutineScope(Dispatchers.IO).launch {
             val nid = notificationHelper.showNotification(
@@ -59,12 +59,12 @@ class SyncRepository(
                 showIndeterminateProgress = true,
                 saveToDatabase = false
             )
-            CrashlyticsHelper.log("SyncRepository", "Starting face data sync...")
+            LogHelper.log("SyncRepository", "Starting face data sync...")
             data.students.forEach { studentDto ->
                 if (studentDto.profilePic != null) {
-                    val bitamp = Utils.getBitmapFromURL(context, studentDto.profilePic.url)
+                    val bitamp = getBitmapFromURL(context, studentDto.profilePic!!.url)
                     if (bitamp == null) {
-                        CrashlyticsHelper.log(
+                        LogHelper.log(
                             "SyncRepository",
                             "Bitmap is null for student ID: ${studentDto.pid} name: ${studentDto.firstName}"
                         )
@@ -85,9 +85,9 @@ class SyncRepository(
             // Sync volunteers
             data.volunteers.forEach { volunteerDto ->
                 if (volunteerDto.profilePic != null) {
-                    val bitamp = Utils.getBitmapFromURL(context, volunteerDto.profilePic.url)
+                    val bitamp = getBitmapFromURL(context, volunteerDto.profilePic!!.url)
                     if (bitamp == null) {
-                        CrashlyticsHelper.log(
+                        LogHelper.log(
                             "SyncRepository",
                             "Bitmap is null for volunteer ID: ${volunteerDto.pid} name: ${volunteerDto.firstName}"
                         )
@@ -110,7 +110,7 @@ class SyncRepository(
                 if (user?.pid == volunteerDto.pid && volunteerDto.profilePic != null) {
                     appPreferences.userDetails.set(
                         user.copy(
-                            photoUrl = volunteerDto.profilePic.url
+                            photoUrl = volunteerDto.profilePic!!.url
                         )
                     )
                 }
@@ -118,7 +118,7 @@ class SyncRepository(
             handleDeletedFaces()
             onCompletion()
             notificationHelper.removeNotification(nid)
-            CrashlyticsHelper.log("SyncRepository", "Face data sync completed.")
+            LogHelper.log("SyncRepository", "Face data sync completed.")
         }
     }
 

@@ -5,7 +5,6 @@ import com.hexagraph.jagrati_android.model.ResponseError
 import com.hexagraph.jagrati_android.model.volunteer.DetailedVolunteerRequestResponse
 import com.hexagraph.jagrati_android.repository.volunteer.VolunteerRequestRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
-import com.hexagraph.jagrati_android.ui.screens.volunteer.VolunteerRequestUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
