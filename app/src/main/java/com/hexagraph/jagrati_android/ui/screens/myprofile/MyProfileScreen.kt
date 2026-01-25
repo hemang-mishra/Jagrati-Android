@@ -1,12 +1,14 @@
 package com.hexagraph.jagrati_android.ui.screens.myprofile
 
 import android.content.Intent
+import android.content.res.Configuration
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,7 +37,10 @@ import com.hexagraph.jagrati_android.model.User
 import com.hexagraph.jagrati_android.model.permission.RoleSummaryResponse
 import com.hexagraph.jagrati_android.model.user.VolunteerDTO
 import com.hexagraph.jagrati_android.ui.components.ProfileAvatar
+import com.hexagraph.jagrati_android.ui.theme.CustomColors
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
+import com.hexagraph.jagrati_android.ui.theme.JagratiColors
+import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 import com.hexagraph.jagrati_android.util.AttendanceUtils
 import org.koin.androidx.compose.koinViewModel
 
@@ -215,8 +220,9 @@ fun MyProfileTopBar(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = JagratiThemeColors.faintBlueBg
         ),
+        border = BorderStroke(0.7.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 2.dp
         )
@@ -265,7 +271,6 @@ fun MyProfileTopBar(
                         Box(
                             modifier = Modifier
                                 .size(72.dp)
-                                .shadow(4.dp, CircleShape)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.secondaryContainer),
                             contentAlignment = Alignment.Center
@@ -386,6 +391,7 @@ fun PrimaryDetailsSection(
                             Surface(
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(12.dp),
+                                border = BorderStroke(0.7.dp, MaterialTheme.colorScheme.onSecondaryContainer),
                                 color = MaterialTheme.colorScheme.secondaryContainer
                             ) {
                                 Row(
@@ -396,7 +402,7 @@ fun PrimaryDetailsSection(
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_shield),
                                         contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
+                                        modifier = Modifier.size(12.dp),
                                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                     Text(
@@ -426,7 +432,8 @@ fun PrimaryDetailsSection(
                 label = "Gender",
                 value = gender.name,
                 containerColor = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isVerticallyAligned = false
             )
         }
 
@@ -436,38 +443,42 @@ fun PrimaryDetailsSection(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 InfoChip(
-                    icon = painterResource(id = R.drawable.ic_category),
+                    icon = painterResource(id = R.drawable.ic_bachelor_cap),
                     label = "Programme",
                     value = volunteer.programme,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.weight(1f)
+                    containerColor = CustomColors.BatchBrown,
+                    modifier = Modifier.weight(1f),
+                    isVerticallyAligned = true
                 )
                 InfoChip(
-                    icon = painterResource(id = R.drawable.ic_category),
+                    icon = painterResource(id = R.drawable.ic_book_open),
                     label = "Branch",
                     value = volunteer.branch,
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.weight(1f)
+                    containerColor = CustomColors.BatchTurquoise,
+                    modifier = Modifier.weight(1f),
+                    isVerticallyAligned = true
                 )
             }
         } else {
             volunteer?.programme?.let { programme ->
                 InfoChip(
-                    icon = painterResource(id = R.drawable.ic_category),
+                    icon = painterResource(id = R.drawable.ic_bachelor_cap),
                     label = "Programme",
                     value = programme,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.fillMaxWidth()
+                    containerColor = CustomColors.BatchBrown,
+                    modifier = Modifier.fillMaxWidth(),
+                    isVerticallyAligned = true
                 )
             }
 
             volunteer?.branch?.let { branch ->
                 InfoChip(
-                    icon = painterResource(id = R.drawable.ic_category),
+                    icon = painterResource(id = R.drawable.ic_book_open),
                     label = "Branch",
                     value = branch,
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.fillMaxWidth()
+                    containerColor = CustomColors.BatchTurquoise,
+                    modifier = Modifier.fillMaxWidth(),
+                    isVerticallyAligned = true
                 )
             }
         }
@@ -551,8 +562,39 @@ fun InfoChip(
     label: String,
     value: String,
     containerColor: Color,
+    isVerticallyAligned: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val content = @Composable {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(containerColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                icon,
+                contentDescription = label,
+                modifier = Modifier.size(18.dp),
+                tint = Color.White
+            )
+        }
+        Column {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
@@ -560,40 +602,21 @@ fun InfoChip(
         ),
         modifier = modifier
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
+        if(isVerticallyAligned){
+            Column(modifier = Modifier.fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(containerColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    icon,
-                    contentDescription = label,
-                    modifier = Modifier.size(18.dp),
-                    tint = Color.White
-                )
+                verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                content()
             }
-            Column {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+        }else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                content()
             }
         }
     }
@@ -607,7 +630,7 @@ fun SecondaryDetailsSection(volunteer: VolunteerDTO?) {
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = JagratiThemeColors.faintBlueBg
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -784,7 +807,7 @@ fun AttendanceSummarySection(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = JagratiThemeColors.faintBlueBg
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp
@@ -995,53 +1018,56 @@ fun BottomSheetOption(
 }
 
 @Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun MyProfilePreview() {
     JagratiAndroidTheme {
-        MyProfileLayout(
-            uiState = MyProfileUiState(
-                currentUser = User(
-                    pid = "V001",
-                    firstName = "Rajesh",
-                    lastName = "Kumar",
-                    email = "rajesh.kumar@iiitdmj.ac.in",
-                    photoUrl = null,
+        Surface(color = MaterialTheme.colorScheme.background) {
+            MyProfileLayout(
+                uiState = MyProfileUiState(
+                    currentUser = User(
+                        pid = "V001",
+                        firstName = "Rajesh",
+                        lastName = "Kumar",
+                        email = "rajesh.kumar@iiitdmj.ac.in",
+                        photoUrl = null,
+                    ),
+                    volunteer = VolunteerDTO(
+                        pid = "V001",
+                        rollNumber = "2021BCS001",
+                        firstName = "Rajesh",
+                        lastName = "Kumar",
+                        gender = Gender.MALE,
+                        alternateEmail = null,
+                        batch = "2021",
+                        programme = "B.Tech",
+                        streetAddress2 = null,
+                        pincode = null,
+                        city = "Jabalpur",
+                        state = "Madhya Pradesh",
+                        dateOfBirth = "2003-05-15",
+                        contactNumber = "+919876543210",
+                        college = "IIITDMJ",
+                        branch = "Computer Science",
+                        yearOfStudy = 3,
+                        profilePic = null,
+                        isActive = true,
+                        streetAddress1 = ""
+                    ),
+                    userRoles = listOf("Teacher", "Coordinator"),
+                    lastPresentDate = "2024-10-20",
+                    presentCountLastMonth = 15
                 ),
-                volunteer = VolunteerDTO(
-                    pid = "V001",
-                    rollNumber = "2021BCS001",
-                    firstName = "Rajesh",
-                    lastName = "Kumar",
-                    gender = Gender.MALE,
-                    alternateEmail = null,
-                    batch = "2021",
-                    programme = "B.Tech",
-                    streetAddress2 = null,
-                    pincode = null,
-                    city = "Jabalpur",
-                    state = "Madhya Pradesh",
-                    dateOfBirth = "2003-05-15",
-                    contactNumber = "+919876543210",
-                    college = "IIITDMJ",
-                    branch = "Computer Science",
-                    yearOfStudy = 3,
-                    profilePic = null,
-                    isActive = true,
-                    streetAddress1 = ""
-                ),
-                userRoles = listOf("Teacher", "Coordinator"),
-                lastPresentDate = "2024-10-20",
-                presentCountLastMonth = 15
-            ),
-            onRefresh = {},
-            onPhotoClick = {},
-            onEditProfile = {},
-            onAddFaceData = {},
-            onChatWhatsApp = {},
-            onDismissEditOptions = {},
-            onViewFullScreenImage = {},
-            onViewDetails = {},
-            onDeleteFaceData = {}
-        )
+                onRefresh = {},
+                onPhotoClick = {},
+                onEditProfile = {},
+                onAddFaceData = {},
+                onChatWhatsApp = {},
+                onDismissEditOptions = {},
+                onViewFullScreenImage = {},
+                onViewDetails = {},
+                onDeleteFaceData = {}
+            )
+        }
     }
 }
