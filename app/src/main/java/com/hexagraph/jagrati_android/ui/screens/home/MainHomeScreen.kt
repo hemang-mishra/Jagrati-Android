@@ -1,6 +1,7 @@
 package com.hexagraph.jagrati_android.ui.screens.home
 
 import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -56,6 +57,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.Color
 
 /**
  * Main home screen with bottom navigation, side drawer, and nested navigation.
@@ -333,18 +335,19 @@ fun BottomNavigationBar(
     showLabels: Boolean = true
 ) {
     NavigationBar(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.background,
+        modifier = modifier
+            .border(1.dp, MaterialTheme.colorScheme.outline),
+        containerColor = Color.Transparent,
         tonalElevation = 3.dp
     ) {
         NavigationBarItem(
             selected = selectedItem == 0, onClick = { onItemSelected(0) }, icon = {
                 Icon(
                     painter = painterResource(
-                        id = if (selectedItem == 0) R.drawable.ic_home_filled
-                        else R.drawable.ic_home_outlined
+                        id = if (selectedItem == 0) R.drawable.ic_home
+                        else R.drawable.ic_home
                     ),
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(24.dp),
                     contentDescription = "Home"
                 )
             }, label = { Text("Home") }, alwaysShowLabel = showLabels
@@ -354,10 +357,10 @@ fun BottomNavigationBar(
             selected = selectedItem == 1, onClick = { onItemSelected(1) }, icon = {
                 Icon(
                     painter = painterResource(
-                        id = if (selectedItem == 1) R.drawable.ic_attendance_filled
-                        else R.drawable.ic_attendance_outlined
+                        id = if (selectedItem == 1) R.drawable.ic_attendance
+                        else R.drawable.ic_attendance
                     ),
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(24.dp),
                     contentDescription = "Attendance"
                 )
             }, label = { Text("Attendance") }, alwaysShowLabel = showLabels
@@ -382,10 +385,10 @@ fun BottomNavigationBar(
             selected = selectedItem == 3, onClick = { onItemSelected(3) }, icon = {
                 Icon(
                     painter = painterResource(
-                        id = if (selectedItem == 3) R.drawable.ic_profile_filled
-                        else R.drawable.ic_profile_outlined
+                        id = if (selectedItem == 3) R.drawable.ic_profile
+                        else R.drawable.ic_profile
                     ),
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(24.dp),
                     contentDescription = "Profile"
                 )
             }, label = { Text("Profile") }, alwaysShowLabel = showLabels

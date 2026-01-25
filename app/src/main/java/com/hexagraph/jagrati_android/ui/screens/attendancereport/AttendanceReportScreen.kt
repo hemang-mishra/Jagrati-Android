@@ -528,7 +528,7 @@ fun TakeAttendanceButton(onClick: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_attendance_filled),
+                    painter = painterResource(R.drawable.ic_attendance),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
                     tint = MaterialTheme.colorScheme.onPrimary
