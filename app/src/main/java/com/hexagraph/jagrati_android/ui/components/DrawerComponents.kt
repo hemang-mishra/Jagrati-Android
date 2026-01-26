@@ -65,8 +65,7 @@ fun DrawerHeader(
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+            )
         ) {
             Column(
                 modifier = Modifier
@@ -178,6 +177,7 @@ fun DrawerHeader(
 @Composable
 fun DrawerSectionHeader(
     title: String,
+    color: Color,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -192,7 +192,7 @@ fun DrawerSectionHeader(
                 .width(3.dp)
                 .height(16.dp)
                 .background(
-                    MaterialTheme.colorScheme.primary,
+                    color = color,
                     shape = RoundedCornerShape(2.dp)
                 )
         )
@@ -204,7 +204,7 @@ fun DrawerSectionHeader(
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.primary,
+            color = color,
             letterSpacing = 1.sp
         )
     }
@@ -219,22 +219,15 @@ fun DrawerItem(
     @DrawableRes icon: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    iconTint: Color = MaterialTheme.colorScheme.onSurface,
-    colorIndex: Int = 0
+    color: Color
 ) {
-    val batchColors = getBatchColors()
-    val iconColor = if (iconTint == MaterialTheme.colorScheme.onSurface) {
-        batchColors[colorIndex % batchColors.size]
-    } else {
-        iconTint
-    }
-
+    val iconColor = color.copy(alpha = 0.5f)
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 3.dp),
         shape = RoundedCornerShape(12.dp),
-        color = Color.Transparent,
+        color = color.copy(0.1f),
         onClick = onClick
     ) {
         Row(
@@ -326,38 +319,39 @@ fun DrawerItemsPreview() {
                 .width(300.dp)
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            DrawerSectionHeader(title = "ADMIN CONTROLS")
+            DrawerSectionHeader(title = "ADMIN CONTROLS", color = MaterialTheme.colorScheme.primary)
 
             DrawerItem(
                 label = "Management",
                 icon = R.drawable.ic_management_rounded,
                 onClick = {},
-                colorIndex = 0
+                color =MaterialTheme.colorScheme.primary
             )
 
             DrawerItem(
                 label = "Settings",
                 icon = R.drawable.ic_settings_rounded,
                 onClick = {},
-                colorIndex = 1
+                color =MaterialTheme.colorScheme.primary
             )
 
             DrawerDivider()
 
-            DrawerSectionHeader(title = "LISTS")
+            DrawerSectionHeader(title = "LISTS",
+                color =MaterialTheme.colorScheme.primary)
 
             DrawerItem(
                 label = "Student List",
                 icon = R.drawable.ic_person_rounded,
                 onClick = {},
-                colorIndex = 2
+                color =MaterialTheme.colorScheme.primary
             )
 
             DrawerItem(
                 label = "Volunteer List",
                 icon = R.drawable.ic_person_rounded,
                 onClick = {},
-                colorIndex = 3
+                color =MaterialTheme.colorScheme.primary
             )
 
             DrawerDivider()
@@ -366,8 +360,7 @@ fun DrawerItemsPreview() {
                 label = "Log out",
                 icon = R.drawable.ic_logout_rounded,
                 onClick = {},
-                iconTint = MaterialTheme.colorScheme.error,
-                colorIndex = 0
+                color =MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -391,56 +384,59 @@ fun FullDrawerPreview() {
 
             DrawerDivider()
 
-            DrawerSectionHeader(title = "ADMIN CONTROLS")
+            DrawerSectionHeader(title = "ADMIN CONTROLS",
+                color =MaterialTheme.colorScheme.primary)
 
             DrawerItem(
                 label = "Management",
                 icon = R.drawable.ic_management_rounded,
                 onClick = {},
-                colorIndex = 0
+                color =MaterialTheme.colorScheme.primary
             )
 
             DrawerItem(
                 label = "Settings",
                 icon = R.drawable.ic_settings_rounded,
                 onClick = {},
-                colorIndex = 1
+                color =MaterialTheme.colorScheme.primary
             )
 
             DrawerDivider()
 
-            DrawerSectionHeader(title = "LISTS")
+            DrawerSectionHeader(title = "LISTS",
+                color =MaterialTheme.colorScheme.secondary)
 
             DrawerItem(
                 label = "Student List",
                 icon = R.drawable.ic_person_rounded,
                 onClick = {},
-                colorIndex = 2
+                color =MaterialTheme.colorScheme.secondary
             )
 
             DrawerItem(
                 label = "Volunteer List",
                 icon = R.drawable.ic_person_rounded,
                 onClick = {},
-                colorIndex = 3
+                color =MaterialTheme.colorScheme.secondary
             )
 
             DrawerDivider()
 
-            DrawerSectionHeader(title = "ATTENDANCE")
+            DrawerSectionHeader(title = "ATTENDANCE",
+                color =MaterialTheme.colorScheme.tertiary)
 
             DrawerItem(
                 label = "Take Attendance",
                 icon = R.drawable.ic_attendance_rounded,
                 onClick = {},
-                colorIndex = 3
+                color =MaterialTheme.colorScheme.tertiary
             )
 
             DrawerItem(
                 label = "Register Student",
                 icon = R.drawable.ic_person_add_rounded,
                 onClick = {},
-                colorIndex = 4
+                color =MaterialTheme.colorScheme.tertiary
             )
 
             DrawerDivider()
@@ -449,8 +445,7 @@ fun FullDrawerPreview() {
                 label = "Log out",
                 icon = R.drawable.ic_logout_rounded,
                 onClick = {},
-                iconTint = MaterialTheme.colorScheme.error,
-                colorIndex = 0
+                color =MaterialTheme.colorScheme.tertiary
             )
         }
     }

@@ -2,10 +2,12 @@ package com.hexagraph.jagrati_android.ui.screens.home
 
 import android.util.Log
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -58,6 +60,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.Color
+import com.hexagraph.jagrati_android.ui.theme.CustomColors
 
 /**
  * Main home screen with bottom navigation, side drawer, and nested navigation.
@@ -238,53 +241,50 @@ fun DrawerContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         DrawerHeader(
             userName = userName, userEmail = userEmail, profileImageUrl = profileImageUrl
         )
 
-        DrawerDivider()
-
-        DrawerSectionHeader(title = "ADMIN CONTROLS")
+        DrawerSectionHeader(title = "ADMIN CONTROLS",
+            color =MaterialTheme.colorScheme.secondary)
 
         DrawerItem(
             label = "Management",
             icon = R.drawable.ic_management_rounded,
             onClick = onManagementClick,
-            colorIndex = 0
+            color =MaterialTheme.colorScheme.secondary
         )
 
         DrawerItem(
             label = "Settings",
             icon = R.drawable.ic_settings_rounded,
             onClick = onSettingsClick,
-            colorIndex = 1
+            color =MaterialTheme.colorScheme.secondary
         )
 
-        DrawerDivider()
-
-        DrawerSectionHeader(title = "LISTS")
+        DrawerSectionHeader(title = "LISTS",
+            color = CustomColors.BatchTurquoise)
 
         DrawerItem(
             label = "Student List",
             icon = R.drawable.ic_person_rounded,
             onClick = onStudentListClick,
-            colorIndex = 2
+            color =CustomColors.BatchTurquoise
         )
 
         DrawerItem(
             label = "Volunteer List",
             icon = R.drawable.ic_person_rounded,
             onClick = onVolunteerListClick,
-            colorIndex = 3
+            color =CustomColors.BatchTurquoise
         )
 
 
         if (hasAttendancePermission || hasStudentRegistrationPermission) {
-
-            DrawerDivider()
-            DrawerSectionHeader(title = "ATTENDANCE & REGISTRATION")
+            DrawerSectionHeader(title = "ATTENDANCE & REGISTRATION", color = CustomColors.BatchBrown)
         }
 
         if (hasAttendancePermission) {
@@ -292,14 +292,14 @@ fun DrawerContent(
                 label = "Smart Attendance",
                 icon = R.drawable.ic_camera,
                 onClick = onTakeStudentAttendanceClick,
-                colorIndex = 3
+                color = CustomColors.BatchBrown
             )
 
             DrawerItem(
                 label = "Manual Attendance",
                 icon = R.drawable.ic_search_with_t,
                 onClick = { navigateToManualAttendanceMarking(System.currentTimeMillis()) },
-                colorIndex = 4
+                color = CustomColors.BatchBrown
             )
         }
 
@@ -308,18 +308,17 @@ fun DrawerContent(
                 label = "Register New Student",
                 icon = R.drawable.ic_person_add_rounded,
                 onClick = onRegisterNewStudentClick,
-                colorIndex = 5
+                color = CustomColors.BatchBrown
             )
         }
 
-        DrawerDivider()
+        Spacer(Modifier.height(12.dp))
 
         DrawerItem(
             label = "Log out",
             icon = R.drawable.ic_logout_rounded,
             onClick = onLogoutClick,
-            iconTint = MaterialTheme.colorScheme.error,
-            colorIndex = 0
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
