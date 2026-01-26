@@ -82,9 +82,9 @@ val DarkColorScheme = darkColorScheme(
     onSecondaryContainer = Color(0xFFD4C6FF), // Light purple for better contrast
 
     // Tertiary - Turquoise (using turquoise instead of yellow for better dark theme contrast)
-    tertiary = JagratiColors.Turquoise,
+    tertiary = JagratiColors.Yellow,
     onTertiary = Color.White,
-    tertiaryContainer = JagratiColors.Turquoise.copy(alpha = 0.2f),
+    tertiaryContainer = JagratiColors.Yellow.copy(alpha = 0.2f),
     onTertiaryContainer = Color(0xFF9FECF7), // Light turquoise for better contrast
 
     // Surface colors - Using neutral dark gray instead of brown
