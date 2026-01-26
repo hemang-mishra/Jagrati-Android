@@ -1022,6 +1022,8 @@ fun StatsCard(
                     StatChip(
                         label = item.label,
                         count = item.count,
+                        // Use the item id (batch/group/village id) as the stable "state" key for coloring.
+                        stateKey = item.id ?: item.label,
                         onClick = { onItemClick(item.id) }
                     )
                 }
@@ -1031,15 +1033,42 @@ fun StatsCard(
 }
 
 @Composable
+private fun batchChipColorsForStateKey(
+    stateKey: String?,
+    batchColors: List<Color>
+): Pair<Color, Color> {
+    val key = stateKey?.trim().orEmpty()
+
+    if (key.isBlank() || key.equals("N/A", ignoreCase = true) || batchColors.isEmpty()) {
+        val fallback = MaterialTheme.colorScheme.onSurfaceVariant
+        // background = text color with alpha, as requested
+        return fallback.copy(alpha = 0.14f) to fallback
+    }
+
+    val index = (key.lowercase(Locale.getDefault()).hashCode() and Int.MAX_VALUE) % batchColors.size
+    val textColor = batchColors[index]
+    val backgroundColor = textColor.copy(alpha = 0.14f)
+
+    return backgroundColor to textColor
+}
+
+@Composable
 fun StatChip(
     label: String,
     count: Int,
+    stateKey: String? = null,
     onClick: () -> Unit = {}
 ) {
+    val batchColors = com.hexagraph.jagrati_android.ui.theme.getBatchColors()
+    val (backgroundColor, textColor) = batchChipColorsForStateKey(
+        stateKey = stateKey,
+        batchColors = batchColors
+    )
+
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -1048,18 +1077,20 @@ fun StatChip(
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface
+            color = textColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Text(
             text = "•",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = textColor.copy(alpha = 0.8f)
         )
         Text(
             text = count.toString(),
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = textColor
         )
     }
 }
