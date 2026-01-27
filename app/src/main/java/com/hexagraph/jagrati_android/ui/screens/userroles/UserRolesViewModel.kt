@@ -2,7 +2,6 @@ package com.hexagraph.jagrati_android.ui.screens.userroles
 
 import androidx.lifecycle.viewModelScope
 import com.hexagraph.jagrati_android.model.ResponseError
-import com.hexagraph.jagrati_android.model.user.UserWithRolesListResponse
 import com.hexagraph.jagrati_android.model.user.UserWithRolesResponse
 import com.hexagraph.jagrati_android.repository.user.UserRepository
 import com.hexagraph.jagrati_android.ui.screens.main.BaseViewModel
@@ -33,7 +32,7 @@ class UserRolesViewModel(
     override val uiState: StateFlow<UserRolesUiState> = createUiStateFlow()
 
     init {
-        loadUsers()
+        refresh()
     }
 
     override fun createUiStateFlow(): StateFlow<UserRolesUiState> {
@@ -53,26 +52,44 @@ class UserRolesViewModel(
         )
     }
 
-    fun loadUsers() {
+    private fun applyLocalFilter(query: String, users: List<UserWithRolesResponse>): List<UserWithRolesResponse> {
+        val q = query.trim().lowercase()
+        if (q.isEmpty()) return users
+
+        return users.filter { user ->
+            val fullName = "${user.firstName} ${user.lastName}".trim().lowercase()
+            val email = user.email.trim().lowercase()
+            fullName.contains(q) || email.contains(q)
+        }
+    }
+
+    /**
+     * Pull-to-refresh / manual reload of the full list.
+     * Search is applied locally on top of the fetched list.
+     */
+    fun refresh() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true) }
 
-            userRepository.getAllUsers(_uiState.value.searchQuery.ifEmpty { null }).collect { result ->
+            // Always fetch the full list; search is local.
+            userRepository.getAllUsers(search = null).collect { result ->
                 when (result.status) {
                     Resource.Status.SUCCESS -> {
-                        val users = result.data?.users ?: emptyList()
-                        _uiState.update {
-                            it.copy(
+                        val users = result.data?.users.orEmpty()
+                        _uiState.update { current ->
+                            current.copy(
                                 isLoading = false,
                                 users = users,
-                                filteredUsers = users
+                                filteredUsers = applyLocalFilter(current.searchQuery, users)
                             )
                         }
                     }
+
                     Resource.Status.FAILED -> {
                         _uiState.update { it.copy(isLoading = false) }
                         emitError(result.error)
                     }
+
                     Resource.Status.LOADING -> {
                         _uiState.update { it.copy(isLoading = true) }
                     }
@@ -81,10 +98,17 @@ class UserRolesViewModel(
         }
     }
 
+    /**
+     * Called from the search text field. No network requests.
+     */
     fun updateSearchQuery(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
-        // If search query is updated, reload users with the search filter
-        // This utilizes the server-side search capability
-        loadUsers()
+        _uiState.update { current ->
+            current.copy(
+                searchQuery = query,
+                filteredUsers = applyLocalFilter(query, current.users)
+            )
+        }
     }
+
+    fun loadUsers() = refresh()
 }

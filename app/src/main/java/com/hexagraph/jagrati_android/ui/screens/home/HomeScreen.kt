@@ -1,6 +1,12 @@
 package com.hexagraph.jagrati_android.ui.screens.home
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,21 +32,29 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.hexagraph.jagrati_android.R
+import com.hexagraph.jagrati_android.ui.theme.CustomColors
 import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
 import java.util.Calendar
+import androidx.core.net.toUri
 
 // Home Dashboard Screen
 
@@ -57,6 +71,7 @@ fun HomeContentScreen(
     hasStudentRegistrationPermission: Boolean = false,
     hasAttendancePermission: Boolean = false
 ) {
+    val context = LocalContext.current
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
@@ -81,23 +96,25 @@ fun HomeContentScreen(
             }
         }
 
-        // Register New Student Card - Only show if user has permission
-        if (hasStudentRegistrationPermission) {
-            item {
-                RegisterStudentCard(
-                    onClick = onRegisterStudentClick
-                )
-            }
-        }
 
-        // Search Section
+//
+//        // Register New Student Card - Only show if user has permission
+//        if (hasStudentRegistrationPermission) {
+//            item {
+//                RegisterStudentCard(
+//                    onClick = onRegisterStudentClick
+//                )
+//            }
+//        }
+
+
         item {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Find Students",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
+            RegisterAndSyllabusRow(
+                onSyllabusOpenClick = {
+                    openLink(context, "https://drive.google.com/drive/folders/1_dREOlponixBajt9STv3lAilqmb5ab-h?usp=sharing")
+                },
+                onRegisterStudentClick = onRegisterStudentClick,
+                registerPermissionExists = hasStudentRegistrationPermission
             )
         }
 
@@ -108,12 +125,21 @@ fun HomeContentScreen(
             )
         }
 
+
 //        // Quick Stats (Optional)
 //        item {
 //            Spacer(modifier = Modifier.height(8.dp))
 //            QuickStatsSection()
 //        }
     }
+}
+
+
+fun openLink(context: Context, url: String){
+    val intent = Intent(Intent.ACTION_VIEW, url.toUri()).apply {
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent)
 }
 
 @Composable
@@ -133,14 +159,66 @@ fun HomeHeader(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onOpenDrawer) {
+            Box(
+                modifier = Modifier
+                    .clickable{ onOpenDrawer()}
+                    .dropShadow(
+                        shape = RoundedCornerShape(12.dp),
+                        shadow = Shadow(
+                            radius = 8.dp,
+                            spread = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(0.1f),
+                            offset = DpOffset(x = 1.dp, 1.dp)
+                        )
+                    )
+                    .border(BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)),
+                        shape = RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(8.dp)
+            ) {
                 Icon(
                     imageVector = Icons.Default.Menu,
                     contentDescription = "Open Menu",
                     tint = MaterialTheme.colorScheme.onBackground
                 )
             }
+            // Greeting
+            Column(
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = getGreeting(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = userName,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
 
+            Box(
+                modifier = Modifier
+                    .clickable{ onNotificationClick()}
+                    .dropShadow(
+                        shape = RoundedCornerShape(12.dp),
+                        shadow = Shadow(
+                            radius = 6.dp,
+                            spread = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(0.1f),
+                            offset = DpOffset(x = 1.dp, 1.dp)
+                        )
+                    )
+                    .border(BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f)),
+                        shape = RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(6.dp)
+            )  {
             BadgedBox(
                 badge = {
                     if (notificationCount > 0) {
@@ -150,9 +228,9 @@ fun HomeHeader(
                     }
                 }
             ) {
-                IconButton(onClick = onNotificationClick) {
                     Icon(
-                        imageVector = Icons.Default.Notifications,
+                        modifier = Modifier.padding(4.dp),
+                        painter = painterResource(R.drawable.ic_notification),
                         contentDescription = "Notifications",
                         tint = MaterialTheme.colorScheme.onBackground
                     )
@@ -160,22 +238,7 @@ fun HomeHeader(
             }
         }
 
-        // Greeting
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = getGreeting(),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = userName,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
+
     }
 }
 
@@ -299,9 +362,9 @@ fun SearchOptions(
     ) {
         SearchOptionCardWithDrawable(
             title = "Search by Camera",
-            iconRes = R.drawable.ic_photo_camera,
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            iconColor = MaterialTheme.colorScheme.tertiary,
+            iconRes = R.drawable.ic_camera,
+            containerColor = CustomColors.BatchBrown.copy(0.2f),
+            iconColor = CustomColors.BatchBrown,
             onClick = onSearchByCamera,
             modifier = Modifier.weight(1f)
         )
@@ -309,13 +372,47 @@ fun SearchOptions(
         SearchOptionCardWithVector(
             title = "Search by Name",
             icon = Icons.Default.Search,
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-            iconColor = MaterialTheme.colorScheme.primary,
+            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+            iconColor = MaterialTheme.colorScheme.secondary,
             onClick = onSearchByName,
             modifier = Modifier.weight(1f)
         )
     }
 }
+
+
+@Composable
+fun RegisterAndSyllabusRow(
+    onSyllabusOpenClick: () -> Unit,
+    registerPermissionExists: Boolean,
+    onRegisterStudentClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SearchOptionCardWithDrawable(
+            title = "Open Course Material",
+            iconRes = R.drawable.ic_book,
+            containerColor = CustomColors.BatchTurquoise.copy(0.2f),
+            iconColor = CustomColors.BatchTurquoise,
+            onClick = onSyllabusOpenClick,
+            modifier = Modifier.weight(1f)
+        )
+        if(registerPermissionExists) {
+            SearchOptionCardWithDrawable(
+                title = "Register New Student",
+                iconRes = R.drawable.ic_person_add,
+                containerColor = CustomColors.BatchYellow.copy(0.2f),
+                iconColor = CustomColors.BatchYellow,
+                onClick = onRegisterStudentClick,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+    }
+}
+
 
 @Composable
 fun SearchOptionCardWithDrawable(
@@ -332,12 +429,13 @@ fun SearchOptionCardWithDrawable(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = containerColor
-        )
+        ),
+        border = BorderStroke(2.dp, iconColor)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -359,7 +457,7 @@ fun SearchOptionCardWithDrawable(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = iconColor,
                 textAlign = TextAlign.Center
             )
         }
@@ -381,12 +479,13 @@ fun SearchOptionCardWithVector(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = containerColor
-        )
+        ),
+        border = BorderStroke(2.dp, iconColor)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -408,7 +507,7 @@ fun SearchOptionCardWithVector(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = iconColor,
                 textAlign = TextAlign.Center
             )
         }

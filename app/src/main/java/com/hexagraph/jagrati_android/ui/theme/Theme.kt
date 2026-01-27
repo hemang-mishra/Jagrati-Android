@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.graphics.Color
 
 // Custom colors composition local for accessing custom colors in components
 val LocalCustomColors = staticCompositionLocalOf { CustomColors }
@@ -44,4 +45,7 @@ object JagratiThemeColors {
 
     // Batch colors based on current theme
     val batchColors @Composable get() = getBatchColors()
+    val faintBlueBg @Composable get() = if(isSystemInDarkTheme())
+        Color(0xFF161E26) else
+        Color(0xFFF9FAFB)
 }

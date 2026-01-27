@@ -11,8 +11,8 @@ object JagratiColors {
     val Red = Color(0xFFE53935) // Vibrant red replacing orange
     val Purple = Color(0xFFAA9FF8)
     val Yellow = Color(0xFFEEC434)
-    val Turquoise = Color(0xFF3FB8AF)
-    val Brown = Color(0xFFA65700)
+    val Turquoise = Color(0xFF7DD4CC)
+    val Brown = Color(0xFFFFA559)
     val LightGray = Color(0xFFFAF7F2)
     val Black = Color(0xFF000000)
     val DarkGray = Color(0xFF1E1E1E) // Neutral dark gray for dark theme
@@ -82,9 +82,9 @@ val DarkColorScheme = darkColorScheme(
     onSecondaryContainer = Color(0xFFD4C6FF), // Light purple for better contrast
 
     // Tertiary - Turquoise (using turquoise instead of yellow for better dark theme contrast)
-    tertiary = JagratiColors.Turquoise,
+    tertiary = JagratiColors.Yellow,
     onTertiary = Color.White,
-    tertiaryContainer = JagratiColors.Turquoise.copy(alpha = 0.2f),
+    tertiaryContainer = JagratiColors.Yellow.copy(alpha = 0.2f),
     onTertiaryContainer = Color(0xFF9FECF7), // Light turquoise for better contrast
 
     // Surface colors - Using neutral dark gray instead of brown

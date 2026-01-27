@@ -96,7 +96,7 @@ fun UserRolesScreen(
     UserRolesScreenLayout(
         uiState = uiState,
         onBackPressed = onBackPressed,
-        onRefresh = { viewModel.loadUsers() },
+        onRefresh = { viewModel.refresh() },
         onSearchQueryChanged = { viewModel.updateSearchQuery(it) },
         onUserClicked = onUserClicked
     )
@@ -116,6 +116,8 @@ fun UserRolesScreenLayout(
     val isTablet = configuration.screenWidthDp >= 600
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    val displayedUsers = uiState.filteredUsers
+
     Scaffold(
         topBar = {
             androidx.compose.material3.CenterAlignedTopAppBar(
@@ -127,7 +129,7 @@ fun UserRolesScreenLayout(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "${uiState.users.size} users",
+                            "${displayedUsers.size} users",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -203,7 +205,7 @@ fun UserRolesScreenLayout(
                     )
             ) {
                 when {
-                    uiState.isLoading && uiState.users.isEmpty() -> {
+                    uiState.isLoading && displayedUsers.isEmpty() -> {
                         // Loading State
                         Box(
                             modifier = Modifier
@@ -228,7 +230,7 @@ fun UserRolesScreenLayout(
                         }
                     }
 
-                    uiState.users.isEmpty() -> {
+                    displayedUsers.isEmpty() -> {
                         // Empty State
                         Column(
                             modifier = Modifier
@@ -292,10 +294,10 @@ fun UserRolesScreenLayout(
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 items(
-                                    items = uiState.users,
+                                    items = displayedUsers,
                                     key = { it.pid }
                                 ) { user ->
-                                    val index = uiState.users.indexOf(user)
+                                    val index = displayedUsers.indexOf(user)
                                     EnhancedUserCard(
                                         user = user,
                                         colorIndex = index,
@@ -311,10 +313,10 @@ fun UserRolesScreenLayout(
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 items(
-                                    items = uiState.users,
+                                    items = displayedUsers,
                                     key = { it.pid }
                                 ) { user ->
-                                    val index = uiState.users.indexOf(user)
+                                    val index = displayedUsers.indexOf(user)
                                     EnhancedUserCard(
                                         user = user,
                                         colorIndex = index,

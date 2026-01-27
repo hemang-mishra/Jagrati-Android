@@ -2,6 +2,7 @@ package com.hexagraph.jagrati_android.ui.screens.attendancereport
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,12 +37,14 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -74,6 +77,14 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.tooling.preview.Preview
+import com.hexagraph.jagrati_android.model.attendance.AttendanceReportResponse
+import com.hexagraph.jagrati_android.model.attendance.PresentStudent
+import com.hexagraph.jagrati_android.model.attendance.PresentVolunteer
+import com.hexagraph.jagrati_android.ui.theme.CustomColors
+import com.hexagraph.jagrati_android.ui.theme.JagratiAndroidTheme
+import com.hexagraph.jagrati_android.ui.theme.JagratiColors
+import com.hexagraph.jagrati_android.ui.theme.JagratiThemeColors
 
 @Composable
 fun AttendanceReportScreen(
@@ -413,14 +424,12 @@ fun DateNavigationSection(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "Attendance Report",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = date,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -428,15 +437,21 @@ fun DateNavigationSection(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onDateClick) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_calendar_month),
-                        contentDescription = "Select Date",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
+                Box(
+                    modifier = Modifier
+                        .clickable{ onDateClick() }
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(12.dp))
+                        .padding(8.dp)
+                ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_calendar),
+                            contentDescription = "Select Date",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
                 }
-                androidx.compose.material3.FilledTonalButton(
+                Spacer(modifier = Modifier.width(4.dp))
+                OutlinedButton(
                     onClick = onTakeAttendance,
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
@@ -465,7 +480,7 @@ fun DateNavigationSection(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(vertical = 4.dp, horizontal = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -528,7 +543,7 @@ fun TakeAttendanceButton(onClick: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_attendance_filled),
+                    painter = painterResource(R.drawable.ic_attendance),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
                     tint = MaterialTheme.colorScheme.onPrimary
@@ -604,7 +619,7 @@ fun SummaryCards(
             title = "Students",
             count = totalStudents,
             icon = painterResource(R.drawable.ic_group),
-            containerColor = MaterialTheme.colorScheme.primary,
+            containerColor = CustomColors.BatchBrown,
             modifier = Modifier.weight(1f)
         )
         SummaryCard(
@@ -626,10 +641,11 @@ fun SummaryCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
-            containerColor = containerColor.copy(alpha = 0.12f)
+            containerColor = containerColor.copy(alpha = 0.3f)
         ),
+        border = BorderStroke(2.dp, containerColor.copy(alpha = 0.5f)),
         modifier = modifier
     ) {
         Column(
@@ -756,11 +772,11 @@ fun VillageGenderTableCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = Color.Transparent
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(
-            1.dp,
+            0.7.dp,
             MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
         )
     ) {
@@ -772,8 +788,8 @@ fun VillageGenderTableCard(
         ) {
             Text(
                 text = "By Village & Gender",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
@@ -785,7 +801,8 @@ fun VillageGenderTableCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(CustomColors.BatchTurquoise.copy(0.3f))
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -793,31 +810,23 @@ fun VillageGenderTableCard(
                     Text(
                         text = "Village",
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = "Male",
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.width(50.dp),
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Female",
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.width(60.dp),
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Total",
                         style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.width(50.dp),
                         textAlign = TextAlign.Center
                     )
@@ -839,8 +848,8 @@ fun VillageGenderTableCard(
 
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
+                        .fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(0.15f))
                         .padding(horizontal = 12.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -848,31 +857,23 @@ fun VillageGenderTableCard(
                     Text(
                         text = "Total",
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = totalMale.toString(),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.width(50.dp),
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = totalFemale.toString(),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.width(60.dp),
                         textAlign = TextAlign.Center
                     )
                     Text(
                         text = grandTotal.toString(),
                         style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.width(50.dp),
                         textAlign = TextAlign.Center
                     )
@@ -890,7 +891,6 @@ fun VillageGenderRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -910,7 +910,7 @@ fun VillageGenderRow(
                 .clip(RoundedCornerShape(8.dp))
                 .background(
                     if (data.maleCount > 0)
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                        CustomColors.BatchBrown.copy(alpha = 0.5f)
                     else
                         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                 )
@@ -997,8 +997,9 @@ fun StatsCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f)
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(
             modifier = Modifier
@@ -1021,6 +1022,8 @@ fun StatsCard(
                     StatChip(
                         label = item.label,
                         count = item.count,
+                        // Use the item id (batch/group/village id) as the stable "state" key for coloring.
+                        stateKey = item.id ?: item.label,
                         onClick = { onItemClick(item.id) }
                     )
                 }
@@ -1030,15 +1033,42 @@ fun StatsCard(
 }
 
 @Composable
+private fun batchChipColorsForStateKey(
+    stateKey: String?,
+    batchColors: List<Color>
+): Pair<Color, Color> {
+    val key = stateKey?.trim().orEmpty()
+
+    if (key.isBlank() || key.equals("N/A", ignoreCase = true) || batchColors.isEmpty()) {
+        val fallback = MaterialTheme.colorScheme.onSurfaceVariant
+        // background = text color with alpha, as requested
+        return fallback.copy(alpha = 0.14f) to fallback
+    }
+
+    val index = (key.lowercase(Locale.getDefault()).hashCode() and Int.MAX_VALUE) % batchColors.size
+    val textColor = batchColors[index]
+    val backgroundColor = textColor.copy(alpha = 0.14f)
+
+    return backgroundColor to textColor
+}
+
+@Composable
 fun StatChip(
     label: String,
     count: Int,
+    stateKey: String? = null,
     onClick: () -> Unit = {}
 ) {
+    val batchColors = com.hexagraph.jagrati_android.ui.theme.getBatchColors()
+    val (backgroundColor, textColor) = batchChipColorsForStateKey(
+        stateKey = stateKey,
+        batchColors = batchColors
+    )
+
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surface)
+            .background(backgroundColor)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -1047,18 +1077,20 @@ fun StatChip(
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface
+            color = textColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Text(
             text = "•",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = textColor.copy(alpha = 0.8f)
         )
         Text(
             text = count.toString(),
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = textColor
         )
     }
 }
@@ -1420,4 +1452,190 @@ fun isToday(millis: Long): Boolean {
     val today = Calendar.getInstance()
     return calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
             calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+}
+
+@Preview(name = "Attendance Report - Loaded", showBackground = true)
+@Composable
+private fun AttendanceReportScreenLayoutPreviewLoaded() {
+    val selectedDateMillis = remember {
+        Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 10)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
+    val students = remember {
+        listOf(
+            PresentStudent(
+                pid = "stu_1",
+                aid = "att_stu_1",
+                firstName = "Aarav",
+                lastName = "Sharma",
+                gender = Gender.MALE,
+                villageId = 1L,
+                villageName = "Rampur",
+                groupId = 101L,
+                groupName = "Group A"
+            ),
+            PresentStudent(
+                pid = "stu_2",
+                aid = "att_stu_2",
+                firstName = "Anaya",
+                lastName = "Verma",
+                gender = Gender.FEMALE,
+                villageId = 1L,
+                villageName = "Rampur",
+                groupId = 102L,
+                groupName = "Group B"
+            ),
+            PresentStudent(
+                pid = "stu_3",
+                aid = "att_stu_3",
+                firstName = "Ishaan",
+                lastName = "Gupta",
+                gender = Gender.MALE,
+                villageId = 2L,
+                villageName = "Devpur",
+                groupId = 101L,
+                groupName = "Group A"
+            )
+        )
+    }
+
+    val volunteers = remember {
+        listOf(
+            PresentVolunteer(
+                pid = "vol_1",
+                aid = "att_vol_1",
+                firstName = "Meera",
+                lastName = "Singh",
+                batch = "Batch 1",
+                rollNo = "V-12"
+            ),
+            PresentVolunteer(
+                pid = "vol_2",
+                aid = "att_vol_2",
+                firstName = "Rohan",
+                lastName = "Kumar",
+                batch = "Batch 2",
+                rollNo = "V-07"
+            )
+        )
+    }
+
+    val reportData = remember {
+        AttendanceReportResponse(
+            date = "2026-01-25",
+            studentsByVillageGender = listOf(
+                StudentVillageGenderCount(
+                    villageId = 1L,
+                    villageName = "Rampur",
+                    gender = Gender.MALE,
+                    count = 1L
+                ),
+                StudentVillageGenderCount(
+                    villageId = 1L,
+                    villageName = "Rampur",
+                    gender = Gender.FEMALE,
+                    count = 1L
+                ),
+                StudentVillageGenderCount(
+                    villageId = 2L,
+                    villageName = "Devpur",
+                    gender = Gender.MALE,
+                    count = 1L
+                )
+            ),
+            volunteersByBatch = listOf(
+                VolunteerBatchCount(batch = "Batch 1", count = 1L),
+                VolunteerBatchCount(batch = "Batch 2", count = 1L)
+            ),
+            presentStudents = students,
+            presentVolunteers = volunteers
+        )
+    }
+
+    val groupCounts = remember {
+        students
+            .groupBy { it.groupId to it.groupName }
+            .mapValues { (_, list) -> list.size }
+    }
+
+    val uiState = remember {
+        AttendanceReportUiState(
+            isLoading = false,
+            isRefreshing = false,
+            selectedDateMillis = selectedDateMillis,
+            reportData = reportData,
+            filteredStudents = students,
+            filteredVolunteers = volunteers,
+            groupCounts = groupCounts,
+            canDeleteStudentAttendance = true,
+            canDeleteVolunteerAttendance = true,
+            studentProfilePics = mapOf(
+                "stu_1" to null,
+                "stu_2" to null,
+                "stu_3" to null
+            ),
+            volunteerProfilePics = mapOf(
+                "vol_1" to null,
+                "vol_2" to null
+            )
+        )
+    }
+
+    JagratiAndroidTheme {
+        AttendanceReportScreenLayout(
+            uiState = uiState,
+            onDateSelected = {},
+            onRefresh = {},
+            onPreviousDay = {},
+            onNextDay = {},
+            onTakeAttendance = {},
+            onStudentVillageFilter = {},
+            onStudentGenderFilter = {},
+            onStudentGroupFilter = {},
+            onVolunteerBatchFilter = {},
+            onDeleteStudentAttendance = {},
+            onDeleteVolunteerAttendance = {},
+            onNavigateToStudentProfile = {},
+            onNavigateToVolunteerProfile = {},
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
+}
+
+@Preview(name = "Attendance Report - Empty", showBackground = true)
+@Composable
+private fun AttendanceReportScreenLayoutPreviewEmpty() {
+    val uiState = remember {
+        AttendanceReportUiState(
+            isLoading = false,
+            isRefreshing = false,
+            selectedDateMillis = System.currentTimeMillis(),
+            reportData = null
+        )
+    }
+
+    JagratiAndroidTheme {
+        AttendanceReportScreenLayout(
+            uiState = uiState,
+            onDateSelected = {},
+            onRefresh = {},
+            onPreviousDay = {},
+            onNextDay = {},
+            onTakeAttendance = {},
+            onStudentVillageFilter = {},
+            onStudentGenderFilter = {},
+            onStudentGroupFilter = {},
+            onVolunteerBatchFilter = {},
+            onDeleteStudentAttendance = {},
+            onDeleteVolunteerAttendance = {},
+            onNavigateToStudentProfile = {},
+            onNavigateToVolunteerProfile = {},
+            snackbarHostState = remember { SnackbarHostState() }
+        )
+    }
 }
