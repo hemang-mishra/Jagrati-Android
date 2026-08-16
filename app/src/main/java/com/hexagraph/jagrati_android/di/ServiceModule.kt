@@ -9,6 +9,7 @@ import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionSer
 import com.hexagraph.jagrati_android.service.face_recognition.FaceRecognitionServiceImpl
 import com.hexagraph.jagrati_android.service.image_service.ImageKitService
 import com.hexagraph.jagrati_android.service.image_service.KtorImageKitService
+import com.hexagraph.jagrati_android.util.AppUpdateHelper
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttpConfig
 import io.ktor.client.plugins.HttpTimeout
@@ -22,6 +23,8 @@ val serviceModule = module{
     single<NotificationHelper> {
         NotificationHelperImpl(androidApplication())
     }
+
+    single { AppUpdateHelper(androidApplication()) }
 
     single<FaceRecognitionService> {
         FaceRecognitionServiceImpl(get(),  get())

@@ -61,7 +61,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hexagraph.jagrati_android.BuildConfig
 import com.hexagraph.jagrati_android.R
-import com.hexagraph.jagrati_android.util.AppUpdateHelper
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import androidx.core.net.toUri
@@ -74,20 +73,10 @@ fun SettingsScreen(
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() }
 ) {
     val context = LocalContext.current
-    val activity = context as Activity
     val appVersion = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
 
-    // Create ViewModel with only app version (no Activity)
     val viewModel: SettingsViewModel = koinViewModel { parametersOf(appVersion) }
     val uiState by viewModel.uiState.collectAsState()
-
-    // Create AppUpdateHelper in the UI layer
-    val updateHelper = remember { AppUpdateHelper(activity) }
-
-    // Initialize the helper in ViewModel
-    LaunchedEffect(Unit) {
-        viewModel.setUpdateHelper(updateHelper)
-    }
 
     // Setup Activity Result Launcher for handling update flow
     val updateLauncher = rememberLauncherForActivityResult(
@@ -124,11 +113,34 @@ fun SettingsScreen(
         }
     }
 
-    // Check if there's an update available and start it automatically
-    LaunchedEffect(uiState.updateAvailable) {
-        if (uiState.updateAvailable) {
-            viewModel.startUpdate(updateLauncher)
-        }
+    uiState.pendingUpdateVersionCode?.let { versionCode ->
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissUpdateDialog() },
+            title = {
+                Text(
+                    text = "Update Available",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = "Version $versionCode is available on the Play Store. " +
+                            "The app will restart once the update is installed.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(onClick = { viewModel.confirmUpdate(updateLauncher) }) {
+                    Text("Update Now")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissUpdateDialog() }) {
+                    Text("Later")
+                }
+            }
+        )
     }
 
     // Delete Account Confirmation Dialog

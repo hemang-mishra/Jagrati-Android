@@ -90,7 +90,7 @@ val viewModelModule = module {
     factory { (pid: String, isStudent: Boolean) -> AttendanceViewModel(pid, isStudent, get(), get(), get()) }
     factory { (pid: String) -> EditVolunteerProfileViewModel(pid, get()) }
 
-    factory { (appVersion: String) -> SettingsViewModel(appVersion) }
+    factory { (appVersion: String) -> SettingsViewModel(appVersion, get()) }
 
     factory { NotificationViewModel(get()) }
 }
